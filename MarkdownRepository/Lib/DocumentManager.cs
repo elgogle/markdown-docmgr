@@ -29,6 +29,9 @@ namespace MarkdownRepository.Lib
     {
         public static readonly DocumentManager DocManager = new DocumentManager();
         const string INDEX_PATH = "~/App_Data/Index/";
+        Queue<Doc> AddDocs = new Queue<Doc>();
+
+        internal DocumentManager() { }
 
         struct DocStruct
         {
