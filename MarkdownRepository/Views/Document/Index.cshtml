@@ -1,0 +1,110 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<MarkdownRepository.Models.Document>
+
+
+<div class="blog-post markdown-body col-md-10">
+@if (Model != null && Model.Count > 0) { 
+    <ul class="latest-doc">
+    @foreach (var doc in Model) { 
+        <li>
+            <div class="doc-list">
+                <div class="pull-right" style="font-size:0.7em;" >
+                    <a href="@Url.Action("Create", new { id = doc.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a> 
+                    <a href="javascript:deleteDoc('@doc.rowid')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
+                </div>
+
+                <a href='@Url.Action("Show", new { id = doc.rowid })'>
+                    <h4>@doc.title</h4>
+                    <div class="md" id="md_@doc.rowid">
+                        @(doc.content.Substring(0,doc.content.Length>50?50:doc.content.Length) + "...")
+                    </div>
+                </a>
+
+                <div class="category">
+                    @doc.category
+                </div>                
+
+                <div class="updated-time">
+                    Updated Time: @doc.update_at
+                </div>                
+            </div>
+        </li>   
+    }        
+    </ul>
+    
+    <!-- 分页 -->
+}
+</div>
+<div class="col-md-2 side-category">
+    <span class="title">Documents Category</span>
+    <div class="doc-category">        
+    @if (ViewBag.Category != null) 
+    {
+        <ul>
+            @foreach (var c in ViewBag.Category as List<dynamic>) 
+            {
+                if (!string.IsNullOrWhiteSpace(c.category as string))
+				{
+                <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category })<span style="font-size:0.7em"> @c.hint</span> </li>
+				}
+            }
+        </ul>
+    }
+    </div>
+</div>
+
+@section style{
+    <style>
+        .blog-post{ margin-left: -45px;}
+        .latest-doc li{ list-style-type:none; margin-bottom: 1em; }
+        .doc-list{ background-color:#f3f9f7; border-radius: 5px; padding: 5px;}
+        .updated-time 
+        {
+            font-size: 0.7em;
+            color: Gray;
+            font-family: sans-serif;
+            margin-top: 0.5em;
+        }
+        .category{ padding-left:1em; color:#337ab7; font-size:0.8em;}
+        
+        .md{ word-wrap: break-word; font-size: 0.8em; color: gray; margin: 1em; }
+        .side-category{ height:100%; }
+        .side-category .title    
+        {
+            font-size: 0.8em;
+            padding: 0.2em;
+            color: firebrick;
+            font-family: cursive;
+        }
+        
+        .doc-category{ background-color:#f3f9f7; border-radius: 5px; padding: 5px; }
+        .doc-category ul li{list-style-type: none; font-size:0.8em}
+    </style>
+}
+
+@section scripts{
+
+<script>
+    function deleteDoc(id){
+        if (confirm("确认删除?")) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Delete","Document")",
+                data: { id: id },
+
+                success: function (data) {
+                    if(data.success){
+                        location.reload();
+                    }else{
+                        alert(data.message);
+                    }
+                }
+            });
+        }
+    }
+
+</script>
+}
+

@@ -1,0 +1,106 @@
+﻿@using System.IO
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="~/images/favicon.ico">
+
+    <title>My Documents</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="~/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="~/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="~/css/blog.css" rel="stylesheet">
+    
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="@Url.Content("~/javascripts/ie8-responsive-file-warning.js")"></script><![endif]-->
+    <script src="@Url.Content("~/javascripts/ie-emulation-modes-warning.js")"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .sidebar-module li.active-doc{ background-color:#DBEAF1; }        
+        .sidebar-module li.active-doc ul li { list-style-type: decimal; }
+        .nav-search{display: inline-block;margin-top: 1px;}
+        #content{margin-top: 40px; padding-top:1em; min-height:800px;}
+    </style>
+
+    @RenderSection("style", false)
+
+</head>
+
+<body>
+    <div class="blog-masthead">
+      <div class="container">
+        <nav class="blog-nav">
+          <a class="blog-nav-item @(@ViewBag.Action != "Create"?"active":"")" href="@Url.Action("Index")">My Documents</a>         
+          <a class="blog-nav-item @(@ViewBag.Action == "Create"?"active":"")"  href="@Url.Action("Create")">Create Document</a> 
+
+          @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline pull-right nav-search", @role = "form" }))
+            { 
+                <div class="form-group">
+                    @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "Search Text" })
+                </div>
+                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Search</button>
+            }
+        </nav>
+      </div>
+    </div>
+
+    <div class="container" id="content">
+      <div class="row">
+        <div class="col-sm-12 blog-main">
+            @RenderBody()
+        </div><!-- /.blog-main -->
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Copyright crystalgroup 2016 </p>
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    @System.Web.Optimization.Scripts.Render("~/jquery")
+    @System.Web.Optimization.Scripts.Render("~/bootstrap")
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="@Url.Content("~/javascripts/ie10-viewport-bug-workaround.js")"></script>
+    
+    <script type="text/javascript">
+        function showMarkDown(id, mdText) { 
+            editormd.markdownToHTML(id, {
+                        htmlDecode      : "style,script,iframe",  
+                        tocm            : true,    // Using [TOCM]
+                        emoji           : true,
+                        taskList        : true,
+                        tex             : true,  // 默认不解析
+                        flowChart       : true,  // 默认不解析
+                        sequenceDiagram : true,  // 默认不解析
+                    });        }
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
