@@ -170,6 +170,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Lib\DocumentManager.cs" />
+    <Compile Include="Lib\IndexManager.cs" />
     <Compile Include="Lib\Extentions.cs" />
     <Compile Include="Lib\LogHelper.cs" />
     <Compile Include="Lib\MarkdownSharp.cs" />

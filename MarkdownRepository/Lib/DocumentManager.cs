@@ -1,171 +1,298 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Web;
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
-using Lucene.Net.Index;
-using Lucene.Net.QueryParsers;
-using Lucene.Net.Search;
-using Lucene.Net.Store;
-using System.IO;
-using Lucene.Net.Analysis.PanGu;
+using System.Data.SQLite;
+using System.Data.Common;
+using Dapper;
+using MarkdownRepository.Models;
 
 namespace MarkdownRepository.Lib
 {
-    public class Doc
-    {
-        public string Content { get; set; }
-        public string Title { get; set; }
-        public string Category { get; set; }
-        public string Id { get; set; }
-    }
-
     public class DocumentManager
     {
-        public static readonly DocumentManager DocManager = new DocumentManager();
-        const string INDEX_PATH = "~/App_Data/Index/";
-        Queue<Doc> AddDocs = new Queue<Doc>();
+        private string _dbPath = null;
+        private IndexManager _indexMgr = null;
 
-        internal DocumentManager() { }
-
-        struct DocStruct
+        public DocumentManager(string dbPath, string indexPath)
         {
-            public const string CONTENT = "content";
-            public const string TITLE = "title";
-            public const string CATEGORY = "category";
-            public const string ID = "id";
+            this._dbPath = dbPath;
+            IndexManager.IndexPath = indexPath;
+            this._indexMgr = IndexManager.IndexMgr;
         }
 
-        private static string _IndexPath
+        private void CreateDBIfNotExist()
         {
-            get
+            if (!System.IO.File.Exists(this._dbPath))
             {
-                return HttpContext.Current.Server.MapPath(INDEX_PATH);
+                SQLiteConnection.CreateFile(this._dbPath);
+            }
+        }
+
+        private DbConnection OpenDb()
+        {
+            this.CreateDBIfNotExist();
+            return new SQLiteConnection("data source=" + this._dbPath);
+        }
+
+        private void CreateTableIfNotExist()
+        {
+            using (var db = this.OpenDb())
+            {
+                var sql = @"create VIRTUAL table if not exists documents USING fts3(title, content, category);
+                            create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')));
+                            create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
+                            create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
+                                    ";
+                db.Execute(sql);
             }
         }
 
         /// <summary>
-        /// 删除一个文档
+        /// 创建文档
         /// </summary>
-        /// <param name="docId"></param>
-        public void DeleteDoc(string docId)
-        {
-            FSDirectory dir = FSDirectory.Open(new DirectoryInfo(_IndexPath), new NoLockFactory());
-            DeleteDoc(dir, docId);
-            dir.Close();
-        }
-
-        private void DeleteDoc(FSDirectory dir, string docId)
-        {
-            var reader = IndexReader.Open(dir, false);
-            reader.DeleteDocuments(new Term(DocStruct.ID, docId));
-            reader.Commit();
-            reader.Close();
-        }
-
-        public bool ExistsDoc(string docId)
-        {
-            FSDirectory dir = FSDirectory.Open(new DirectoryInfo(_IndexPath), new NoLockFactory());
-            bool isExistIndex = IndexReader.IndexExists(dir);
-
-            if (isExistIndex)
-            {
-                var reader = IndexReader.Open(dir, true);
-                IndexSearcher searcher = new IndexSearcher(reader);
-                var q = new TermQuery(new Term(DocStruct.ID, docId));
-                TopScoreDocCollector collector = TopScoreDocCollector.create(10,true);
-                searcher.Search(q, collector);
-                return collector.TopDocs().totalHits > 0;
-            }
-            else
-                return false;
-        }
-
-        /// <summary>
-        /// 增加或修改一个文档
-        /// </summary>
-        /// <param name="doc"></param>
-        public void EditDoc(Doc doc)
-        {
-            FSDirectory dir = FSDirectory.Open(new DirectoryInfo(_IndexPath), new NoLockFactory());
-            bool isExistIndex = IndexReader.IndexExists(dir);
-            if (isExistIndex)
-            {
-                DeleteDoc(dir, doc.Id);            
-            }
-            
-            IndexWriter writer = new IndexWriter(dir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
-            Document ndoc = CreateDocument(doc);
-            writer.AddDocument(ndoc);
-            writer.Commit();
-            writer.Close();    
-            dir.Close();
-        }
-
-        private static Document CreateDocument(Doc doc)
-        {
-            Document ndoc = new Document();
-            ndoc.Add(new Field(DocStruct.TITLE, doc.Title, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-            ndoc.Add(new Field(DocStruct.CONTENT, doc.Content, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-            ndoc.Add(new Field(DocStruct.CATEGORY, doc.Category, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-            ndoc.Add(new Field(DocStruct.ID, doc.Id, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-            return ndoc;
-        }
-
-        /// <summary>
-        /// 搜索
-        /// </summary>
-        /// <param name="text"></param>
+        /// <param name="content"></param>
+        /// <param name="title"></param>
+        /// <param name="category"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public List<Doc> Search(string text)
+        public Document Create(string content, string title, string category, string userId)
         {
-            List<Doc> result = new List<Doc>();
-            FSDirectory dir = FSDirectory.Open(new DirectoryInfo(_IndexPath), new NoLockFactory());
-            bool isExistIndex = IndexReader.IndexExists(dir);
-            
-            if (isExistIndex)
+            using (var db = this.OpenDb())
             {
-                var reader = IndexReader.Open(dir, true);
-                IndexSearcher searcher = new IndexSearcher(reader);
+                CreateTableIfNotExist();
 
-                //搜索条件
-                BooleanQuery queryOr = new BooleanQuery();
-                PhraseQuery query = new PhraseQuery();
-                //把用户输入的关键字进行分词
-                foreach (string word in SplitContent.SplitWords(text))
+                var max = db.Query<int?>("select max(id) id from documents_owner").FirstOrDefault();
+                var document = new Document { category = category, content = content, creator = userId, rowid = (max ?? 0) + 1, title = title };
+
+                SaveCategory(document.rowid, category, db);
+
+                db.Execute("insert into documents_owner(id, creator) values(@id, @creator)",
+                    new { id = document.rowid, creator = document.creator });
+
+                db.Execute("insert into documents(rowid, title, content, category) values(@rowid, @title, @content, @category)",
+                    new { rowid = document.rowid, title = title, content = content, category = category });
+
+                _indexMgr.AddOrUpdateDocIndex(new Doc { Id = document.rowid.ToString(), Category = category, Content = content, Title = title, Operate = Operate.AddOrUpdate });
+                return document;
+            }
+        }
+
+        /// <summary>
+        /// 保存文档类别
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="category"></param>
+        /// <param name="db"></param>
+        public void SaveCategory(long id, string category, DbConnection db)
+        {
+            var ca = category.Split(',');
+
+            foreach (var c in ca)
+            {
+                db.Execute("delete from documents_category where doc_id=@id", new { id = id });
+                db.Execute(@"insert or replace into documents_category(category, doc_id) values(@category, @id)",
+                        new { category = c.Trim(), id = id });
+            }
+        }
+
+        /// <summary>
+        /// 获取文档所有类别
+        /// </summary>
+        /// <returns></returns>
+        public List<dynamic> GetCategory()
+        {
+            using (var db = this.OpenDb())
+            {
+                return db.Query<dynamic>("select category, count(*) hint from documents_category group by category order by count(*) desc").ToList();
+            }
+        }
+
+        /// <summary>
+        /// 创建或更新文档
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="content"></param>
+        /// <param name="title"></param>
+        /// <param name="category"></param>
+        public void Update(long id, string content, string title, string category)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                SaveCategory(id, category, db);
+
+                db.Execute("update documents_owner set update_at=datetime('now', 'localtime') where id=@id",
+                    new { id = id });
+
+                db.Execute("update documents set title=@title, content=@content, category=@category where rowid=@rowid",
+                    new { rowid = id, title = title, content = content, category = category });
+
+                _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Category = category, Content = content, Title = title, Operate = Operate.AddOrUpdate });
+                //ClearNotExistsAtachFile(id);
+            }
+        }
+
+        /// <summary>
+        /// 删除文档
+        /// </summary>
+        /// <param name="id"></param>
+        public void Delete(long id)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                db.Execute("delete from documents_owner where id=@id;", new { id = id });
+                db.Execute("delete from documents where rowid=@rowid;", new { rowid = id });
+                db.Execute("delete from documents_category where doc_id=@id", new { id = id });
+
+                _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Operate = Operate.Delete });
+                //DeleteAtachFile(id);
+            }
+        }
+
+        private void DeleteAtachFile(long id)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id",
+                    new { id = id });
+                foreach (var f in filePath)
                 {
-                    query.Add(new Term(DocStruct.CONTENT, word));
-                    queryOr.Add(query, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+                    if (System.IO.File.Exists(f))
+                    {
+                        System.IO.File.Delete(f);
+                    }
                 }
-                query.SetSlop(100); //指定关键词相隔最大距离
 
-                //TopScoreDocCollector盛放查询结果的容器
-                TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
-                //searcher.Search(query, null, collector);//根据query查询条件进行查询，查询结果放入collector容器
-                searcher.Search(queryOr, null, collector);
-                //TopDocs 指定0到GetTotalHits() 即所有查询结果中的文档 如果TopDocs(20,10)则意味着获取第20-30之间文档内容 达到分页的效果
-                ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs;
-                for (int i = 0; i < docs.Length; i++)
+                db.Execute("delete from documents_file where doc_id=@id", new { id = id });
+            }
+        }
+
+        private void ClearNotExistsAtachFile(long id)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var content = db.Query<string>("select content from documents where rowid=@id", new { id = id }).FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(content))
+                    DeleteAtachFile(id);
+                else
                 {
-                    int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
-                    Document doc = searcher.Doc(docId);//根据文档id来获得文档对象Document
-                    var d = new Doc();
-                    d.Id = doc.Get(DocStruct.ID);
-                    result.Add(d);
+                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id",
+                        new { id = id });
+                    foreach (var f in filePath)
+                    {
+                        if (!content.Contains(f))
+                        {
+                            if (System.IO.File.Exists(f)) System.IO.File.Delete(f);
+                            db.Execute("delete from documents_file  where doc_id=@id and file_path=@path",
+                                new { id = id, path = f });
+                        }
+                    }
                 }
+            }
+        }
 
-                reader.Close();
+        private void AddAtachFile(long id, string path)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                db.Execute("insert into documents_file(file_path, doc_id) values(@path, @id)", new { path = path, id = id });
+            }
+        }
+
+        /// <summary>
+        /// 通过文档id获取文档
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Document Get(long id)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var document = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator 
+                                                    from documents a, documents_owner b 
+                                                    where a.rowid = b.id and b.id=@id",
+                                                                                      new { id = id }).FirstOrDefault();
+                if (!_indexMgr.Exists(id.ToString()))
+                    _indexMgr.AddOrUpdateDocIndex(new Doc { Title = document.title, Content = document.content, Category = document.category, Id = id.ToString(), Operate = Operate.AddOrUpdate });
+
+                return document;
+            }
+        }
+
+        /// <summary>
+        /// 通过文档Category索引文档
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        public List<Document> SearchByCategory(string category)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var documents = db.Query<Document>(@"select distinct b.id as rowid, title, 
+                                                        content, 
+                                                        a.category,
+                                                        creat_at, update_at, creator
+                                                    from documents a, documents_owner b, documents_category c 
+                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category",
+                                                                                               new { category = category });
+                return documents.ToList();
+            }
+        }
+
+        /// <summary>
+        /// 搜索文档
+        /// </summary>
+        /// <param name="queryText"></param>
+        /// <returns></returns>
+        public List<Document> Search(string queryText)
+        {
+            var result = _indexMgr.Search(queryText);
+            if (result != null && result.Count > 0)
+            {
+                using (var db = this.OpenDb())
+                {
+                    CreateTableIfNotExist();
+
+                    var documents = db.Query<Document>(@"select b.id as rowid, title, 
+                                                        content, 
+                                                        category,
+                                                        creat_at, update_at, creator
+                                                    from documents a, documents_owner b 
+                                                    WHERE a.rowid = b.id and b.id in @list",
+                                                                                                   new { list = result.Select(t => t.Id).ToList() });
+                    return documents.ToList();
+                }
             }
 
-            dir.Close();
-
-            return result;
+            return null;
         }
-       
+
+        /// <summary>
+        /// 我的文档
+        /// </summary>
+        /// <returns></returns>
+        public List<Document> MyDocument(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at 
+                                                    from documents a, documents_owner b 
+                                                    where a.rowid = b.id and b.creator=@creator",
+                                                                                                new { creator = userId });
+                return documents.ToList();
+            }
+        }
     }
 }
