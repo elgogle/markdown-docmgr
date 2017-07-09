@@ -210,7 +210,8 @@ namespace MarkdownRepository.Lib
                     query3.Add(new Term(DocStruct.CATEGORY, word));
                     queryOr1.Add(query3, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
                 }
-                query1.SetSlop(100); //指定关键词相隔最大距离
+
+                //query1.SetSlop(100); //指定关键词相隔最大距离
 
                 MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
 
