@@ -56,9 +56,13 @@
                     },
                     function (result) {
                         $("#docId").val(result.rowid);
-                        $("#message")
-                        .html("<span style='pading:0.5em;background-color:green;color:#fff;font-size:0.75em'>Saved</span>")
-                        .animate({ opacity: 0 }, 5000, function () { $(this).html("").css("opacity", "1"); });
+                        var msg = "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>"
+                            ,$msg = $(msg);
+                        $msg.text("Saved")
+                        $("body").append($msg);
+                        $msg.animate({ top: 0, left:0, fontSize: 0, opacity: 0 }, 2000, function () {
+                            $(this).remove();
+                        })                        
                     });
                 return false;
             });
