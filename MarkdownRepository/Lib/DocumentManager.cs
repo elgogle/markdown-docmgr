@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -97,6 +97,21 @@ namespace MarkdownRepository.Lib
         }
 
         /// <summary>
+        /// 获取我的文档的类别
+        /// </summary>
+        /// <returns></returns>
+        public List<dynamic> GetMyCategory(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                return db.Query<dynamic>(@"select category, count(*) hint 
+                                           from documents_category a, documents_owner b 
+                                            where a.rowid = b.id and b.creator=@creator
+                                            group by category order by count(*) desc", new { creator = userId }).ToList();
+            }
+        }
+
+        /// <summary>
         /// 获取文档所有类别
         /// </summary>
         /// <returns></returns>
@@ -104,7 +119,17 @@ namespace MarkdownRepository.Lib
         {
             using (var db = this.OpenDb())
             {
+                CreateTableIfNotExist();
                 return db.Query<dynamic>("select category, count(*) hint from documents_category group by category order by count(*) desc").ToList();
+            }
+        }
+
+        public List<string> GetCreator()
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                return db.Query<string>("select distinct creator from documents_owner order by creator asc").ToList();
             }
         }
 
@@ -233,7 +258,7 @@ namespace MarkdownRepository.Lib
         /// </summary>
         /// <param name="category"></param>
         /// <returns></returns>
-        public List<Document> SearchByCategory(string category)
+        public List<Document> SearchByCategory(string category, string userId="")
         {
             using (var db = this.OpenDb())
             {
@@ -243,8 +268,8 @@ namespace MarkdownRepository.Lib
                                                         a.category,
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b, documents_category c 
-                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category",
-                                                                                               new { category = category });
+                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category and (b.creator = @userId or @userId='')",
+                                                                                               new { category = category, userId = userId });
                 return documents.ToList();
             }
         }
@@ -289,8 +314,23 @@ namespace MarkdownRepository.Lib
 
                 var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at 
                                                     from documents a, documents_owner b 
-                                                    where a.rowid = b.id and b.creator=@creator",
+                                                    where a.rowid = b.id and b.creator=@creator
+                                                    order by update_at desc",
                                                                                                 new { creator = userId });
+                return documents.ToList();
+            }
+        }
+
+        public List<Document> AllDocument()
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at 
+                                                    from documents a, documents_owner b 
+                                                    where a.rowid = b.id 
+                                                    order by update_at desc");
                 return documents.ToList();
             }
         }
