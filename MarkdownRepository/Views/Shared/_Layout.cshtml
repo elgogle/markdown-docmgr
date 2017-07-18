@@ -1,4 +1,4 @@
-﻿@using System.IO
+@using System.IO
 @{
     Layout = null;
 }
@@ -50,8 +50,9 @@
     <div class="blog-masthead">
       <div class="container">
         <nav class="blog-nav">
-          <a class="blog-nav-item @(@ViewBag.Action != "Create"?"active":"")" href="@Url.Action("Index")">My Documents</a>         
+          <a class="blog-nav-item @(@ViewBag.Action == "MyDocs" ? "active" : "")" href="@Url.Action("Index")">My Documents</a>         
           <a class="blog-nav-item @(@ViewBag.Action == "Create"?"active":"")"  href="@Url.Action("Create")">Create Document</a> 
+          <a class="blog-nav-item @(@ViewBag.Action == "ShowAll" ? "active" : "")" href="@Url.Action("AllDocument")">All Documents</a>      
 
           @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline pull-right nav-search", @role = "form" }))
             { 
@@ -98,9 +99,9 @@
                         tex             : true,  // 默认不解析
                         flowChart       : true,  // 默认不解析
                         sequenceDiagram : true,  // 默认不解析
-                    });        }
+                    });
+        }
     </script>
     @RenderSection("scripts", required: false)
 </body>
 </html>
-
