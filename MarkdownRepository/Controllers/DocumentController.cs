@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -47,8 +47,25 @@ namespace MarkdownRepository.Controllers
         public ActionResult Index(string searchText, int? page)
         {
             var result = docMgr.MyDocument(UserId);
-            var category = docMgr.GetCategory();
+            var category = docMgr.GetMyCategory(UserId);
+            ViewBag.Action = "MyDocs";
             ViewBag.Category = category;
+            return View(result);
+        }
+
+        /// <summary>
+        /// 所有文档
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public ActionResult AllDocument(int?page)
+        {            
+            var result = docMgr.AllDocument();
+            var category = docMgr.GetCategory();
+            var creator = docMgr.GetCreator();
+            ViewBag.Action = "ShowAll";
+            ViewBag.Category = category;
+            ViewBag.Creator = creator;
             return View(result);
         }
 
@@ -85,13 +102,13 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="category"></param>
         /// <returns></returns>
-        public ActionResult SearchByCategory(string category)
+        public ActionResult SearchByCategory(string category, bool byOwner)
         {
             ViewBag.CurrentFilter = category;
 
             if (!String.IsNullOrWhiteSpace(category))
             {
-                var result = docMgr.SearchByCategory(category);
+                var result = docMgr.SearchByCategory(category, byOwner?UserId:"");
                 foreach (var r in result)
                 {
                     r.title = SplitContent.HightLight(category, r.title);
