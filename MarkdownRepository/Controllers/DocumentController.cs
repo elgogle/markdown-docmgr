@@ -60,8 +60,8 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         public ActionResult AllDocument(int?page)
         {            
-            var result = docMgr.AllDocument();
-            var category = docMgr.GetCategory();
+            var result = docMgr.AllDocument(UserId);
+            var category = docMgr.GetCategory(UserId);
             var creator = docMgr.GetCreator();
             ViewBag.Action = "ShowAll";
             ViewBag.Category = category;
@@ -172,12 +172,12 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateInput(false)]
-        public ActionResult Create(string category, string content, string title, long id)
+        public ActionResult Create(string category, string content, string title, long id, DocumentAccess access)
         {
             Document document = null;
             // create
             if (id==0)
-                document = docMgr.Create(content, title, category, UserId);
+                document = docMgr.Create(content, title, category, UserId, access);
             // edit
             else
             {
@@ -196,7 +196,7 @@ namespace MarkdownRepository.Controllers
                 document.content = content;
                 document.title = title;
 
-                docMgr.Update(id, content, title, category);
+                docMgr.Update(id, content, title, category, access);
             }
 
             return Json(document);

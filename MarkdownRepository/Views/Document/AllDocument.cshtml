@@ -13,11 +13,6 @@
             {
                 <li>
                     <div class="doc-list">
-                        <div class="pull-right" style="font-size:0.7em;">
-                            <a href="@Url.Action("Create", new { id = doc.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
-                            <a href="javascript:deleteDoc('@doc.rowid')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
-                        </div>
-
                         <a href='@Url.Action("Show", new { id = doc.rowid })'>
                             <h4>@doc.title</h4>
                             <div class="md" id="md_@doc.rowid">
@@ -30,7 +25,7 @@
                         </div>
 
                         <div class="updated-time">
-                            Updated Time: @doc.update_at
+                            Updated By: @doc.creator, Updated Time: @doc.update_at
                         </div>
                     </div>
                 </li>

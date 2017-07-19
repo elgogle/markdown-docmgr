@@ -40,7 +40,7 @@ namespace MarkdownRepository.Lib
             using (var db = this.OpenDb())
             {
                 var sql = @"create VIRTUAL table if not exists documents USING fts3(title, content, category);
-                            create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')));
+                            create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
                             create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
                             create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
                                     ";
@@ -56,7 +56,7 @@ namespace MarkdownRepository.Lib
         /// <param name="category"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public Document Create(string content, string title, string category, string userId)
+        public Document Create(string content, string title, string category, string userId, DocumentAccess access)
         {
             using (var db = this.OpenDb())
             {
@@ -67,8 +67,8 @@ namespace MarkdownRepository.Lib
 
                 SaveCategory(document.rowid, category, db);
 
-                db.Execute("insert into documents_owner(id, creator) values(@id, @creator)",
-                    new { id = document.rowid, creator = document.creator });
+                db.Execute("insert into documents_owner(id, creator, is_public) values(@id, @creator, @isPublic)",
+                    new { id = document.rowid, creator = document.creator, isPublic = access });
 
                 db.Execute("insert into documents(rowid, title, content, category) values(@rowid, @title, @content, @category)",
                     new { rowid = document.rowid, title = title, content = content, category = category });
@@ -115,12 +115,14 @@ namespace MarkdownRepository.Lib
         /// 获取文档所有类别
         /// </summary>
         /// <returns></returns>
-        public List<dynamic> GetCategory()
+        public List<dynamic> GetCategory(string userId)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                return db.Query<dynamic>("select category, count(*) hint from documents_category group by category order by count(*) desc").ToList();
+                return db.Query<dynamic>(@"select category, count(*) hint from documents_category a, documents_owner b 
+                                            where a.rowid = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1)) 
+                                            group by category order by count(*) desc", new { userId = userId }).ToList();
             }
         }
 
@@ -140,7 +142,7 @@ namespace MarkdownRepository.Lib
         /// <param name="content"></param>
         /// <param name="title"></param>
         /// <param name="category"></param>
-        public void Update(long id, string content, string title, string category)
+        public void Update(long id, string content, string title, string category, DocumentAccess access)
         {
             using (var db = this.OpenDb())
             {
@@ -148,8 +150,8 @@ namespace MarkdownRepository.Lib
 
                 SaveCategory(id, category, db);
 
-                db.Execute("update documents_owner set update_at=datetime('now', 'localtime') where id=@id",
-                    new { id = id });
+                db.Execute("update documents_owner set update_at=datetime('now', 'localtime'), is_public=@access where id=@id",
+                    new { id = id, access = access });
 
                 db.Execute("update documents set title=@title, content=@content, category=@category where rowid=@rowid",
                     new { rowid = id, title = title, content = content, category = category });
@@ -242,7 +244,7 @@ namespace MarkdownRepository.Lib
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                var document = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator 
+                var document = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator, is_public 
                                                     from documents a, documents_owner b 
                                                     where a.rowid = b.id and b.id=@id",
                                                                                       new { id = id }).FirstOrDefault();
@@ -268,7 +270,7 @@ namespace MarkdownRepository.Lib
                                                         a.category,
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b, documents_category c 
-                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category and (b.creator = @userId or @userId='')",
+                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category and (b.creator = @userId or (@userId='' and b.is_public=1) )",
                                                                                                new { category = category, userId = userId });
                 return documents.ToList();
             }
@@ -279,7 +281,7 @@ namespace MarkdownRepository.Lib
         /// </summary>
         /// <param name="queryText"></param>
         /// <returns></returns>
-        public List<Document> Search(string queryText)
+        public List<Document> Search(string queryText, string userId = "")
         {
             var result = _indexMgr.Search(queryText);
             if (result != null && result.Count > 0)
@@ -293,8 +295,8 @@ namespace MarkdownRepository.Lib
                                                         category,
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b 
-                                                    WHERE a.rowid = b.id and b.id in @list",
-                                                                                                   new { list = result.Select(t => t.Id).ToList() });
+                                                    WHERE a.rowid = b.id and b.id in @list and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))",
+                                                                                                   new { list = result.Select(t => t.Id).ToList(), userId = userId });
                     return documents.ToList();
                 }
             }
@@ -321,16 +323,16 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public List<Document> AllDocument()
+        public List<Document> AllDocument(string userId)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
 
-                var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at 
+                var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator
                                                     from documents a, documents_owner b 
-                                                    where a.rowid = b.id 
-                                                    order by update_at desc");
+                                                    where a.rowid = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))
+                                                    order by update_at desc", new { userId = userId });
                 return documents.ToList();
             }
         }

@@ -1,4 +1,5 @@
-﻿@{
+﻿@using MarkdownRepository.Models
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model MarkdownRepository.Models.Document
@@ -16,6 +17,10 @@
 
 <label style="font-size:0.8em">Category
     <input id="category" class="form-control col-sm-4" placeholder="',' as delimeter" type="text" value="@doc.category" class="" />
+</label>
+
+<label style="font-size:0.8em">Public
+    <input id="access" type="checkbox" @(doc.is_public == DocumentAccess.PUBLIC?"checked":"") />
 </label>
 
 <button id="btnSave" class="btn btn-default pull-right"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Save</button>
@@ -52,7 +57,8 @@
                         content: $("#mkEditor > textarea").val(),
                         title: $("#title").val(),
                         category: $("#category").val(),
-                        id: $("#docId").val()
+                        id: $("#docId").val(),
+                        access: $("#access").val() == "on" ? 1 : 0
                     },
                     function (result) {
                         $("#docId").val(result.rowid);

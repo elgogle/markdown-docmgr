@@ -14,6 +14,7 @@ namespace MarkdownRepository.Models
         public DateTime? creat_at { get; set; }
         public DateTime? update_at { get; set; }
         public string creator { get; set; }
+        public DocumentAccess is_public { get; set; }
     }
 
     public class DocumentOwner
@@ -22,5 +23,11 @@ namespace MarkdownRepository.Models
         public string creator { get; set; }
         public DateTime creat_at { get; set; }
         public DateTime update_at { get; set; }
+    }
+
+    public enum DocumentAccess
+    { 
+        PUBLIC=1,
+        PRIVATE=0
     }
 }

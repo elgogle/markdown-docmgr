@@ -754,6 +754,7 @@
     <Content Include="Views\Document\Create.cshtml" />
     <Content Include="Views\Document\Show.cshtml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <Content Include="Views\Document\AllDocument.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
