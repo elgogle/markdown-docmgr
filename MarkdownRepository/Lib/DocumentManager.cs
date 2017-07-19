@@ -106,7 +106,7 @@ namespace MarkdownRepository.Lib
             {
                 return db.Query<dynamic>(@"select category, count(*) hint 
                                            from documents_category a, documents_owner b 
-                                            where a.rowid = b.id and b.creator=@creator
+                                            where a.doc_id = b.id and b.creator=@creator
                                             group by category order by count(*) desc", new { creator = userId }).ToList();
             }
         }
@@ -121,7 +121,7 @@ namespace MarkdownRepository.Lib
             {
                 CreateTableIfNotExist();
                 return db.Query<dynamic>(@"select category, count(*) hint from documents_category a, documents_owner b 
-                                            where a.rowid = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1)) 
+                                            where a.doc_id = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1)) 
                                             group by category order by count(*) desc", new { userId = userId }).ToList();
             }
         }
