@@ -15,6 +15,7 @@ using Lucene.Net.Store;
 using System.IO;
 using Lucene.Net.Analysis.PanGu;
 using System.Threading.Tasks;
+using CrystalGroup.ISD.DocumentManage.Lib;
 
 namespace MarkdownRepository.Lib
 {
@@ -119,10 +120,17 @@ namespace MarkdownRepository.Lib
         /// <param name="docId"></param>
         private void Delete(string docId)
         {
-            this._indexReader = IndexReader.Open(this._fsDir, false);
-            this._indexReader.DeleteDocuments(new Term(DocStruct.ID, docId));
-            this._indexReader.Commit();
-            this._indexReader.Close();
+            try
+            {
+                this._indexReader = IndexReader.Open(this._fsDir, false);
+                this._indexReader.DeleteDocuments(new Term(DocStruct.ID, docId));
+                this._indexReader.Commit();
+                this._indexReader.Close();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
         }
 
         /// <summary>
@@ -132,18 +140,27 @@ namespace MarkdownRepository.Lib
         /// <returns></returns>
         public bool Exists(string docId)
         {
-            bool isExistIndex = IndexReader.IndexExists(this._fsDir);
-
-            if (isExistIndex)
+            try
             {
-                IndexSearcher searcher = new IndexSearcher(this._indexReader);
-                var q = new TermQuery(new Term(DocStruct.ID, docId));
-                TopScoreDocCollector collector = TopScoreDocCollector.create(10,true);
-                searcher.Search(q, collector);
-                return collector.TopDocs().totalHits > 0;
+                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
+
+                if (isExistIndex)
+                {
+                    this._indexReader = IndexReader.Open(this._fsDir, false);
+                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
+                    var q = new TermQuery(new Term(DocStruct.ID, docId));
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(10, true);
+                    searcher.Search(q, collector);
+                    return collector.TopDocs().totalHits > 0;
+                }
+                else
+                    return false;
             }
-            else
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
                 return false;
+            }
         }
 
         /// <summary>
@@ -152,19 +169,26 @@ namespace MarkdownRepository.Lib
         /// <param name="doc"></param>
         private void AddOrUpdate(Doc doc)
         {
-            bool isExistIndex = IndexReader.IndexExists(this._fsDir);
-            if (isExistIndex)
+            try
             {
-                Delete(doc.Id);            
+                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
+                if (isExistIndex)
+                {
+                    Delete(doc.Id);
+                }
+
+                Document ndoc = CreateDocument(doc);
+
+                this._indexWriter = new IndexWriter(this._fsDir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
+                this._indexWriter.AddDocument(ndoc);
+                this._indexWriter.Commit();
+                this._indexWriter.Optimize();
+                this._indexWriter.Close();
             }
-            
-            Document ndoc = CreateDocument(doc);
-            
-            this._indexWriter = new IndexWriter(this._fsDir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
-            this._indexWriter.AddDocument(ndoc);
-            this._indexWriter.Commit();
-            this._indexWriter.Optimize();
-            this._indexWriter.Close();
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
         }
 
         /// <summary>
@@ -190,53 +214,61 @@ namespace MarkdownRepository.Lib
         public List<Doc> Search(string text)
         {
             List<Doc> result = new List<Doc>();
-            bool isExistIndex = IndexReader.IndexExists(this._fsDir);
-            
-            if (isExistIndex)
+            try
             {
-                IndexSearcher searcher = new IndexSearcher(this._indexReader);
+                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
 
-                //搜索条件
-                BooleanQuery queryOr1 = new BooleanQuery();
-                PhraseQuery query1 = new PhraseQuery();
-                PhraseQuery query2 = new PhraseQuery();
-                PhraseQuery query3 = new PhraseQuery();
-
-                //把用户输入的关键字进行分词
-                foreach (string word in SplitContent.SplitWords(text))
+                if (isExistIndex)
                 {
-                    query1.Add(new Term(DocStruct.CONTENT, word));
-                    queryOr1.Add(query1, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+                    this._indexReader = IndexReader.Open(this._fsDir, false);
+                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
 
-                    query2.Add(new Term(DocStruct.TITLE, word));
-                    queryOr1.Add(query2, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+                    //搜索条件
+                    BooleanQuery queryOr1 = new BooleanQuery();
+                    PhraseQuery query1 = new PhraseQuery();
+                    PhraseQuery query2 = new PhraseQuery();
+                    PhraseQuery query3 = new PhraseQuery();
 
-                    query3.Add(new Term(DocStruct.CATEGORY, word));
-                    queryOr1.Add(query3, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+                    //把用户输入的关键字进行分词
+                    foreach (string word in SplitContent.SplitWords(text))
+                    {
+                        query1.Add(new Term(DocStruct.CONTENT, word));
+                        queryOr1.Add(query1, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+
+                        query2.Add(new Term(DocStruct.TITLE, word));
+                        queryOr1.Add(query2, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+
+                        query3.Add(new Term(DocStruct.CATEGORY, word));
+                        queryOr1.Add(query3, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
+                    }
+
+                    //query1.SetSlop(100); //指定关键词相隔最大距离
+
+                    MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
+
+                    //TopScoreDocCollector盛放查询结果的容器
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+
+                    //searcher.Search(query, null, collector);//根据query查询条件进行查询，查询结果放入collector容器
+                    //searcher.Search(queryOr, null, collector);
+
+                    multiSearch.Search(queryOr1, collector);
+
+                    //TopDocs 指定0到GetTotalHits() 即所有查询结果中的文档 如果TopDocs(20,10)则意味着获取第20-30之间文档内容 达到分页的效果
+                    ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs;
+                    for (int i = 0; i < docs.Length; i++)
+                    {
+                        int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
+                        Document doc = searcher.Doc(docId);//根据文档id来获得文档对象Document
+                        var d = new Doc();
+                        d.Id = doc.Get(DocStruct.ID);
+                        result.Add(d);
+                    }
                 }
-
-                //query1.SetSlop(100); //指定关键词相隔最大距离
-
-                MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
-
-                //TopScoreDocCollector盛放查询结果的容器
-                TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
-
-                //searcher.Search(query, null, collector);//根据query查询条件进行查询，查询结果放入collector容器
-                //searcher.Search(queryOr, null, collector);
-
-                multiSearch.Search(queryOr1, collector);
-
-                //TopDocs 指定0到GetTotalHits() 即所有查询结果中的文档 如果TopDocs(20,10)则意味着获取第20-30之间文档内容 达到分页的效果
-                ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs;
-                for (int i = 0; i < docs.Length; i++)
-                {
-                    int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
-                    Document doc = searcher.Doc(docId);//根据文档id来获得文档对象Document
-                    var d = new Doc();
-                    d.Id = doc.Get(DocStruct.ID);
-                    result.Add(d);
-                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
             }
 
             return result;
@@ -244,8 +276,6 @@ namespace MarkdownRepository.Lib
 
         public void Dispose()
         {
-            this._indexReader.Close();            
-            this._indexWriter.Close();
             this._fsDir.Close();
             this._indexReader = null;
             this._indexWriter = null;
