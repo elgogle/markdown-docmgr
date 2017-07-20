@@ -65,11 +65,9 @@ namespace MarkdownRepository.Lib
             if (!System.IO.Directory.Exists(IndexPath))
                 System.IO.Directory.CreateDirectory(IndexPath);
             this._fsDir = FSDirectory.Open(new DirectoryInfo(IndexPath), new NoLockFactory());
-            bool isExistIndex = IndexReader.IndexExists(this._fsDir);                            
-            this._indexWriter = new IndexWriter(this._fsDir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
-            this._indexReader = IndexReader.Open(this._fsDir, false);
+            
             this.Start();
-        }
+        }        
 
         struct DocStruct
         {
@@ -120,9 +118,11 @@ namespace MarkdownRepository.Lib
         /// </summary>
         /// <param name="docId"></param>
         private void Delete(string docId)
-        {            
+        {
+            this._indexReader = IndexReader.Open(this._fsDir, false);
             this._indexReader.DeleteDocuments(new Term(DocStruct.ID, docId));
-            this._indexReader.Commit();              
+            this._indexReader.Commit();
+            this._indexReader.Close();
         }
 
         /// <summary>
@@ -159,8 +159,12 @@ namespace MarkdownRepository.Lib
             }
             
             Document ndoc = CreateDocument(doc);
+            
+            this._indexWriter = new IndexWriter(this._fsDir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
             this._indexWriter.AddDocument(ndoc);
             this._indexWriter.Commit();
+            this._indexWriter.Optimize();
+            this._indexWriter.Close();
         }
 
         /// <summary>
