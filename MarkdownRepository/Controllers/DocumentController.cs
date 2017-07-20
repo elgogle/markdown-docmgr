@@ -80,7 +80,7 @@ namespace MarkdownRepository.Controllers
 
             if (!String.IsNullOrWhiteSpace(searchText))
             {
-                var result = docMgr.Search(searchText);
+                var result = docMgr.Search(searchText, UserId);
                 if (result != null && result.Count > 0)
                 {
                     foreach (var r in result)
