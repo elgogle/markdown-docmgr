@@ -85,6 +85,7 @@ namespace MarkdownRepository.Lib
         public void AddOrUpdateDocIndex(Doc doc)
         {
             this._docqueue.Enqueue(doc);
+            LogHelper.WriteInfo(this.GetType(), string.Format("current queue length {0}", this._docqueue.Count));
         }
 
         /// <summary>
