@@ -184,6 +184,7 @@ namespace MarkdownRepository.Lib
                 this._indexWriter.Commit();
                 this._indexWriter.Optimize();
                 this._indexWriter.Close();
+                LogHelper.WriteInfo(this.GetType(), string.Format("indexing doc {0} completed.", doc.Id));
             }
             catch (Exception ex)
             {
@@ -264,6 +265,7 @@ namespace MarkdownRepository.Lib
                         d.Id = doc.Get(DocStruct.ID);
                         result.Add(d);
                     }
+                    LogHelper.WriteInfo(this.GetType(), string.Format("Searched results count:{0}", docs.Length));
                 }
             }
             catch (Exception ex)
