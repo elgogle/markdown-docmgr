@@ -58,7 +58,7 @@
                         title: $("#title").val(),
                         category: $("#category").val(),
                         id: $("#docId").val(),
-                        access: $("#access").val() == "on" ? 1 : 0
+                        access: $("#access")[0].checked === true ? 1 : 0
                     },
                     function (result) {
                         $("#docId").val(result.rowid);
