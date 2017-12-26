@@ -12,6 +12,8 @@ namespace MarkdownRepository.Controllers
     using System.Data.Common;
     using Models;
     using Dapper;
+    using System.Text.RegularExpressions;
+    using System.Web.Hosting;
 
     public class DocumentController : Controller
     {
@@ -86,7 +88,7 @@ namespace MarkdownRepository.Controllers
                     foreach (var r in result)
                     {
                         r.title = SplitContent.HightLight(searchText, r.title);
-                        r.content = SplitContent.HightLight(searchText, r.content);
+                        r.content = SplitContent.HightLight(searchText, StripHTML(r.content));
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 
@@ -111,8 +113,8 @@ namespace MarkdownRepository.Controllers
                 var result = docMgr.SearchByCategory(category, byOwner?UserId:"");
                 foreach (var r in result)
                 {
-                    r.title = SplitContent.HightLight(category, r.title);
-                    r.content = SplitContent.HightLight(category, r.content);
+                    r.title = r.title;
+                    r.content = StripHTML(r.content);
                     r.category = SplitContent.HightLight(category, r.category);
                 }
 
@@ -231,24 +233,64 @@ namespace MarkdownRepository.Controllers
             {
                 var file = hfc[0];
                 string reletiveSavePath = "/doc/images";
-                string savePath = Server.MapPath(reletiveSavePath);
+                string savePath = HostingEnvironment.ApplicationPhysicalPath + reletiveSavePath;
+
                 if (!Directory.Exists(savePath))
                     Directory.CreateDirectory(savePath);
 
                 string pic = System.IO.Path.GetExtension(file.FileName);
                 var fileName = Guid.NewGuid().ToString() + pic;
-                string path = System.IO.Path.Combine(savePath, fileName);
+                var path = System.IO.Path.Combine(savePath, fileName);
+                var relativePath = HostingEnvironment.ApplicationVirtualPath + path.Replace(Request.ServerVariables["APPL_PHYSICAL_PATH"], String.Empty);
 
                 // file is uploaded
                 file.SaveAs(path);
 
                 //AddAtachFile(Convert.ToInt64(Request["doc_id"]), path);
 
-                var result = new { success = 1, message = "", url = reletiveSavePath + "/" + fileName };
+                var result = new { success = 1, message = "", url = relativePath };
                 return Json(result);
             }
 
             return Json(new { success = 0, message = "", url = "" });
-        }        
+        }
+
+        /// <summary>
+        /// 上传图片
+        /// </summary>
+        /// <param name="base64Content"></param>
+        /// <returns></returns>
+        public ActionResult UploadImageByBase64(string base64Content)
+        {
+            try
+            {
+                base64Content = base64Content.Substring(22); // Replace("data:image/png;base64,", "");
+                byte[] fileContent = Convert.FromBase64String(base64Content);
+                string reletiveSavePath = "/doc/images/";
+                string savePath = HostingEnvironment.ApplicationPhysicalPath + reletiveSavePath;
+
+                if (!Directory.Exists(savePath))
+                    Directory.CreateDirectory(savePath);
+
+                var fileName = Guid.NewGuid().ToString() + ".png";
+                var path = System.IO.Path.Combine(savePath, fileName);
+                var relativePath = HostingEnvironment.ApplicationVirtualPath + path.Replace(Request.ServerVariables["APPL_PHYSICAL_PATH"], String.Empty);
+                
+                System.IO.File.WriteAllBytes(path, fileContent);
+
+                return Json(new { success = 1, message = "", url = relativePath });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = 0, message = ex.Message, url = "" });
+            }
+        }
+        
+        const string HTML_TAG_PATTERN = "<.*?>";
+        public static string StripHTML(string inputString)
+        {
+            return Regex.Replace
+              (inputString, HTML_TAG_PATTERN, string.Empty);
+        }
     }
 }

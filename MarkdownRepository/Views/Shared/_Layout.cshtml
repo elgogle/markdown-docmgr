@@ -1,4 +1,4 @@
-@using System.IO
+﻿@using System.IO
 @{
     Layout = null;
 }
@@ -40,6 +40,11 @@
         .sidebar-module li.active-doc ul li { list-style-type: decimal; }
         .nav-search{display: inline-block;margin-top: 1px;}
         #content{margin-top: 40px; padding-top:1em; min-height:800px;}
+        .doc-category ul li {
+            color: #862ad8;
+            font-weight: 600;
+            font-family: sans-serif;
+        }
     </style>
 
     @RenderSection("style", false)
