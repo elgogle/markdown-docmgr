@@ -115,14 +115,14 @@ namespace MarkdownRepository.Lib
         /// 获取文档所有类别
         /// </summary>
         /// <returns></returns>
-        public List<dynamic> GetCategory(string userId)
+        public List<dynamic> GetCategory()
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
                 return db.Query<dynamic>(@"select category, count(*) hint from documents_category a, documents_owner b 
-                                            where a.doc_id = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1)) 
-                                            group by category order by count(*) desc", new { userId = userId }).ToList();
+                                            where a.doc_id = b.id and b.is_public=1 
+                                            group by category order by count(*) desc").ToList();
             }
         }
 
@@ -323,7 +323,7 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public List<Document> AllDocument(string userId)
+        public List<Document> AllDocument()
         {
             using (var db = this.OpenDb())
             {
@@ -331,8 +331,8 @@ namespace MarkdownRepository.Lib
 
                 var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator
                                                     from documents a, documents_owner b 
-                                                    where a.rowid = b.id and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))
-                                                    order by update_at desc", new { userId = userId });
+                                                    where a.rowid = b.id and b.is_public=1
+                                                    order by update_at desc");
                 return documents.ToList();
             }
         }

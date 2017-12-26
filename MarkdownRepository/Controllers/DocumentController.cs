@@ -62,8 +62,8 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         public ActionResult AllDocument(int?page)
         {            
-            var result = docMgr.AllDocument(UserId);
-            var category = docMgr.GetCategory(UserId);
+            var result = docMgr.AllDocument();
+            var category = docMgr.GetCategory();
             var creator = docMgr.GetCreator();
             ViewBag.Action = "ShowAll";
             ViewBag.Category = category;
@@ -88,7 +88,7 @@ namespace MarkdownRepository.Controllers
                     foreach (var r in result)
                     {
                         r.title = SplitContent.HightLight(searchText, r.title);
-                        r.content = SplitContent.HightLight(searchText, StripHTML(r.content));
+                        r.content = SplitContent.HightLight(searchText, GetShortDesc(StripHTML(r.content)));
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 
@@ -114,7 +114,7 @@ namespace MarkdownRepository.Controllers
                 foreach (var r in result)
                 {
                     r.title = r.title;
-                    r.content = StripHTML(r.content);
+                    r.content = GetShortDesc(StripHTML(r.content));
                     r.category = SplitContent.HightLight(category, r.category);
                 }
 
@@ -285,12 +285,24 @@ namespace MarkdownRepository.Controllers
                 return Json(new { success = 0, message = ex.Message, url = "" });
             }
         }
-        
+                
+        // 去掉html 标签
         const string HTML_TAG_PATTERN = "<.*?>";
         public static string StripHTML(string inputString)
         {
             return Regex.Replace
               (inputString, HTML_TAG_PATTERN, string.Empty);
+        }
+
+        private static string GetShortDesc(string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return content;
+
+            if (content.Length > 256)
+                return content.Substring(0, 256);
+
+            return content;
         }
     }
 }
