@@ -88,7 +88,7 @@ namespace MarkdownRepository.Controllers
                     foreach (var r in result)
                     {
                         r.title = SplitContent.HightLight(searchText, r.title);
-                        r.content = SplitContent.HightLight(searchText, GetShortDesc(StripHTML(r.content)));
+                        r.content = SplitContent.HightLight(searchText, r.content.StripHTML());
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 
@@ -114,7 +114,7 @@ namespace MarkdownRepository.Controllers
                 foreach (var r in result)
                 {
                     r.title = r.title;
-                    r.content = GetShortDesc(StripHTML(r.content));
+                    r.content = GetShortDesc(r.content.StripHTML());
                     r.category = SplitContent.HightLight(category, r.category);
                 }
 
@@ -286,14 +286,11 @@ namespace MarkdownRepository.Controllers
             }
         }
                 
-        // 去掉html 标签
-        const string HTML_TAG_PATTERN = "<.*?>";
-        public static string StripHTML(string inputString)
-        {
-            return Regex.Replace
-              (inputString, HTML_TAG_PATTERN, string.Empty);
-        }
-
+        /// <summary>
+        /// 获取摘要, 取256个长度
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         private static string GetShortDesc(string content)
         {
             if (string.IsNullOrEmpty(content))

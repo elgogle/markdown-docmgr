@@ -6,6 +6,7 @@ using System.Data.SQLite;
 using System.Data.Common;
 using Dapper;
 using MarkdownRepository.Models;
+using System.Text.RegularExpressions;
 
 namespace MarkdownRepository.Lib
 {

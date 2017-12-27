@@ -38,7 +38,7 @@ namespace MarkdownRepository.Lib
                             new PanGu.HighLight.Highlighter(simpleHTMLFormatter,
                             new Segment());
             //设置每个摘要段的字符数
-            highlighter.FragmentSize = 1000;
+            highlighter.FragmentSize = 256;
             //获取最匹配的摘要段
             var result = highlighter.GetBestFragment(keyword, content);
             if (!string.IsNullOrWhiteSpace(result))

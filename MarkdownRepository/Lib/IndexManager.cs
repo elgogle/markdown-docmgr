@@ -16,6 +16,7 @@ using System.IO;
 using Lucene.Net.Analysis.PanGu;
 using System.Threading.Tasks;
 using CrystalGroup.ISD.DocumentManage.Lib;
+using System.Text.RegularExpressions;
 
 namespace MarkdownRepository.Lib
 {
@@ -227,14 +228,15 @@ namespace MarkdownRepository.Lib
 
                     //搜索条件
                     BooleanQuery queryOr1 = new BooleanQuery();
-                    PhraseQuery query1 = new PhraseQuery();
-                    PhraseQuery query2 = new PhraseQuery();
-                    PhraseQuery query3 = new PhraseQuery();
 
                     //把用户输入的关键字进行分词
                     foreach (string word in SplitContent.SplitWords(text))
                     {
-                        query1.Add(new Term(DocStruct.CONTENT, word));
+                        PhraseQuery query1 = new PhraseQuery();
+                        PhraseQuery query2 = new PhraseQuery();
+                        PhraseQuery query3 = new PhraseQuery();
+
+                        query1.Add(new Term(DocStruct.CONTENT.StripHTML(), word));
                         queryOr1.Add(query1, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
 
                         query2.Add(new Term(DocStruct.TITLE, word));
