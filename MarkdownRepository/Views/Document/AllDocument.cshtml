@@ -1,4 +1,5 @@
 @using MarkdownRepository.Controllers
+@using MarkdownRepository.Lib
 @model List<MarkdownRepository.Models.Document>
 
 @{
@@ -17,7 +18,7 @@
                         <a href='@Url.Action("Show", new { id = doc.rowid })'>
                             <h4>@doc.title</h4>
                             <div class="md" id="md_@doc.rowid">
-                                @(DocumentController.StripHTML(doc.content).Substring(0, doc.content.Length > 50 ? 50 : doc.content.Length) + "...")
+                                @(doc.content.StripHTML().GetShortDesc())
                             </div>
                         </a>
 

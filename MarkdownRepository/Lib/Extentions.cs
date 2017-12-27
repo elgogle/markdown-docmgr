@@ -34,5 +34,21 @@ namespace MarkdownRepository.Lib
             return Regex.Replace
               (inputString, HTML_TAG_PATTERN, string.Empty);
         }
+
+        /// <summary>
+        /// 获取摘要, 取256个长度
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public static string GetShortDesc(this string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return content;
+
+            if (content.Length > 256)
+                return content.Substring(0, 256);
+
+            return content;
+        }
     }
 }

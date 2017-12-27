@@ -114,7 +114,7 @@ namespace MarkdownRepository.Controllers
                 foreach (var r in result)
                 {
                     r.title = r.title;
-                    r.content = GetShortDesc(r.content.StripHTML());
+                    r.content = r.content.StripHTML().GetShortDesc();
                     r.category = SplitContent.HightLight(category, r.category);
                 }
 
@@ -284,22 +284,6 @@ namespace MarkdownRepository.Controllers
             {
                 return Json(new { success = 0, message = ex.Message, url = "" });
             }
-        }
-                
-        /// <summary>
-        /// 获取摘要, 取256个长度
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        private static string GetShortDesc(string content)
-        {
-            if (string.IsNullOrEmpty(content))
-                return content;
-
-            if (content.Length > 256)
-                return content.Substring(0, 256);
-
-            return content;
         }
     }
 }
