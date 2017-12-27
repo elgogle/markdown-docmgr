@@ -89,9 +89,9 @@ namespace MarkdownRepository.Lib
         {
             var ca = category.Split(',');
 
+            db.Execute("delete from documents_category where doc_id=@id", new { id = id });
             foreach (var c in ca)
-            {
-                db.Execute("delete from documents_category where doc_id=@id", new { id = id });
+            {                
                 db.Execute(@"insert or replace into documents_category(category, doc_id) values(@category, @id)",
                         new { category = c.Trim(), id = id });
             }
