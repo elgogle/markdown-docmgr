@@ -744,6 +744,7 @@
     <None Include="fonts\glyphicons-halflings-regular.svg" />
     <None Include="fonts\glyphicons-halflings-regular.ttf" />
     <None Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
     <None Include="fonts\maven_pro_black-webfont.woff" />
     <None Include="fonts\maven_pro_bold-webfont.woff" />
     <None Include="images\header.svg" />

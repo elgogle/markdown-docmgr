@@ -4,6 +4,26 @@
 }
 @model MarkdownRepository.Models.Document
 
+<style>
+    pre::before {
+        content: 'select';
+        position: relative;
+        display: block;
+        margin-top: -5px;
+        text-align: center;
+        float: right;
+        color: white;
+        background-color: rgba(0,0,0,0.75);
+        padding: 0 5px;
+        cursor: pointer;
+        pointer-events: all;
+    }
+
+    pre {
+        pointer-events: none;
+    }
+</style>
+
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
 {
 <div class="pull-right" style="font-size:0.7em;" >
@@ -32,5 +52,34 @@
 
 <script>
     showMarkDown("md");
+
+    $(document).ready(function () {
+        function selectText(element) {
+            var doc = document
+				, text = element
+				, range, selection
+            ;
+            if (doc.body.createTextRange) { //ms
+                range = doc.body.createTextRange();
+                range.moveToElementText(text);
+                range.select();
+            } else if (window.getSelection) { //all others
+                selection = window.getSelection();
+                range = doc.createRange();
+                range.selectNodeContents(text);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+
+        var pre = document.getElementsByTagName("pre");
+
+        for (var i = 0; i < pre.length; i++) {
+            pre[i].addEventListener('click', function () {
+                selectText(this);
+            });
+        }
+
+    });
 </script>
 }
