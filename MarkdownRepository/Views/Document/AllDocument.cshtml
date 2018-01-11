@@ -10,29 +10,30 @@
 <div class="blog-post markdown-body col-md-10">
     @if (Model != null && Model.Count > 0)
     {
-        <ul class="latest-doc">
-            @foreach (var doc in Model)
-            {
-                <li>
-                    <div class="doc-list">
-                        <a href='@Url.Action("Show", new { id = doc.rowid })'>
-                            <h4>@doc.title</h4>
-                            <div class="md" id="md_@doc.rowid">
-                                @(doc.content.StripHTML().GetShortDesc())
+        <table class="table table-striped">
+            <tbody>
+                @foreach (var doc in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="doc-list">
+                                <a href='@Url.Action("Show", new { id = doc.rowid })'>
+                                    <h3>@doc.title</h3>
+                                </a>
+
+                                <div class="list-foot">
+                                    @if (!string.IsNullOrEmpty(doc.category))
+                                    {
+                                        <span class="list-doc-category">Category: </span> @doc.category
+                                    }
+                                    <span class="list-doc-updatetime">Update datetime: </span> @doc.update_at
+                                </div>
                             </div>
-                        </a>
-
-                        <div class="category">
-                            @doc.category
-                        </div>
-
-                        <div class="updated-time">
-                            Updated By: @doc.creator, Updated Time: @doc.update_at
-                        </div>
-                    </div>
-                </li>
-            }
-        </ul>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
     <!-- 分页 -->
     }
@@ -60,6 +61,7 @@
     <style>
         .blog-post {
             margin-left: -45px;
+            margin-top: 0!important;
         }
 
         .latest-doc li {
@@ -68,23 +70,18 @@
         }
 
         .doc-list {
-            background-color: #f3f9f7;
-            border-radius: 5px;
-            padding: 5px;
+            
         }
 
-        .updated-time {
-            font-size: 0.7em;
+        .list-foot 
+        {
+            font-size: 0.5em;
             color: Gray;
             font-family: sans-serif;
             margin-top: 0.5em;
         }
-
-        .category {
-            padding-left: 1em;
-            color: #337ab7;
-            font-size: 0.8em;
-        }
+        .list-doc-category{ color:#337ab7; }
+        .list-doc-updatetime{ color: #a342a9; }
 
         .md {
             word-wrap: break-word;

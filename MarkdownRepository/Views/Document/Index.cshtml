@@ -5,35 +5,38 @@
 
 
 <div class="blog-post markdown-body col-md-10">
-@if (Model != null && Model.Count > 0) { 
-    <ul class="latest-doc">
-    @foreach (var doc in Model) { 
-        <li>
-            <div class="doc-list">
-                <div class="pull-right" style="font-size:0.7em;" >
-                    <a href="@Url.Action("Create", new { id = doc.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a> 
-                    <a href="javascript:deleteDoc('@doc.rowid')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
-                </div>
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table table-striped">
+        <tbody>
+            @foreach (var doc in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="doc-list">
+                            <div class="pull-right" style="font-size:0.7em;">
+                                <a href="@Url.Action("Create", new { id = doc.rowid })"><span class="glyphicon glyphicon-edit"></span> Edit</a>
+                                <a href="javascript:deleteDoc('@doc.rowid')"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+                            </div>
 
-                <a href='@Url.Action("Show", new { id = doc.rowid })'>
-                    <h4>@doc.title</h4>
-                    <div class="md" id="md_@doc.rowid">
-                        @(doc.content.Substring(0,doc.content.Length>50?50:doc.content.Length) + "...")
-                    </div>
-                </a>
+                            <a href='@Url.Action("Show", new { id = doc.rowid })'>
+                                <h3>@doc.title</h3>                                
+                            </a>
 
-                <div class="category">
-                    @doc.category
-                </div>                
+                            <div class="list-foot">
+                                @if (!string.IsNullOrEmpty(doc.category))
+                                {
+                                    <span class="list-doc-category">Category: </span> @doc.category
+                                }
+                                <span class="list-doc-updatetime">Update datetime: </span> @doc.update_at
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-                <div class="updated-time">
-                    Updated Time: @doc.update_at
-                </div>                
-            </div>
-        </li>   
-    }        
-    </ul>
-    
     <!-- 分页 -->
 }
 </div>
@@ -57,17 +60,18 @@
 
 @section style{
     <style>
-        .blog-post{ margin-left: -45px;}
+        .blog-post{ margin-left: -45px; margin-top: 0!important;}
         .latest-doc li{ list-style-type:none; margin-bottom: 1em; }
-        .doc-list{ background-color:#f3f9f7; border-radius: 5px; padding: 5px;}
-        .updated-time 
+        /*.doc-list{ background-color:#f3f9f7; border-radius: 5px; padding: 5px;}*/
+        .list-foot 
         {
-            font-size: 0.7em;
+            font-size: 0.5em;
             color: Gray;
             font-family: sans-serif;
             margin-top: 0.5em;
         }
-        .category{ padding-left:1em; color:#337ab7; font-size:0.8em;}
+        .list-doc-category{ color:#337ab7; }
+        .list-doc-updatetime{ color: #a342a9; }
         
         .md{ word-wrap: break-word; font-size: 0.8em; color: gray; margin: 1em; }
         .side-category{ height:100%; }
@@ -80,7 +84,7 @@
         }
         
         .doc-category{ background-color:#f3f9f7; border-radius: 5px; padding: 5px; }
-	.doc-category ul{padding-left:0.2em}
+	    .doc-category ul{padding-left:0.2em}
         .doc-category ul li{list-style-type: none; font-size:0.8em}
     </style>
 }
