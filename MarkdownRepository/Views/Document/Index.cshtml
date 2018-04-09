@@ -50,7 +50,7 @@
             {
                 if (!string.IsNullOrWhiteSpace(c.category as string))
 				{
-                <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category, byOwner=true })<span style="font-size:0.7em"> @c.hint</span> </li>
+                <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category, byOwner=true })<sup> @c.hint</sup> </li>
 				}
             }
         </ul>
