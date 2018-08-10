@@ -162,6 +162,8 @@ namespace MarkdownRepository.Controllers
                 return View(doc);
             }
 
+            ViewBag.Categories = docMgr.GetCategory().Select(t => t.category);
+
             return View();
         }
 

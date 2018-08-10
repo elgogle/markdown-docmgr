@@ -16,8 +16,17 @@
 </label>
 
 <label style="font-size:0.8em">Category
-    <input id="category" class="form-control col-sm-4" placeholder="',' as delimeter" type="text" value="@doc.category" class="" />
+    <input id="category" class="form-control col-sm-4" placeholder="',' as delimeter" type="text" value="@doc.category" class="" list="categories" />
 </label>
+
+<datalist id="categories">
+    @if(ViewBag.Categories != null) {
+        foreach (var c in ViewBag.Categories)
+        {
+            <option value="@c"/>
+        }
+    }
+</datalist>
 
 <label style="font-size:0.8em">Public
     <input id="access" type="checkbox" @(doc.is_public == DocumentAccess.PUBLIC?"checked":"") />
