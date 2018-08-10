@@ -22,6 +22,16 @@
     pre {
         pointer-events: none;
     }
+
+    .author-info{
+	    font-size: 0.6em;
+        color: gray;
+        margin: 1.5em;
+        padding: 0.3em;
+        border-left-style: solid;
+        border-left-width: thin;
+        background-color: #f5f5f5;
+    }
 </style>
 
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
@@ -37,6 +47,11 @@
 }
 
 <h2 style="padding-left:0.3em;">@Model.title</h2>
+
+<div class="author-info">
+    <div>Creator: @Model.creator</div>
+    <div>Update Time: @Model.update_at</div>
+</div>
 
 <div id="md">
     <textarea style="display:none;">@Model.content</textarea>
