@@ -32,6 +32,43 @@
         border-left-width: thin;
         background-color: #f5f5f5;
     }
+    .category-info{
+        display:flex;
+        flex-wrap: wrap;
+    }
+    a.tag-item{
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        margin: 0 1.25rem 1rem 0;
+        padding: .167rem;
+        background-color: #fff;
+        border: 1px solid #e3e3e3;
+        border-radius: 2px;
+        text-decoration: none;
+        cursor: pointer;
+        color: #909090;
+    }
+    .tag-title{
+        padding: 0 .75rem;
+        font-size: 1rem;
+        line-height: 1.75rem;
+        color: #919191;
+    }
+    .tag-box{
+        margin:0.9em;
+    }
+    .tag-box h5{
+        border-left-style: solid;
+        border-left-color: gray;
+        border-left-width: thin;
+        background-color: antiquewhite;
+        padding: 0.2em;
+        color: gray;
+    }
 </style>
 
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
@@ -52,6 +89,22 @@
     <div>Creator: @AdAccount.GetUserNameById(Model.creator)</div>
     <div>Update Time: @Model.update_at</div>
 </div>
+
+@if (!Model.category.IsEmpty())
+{
+    <div class="tag-box">
+        <h5>Category</h5>
+        <div class="category-info">
+            @foreach (var c in Model.category.Split(','))
+            {
+                <a class="tag-item" href="@Url.Action("SearchByCategory", new { category = c, byOwner=false })">
+                    <div class="tag-title">@c</div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
 
 <div id="md">
     <textarea style="display:none;">@Model.content</textarea>
