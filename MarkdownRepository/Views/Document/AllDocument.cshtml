@@ -40,7 +40,7 @@
 </div>
 <div class="col-md-2">
     <div class="side-category">
-        <span class="title">Documents Category</span>
+        <div class="title">文档分类</div>
         <div class="doc-category">
             @if (ViewBag.Category != null)
             {
@@ -59,61 +59,5 @@
 </div>
 @section style{
     <style>
-        .blog-post {
-            margin-left: -45px;
-            margin-top: 0!important;
-        }
-
-        .latest-doc li {
-            list-style-type: none;
-            margin-bottom: 1em;
-        }
-
-        .doc-list {
-            
-        }
-
-        .list-foot 
-        {
-            font-size: 0.5em;
-            color: Gray;
-            font-family: sans-serif;
-            margin-top: 0.5em;
-        }
-        .list-doc-category{ color:#337ab7; }
-        .list-doc-updatetime{ color: #a342a9; }
-
-        .md {
-            word-wrap: break-word;
-            font-size: 0.8em;
-            color: gray;
-            margin: 1em;
-        }
-
-        .side-category {
-            height: 100%;
-        }
-
-		.side-category .title {
-			font-size: 0.8em;
-			padding: 0.2em;
-			color: firebrick;
-			font-family: cursive;
-		}
-
-        .doc-category {
-            background-color: #f3f9f7;
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-		.doc-category ul {
-			padding-left: 0.2em;
-		}
-
-		.doc-category ul li {
-			list-style-type: none;
-			font-size: 0.8em;
-		}
     </style>
 }

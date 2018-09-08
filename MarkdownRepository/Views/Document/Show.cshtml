@@ -81,14 +81,14 @@
 
 @if (TempData["RedirectReason"] == "Unauthorized")
 {
-    <b style="color:Red">You don't have permission to edit</b>
+    <b style="color:Red">你无权修改！</b>
 }
 
 <h2 style="" class="title">@Model.title</h2>
 
 <div class="author-info">
-    <div>Creator: @AdAccount.GetUserNameById(Model.creator)</div>
-    <div>Update Time: @Model.update_at</div>
+    <div>创建人: @AdAccount.GetUserNameById(Model.creator)</div>
+    <div>更新时间: @Model.update_at</div>
 </div>
 
 @if (!Model.category.IsEmpty())

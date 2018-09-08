@@ -11,12 +11,12 @@
 
 <input id="docId" type="hidden" value="@doc.rowid" />
 
-<label style="font-size:0.8em">Title
+<label style="font-size:0.8em">标题
     <input id="title" class="form-control col-sm-4"  type="text" value="@doc.title" class="" />
 </label>
 
-<label style="font-size:0.8em">Category
-    <input id="category" class="form-control col-sm-4" placeholder="',' as delimeter" type="text" value="@doc.category" class="" list="categories" />
+<label style="font-size:0.8em">文档分类
+    <input id="category" class="form-control col-sm-4" placeholder="使用','分隔" type="text" value="@doc.category" class="" list="categories" />
 </label>
 
 <datalist id="categories">
@@ -28,11 +28,11 @@
     }
 </datalist>
 
-<label style="font-size:0.8em">Public
+<label style="font-size:0.8em">是否公开
     <input id="access" type="checkbox" @(doc.is_public == DocumentAccess.PUBLIC?"checked":"") />
 </label>
 
-<button id="btnSave" class="btn btn-default pull-right"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Save</button>
+<button id="btnSave" class="btn btn-default pull-right"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> 保存</button>
 
 <div id="mkEditor">
     <textarea style="display:none;">@doc.content</textarea>
@@ -100,7 +100,7 @@
                         $("#docId").val(result.rowid);
                         var msg = "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>"
                             ,$msg = $(msg);
-                        $msg.text("Saved")
+                        $msg.text("已保存")
                         $("body").append($msg);
                         $msg.animate({ top: 0, left:0, fontSize: 0, opacity: 0 }, 2000, function () {
                             $(this).remove();

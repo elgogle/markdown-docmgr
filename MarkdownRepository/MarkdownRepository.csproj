@@ -95,6 +95,7 @@
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.105.2\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.DynamicData" />
@@ -166,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -178,6 +180,7 @@
     <Compile Include="Lib\MarkdownSharp.cs" />
     <Compile Include="Lib\RssHelper.cs" />
     <Compile Include="Lib\SplitContent.cs" />
+    <Compile Include="Models\Account.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -659,6 +662,7 @@
     <Content Include="editor.md\plugins\table-dialog\table-dialog.js" />
     <Content Include="editor.md\plugins\test-plugin\test-plugin.js" />
     <Content Include="Global.asax" />
+    <Content Include="images\avatar_2x.png" />
     <Content Include="images\chapter-mark.png" />
     <Content Include="images\code_background.gif" />
     <Content Include="images\CrystalLogo.png" />
@@ -758,6 +762,7 @@
     <Content Include="Views\Document\Show.cshtml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="Views\Document\AllDocument.cshtml" />
+    <Content Include="Views\Account\Login.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

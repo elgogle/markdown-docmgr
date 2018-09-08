@@ -16,6 +16,7 @@
         background-color: #f9f9f9;
         padding: 0.5em;
         border-radius: 5px; 
+        border: #ddd solid 1px;
     }
     .update-time
     {
@@ -32,9 +33,9 @@
 @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 { 
     <div class="form-group">
-        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "Search Text" })
+        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
     </div>
-    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>Search</button>
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
 }
 
 <div style="min-height:600px;">
@@ -67,7 +68,7 @@
                 </div>
 
                 <div class="update-time">
-                    Create by: @AdAccount.GetUserNameById(item.creator), Updated time: @item.update_at
+                    创建人: @AdAccount.GetUserNameById(item.creator), 更新时间: @item.update_at
                 </div>          
             </li>
             }

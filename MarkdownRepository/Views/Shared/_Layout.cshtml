@@ -1,4 +1,5 @@
 ﻿@using System.IO
+@using MarkdownRepository.Lib
 @{
     Layout = null;
 }
@@ -25,7 +26,7 @@
 
     <!-- Custom styles for this template -->
     <link href="~/css/blog.css" rel="stylesheet">
-    
+
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="@Url.Content("~/javascripts/ie8-responsive-file-warning.js")"></script><![endif]-->
     <script src="@Url.Content("~/javascripts/ie-emulation-modes-warning.js")"></script>
@@ -36,17 +37,99 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <style>
-        .sidebar-module li.active-doc{ background-color:#DBEAF1; }        
-        .sidebar-module li.active-doc ul li { list-style-type: decimal; }
-        .nav-search{display: inline-block;margin-top: 1px;}
-        #content{margin-top: 40px; padding-top:1em; min-height:800px;}
+        .sidebar-module li.active-doc {
+            background-color: #DBEAF1;
+        }
+
+        .sidebar-module li.active-doc ul li {
+            list-style-type: decimal;
+        }
+
+        #content {
+            margin-top: 50px;
+            padding-top: 1em;
+            min-height: 800px;
+        }
+
         .doc-category ul li {
             color: #862ad8;
             font-weight: 600;
             font-family: sans-serif;
         }
-        .doc-list h4{
-            font-weight:500;
+
+        .doc-list h4 {
+            font-weight: 500;
+        }
+
+        .navbar-fixed-top {
+            background-color: black;
+        }
+
+        .navbar-nav > li.active {
+            border-bottom: #da2fcd solid 2px;
+        }
+
+        .side-category {
+            height: 100%;
+        }
+
+        .side-category .title {
+            font-size: 0.8em;
+            padding: 0.2em;
+            color: firebrick;
+            border-bottom: #31708f solid 2px;
+        }
+
+        .doc-category {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+
+        .blog-post {
+            margin-left: -45px;
+            margin-top: 0 !important;
+        }
+
+        .latest-doc li {
+            list-style-type: none;
+            margin-bottom: 1em;
+        }
+
+        .doc-category ul {
+            padding-left: 0.2em;
+        }
+
+        .doc-category ul li {
+            list-style-type: none;
+            font-size: 0.8em;
+        }
+
+        .doc-category ul li>a{
+            color:#555;
+        }
+
+        .list-foot {
+            font-size: 0.5em;
+            color: Gray;
+            font-family: sans-serif;
+            margin-top: 0.5em;
+        }
+
+        .list-doc-category {
+            color: #337ab7;
+        }
+
+        .list-doc-updatetime {
+            color: #a342a9;
+        }
+
+        .md {
+            word-wrap: break-word;
+            font-size: 0.8em;
+            color: gray;
+            margin: 1em;
         }
     </style>
 
@@ -56,36 +139,69 @@
 
 <body>
     <div class="blog-masthead">
-      <div class="container">
-        <nav class="blog-nav">
-          <a class="blog-nav-item @(@ViewBag.Action == "MyDocs" ? "active" : "")" href="@Url.Action("Index")">My Documents</a>         
-          <a class="blog-nav-item @(@ViewBag.Action == "Create"?"active":"")"  href="@Url.Action("Create")">Create Document</a> 
-          <a class="blog-nav-item @(@ViewBag.Action == "ShowAll" ? "active" : "")" href="@Url.Action("AllDocument")">Public Documents</a>      
+        <div class="container">
+            <nav class="navbar navbar-findcond navbar-fixed-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#"></a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbar">
+                        <ul class="nav navbar-nav navbar-right">
 
-          @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline pull-right nav-search", @role = "form" }))
-            { 
-                <div class="form-group">
-                    @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "Search Text" })
+                            <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文档<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">创建<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "ShowAll" ? "active" : "")"><a href="@Url.Action("AllDocument", "Document")">所有公开文档<span class="sr-only">(current)</span></a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-user"></span> @if (Request.IsAuthenticated)
+                                    { <text>@AdAccount.GetUserNameById(User.Identity.Name)</text> }
+                                    else
+                                    { <text>访客</text> }<b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    @if (Request.IsAuthenticated)
+                                    {
+                                        <li>
+                                            @Html.ActionLink("退出", "LogOff", "Account", routeValues: null, htmlAttributes: new { id = "logoutForm", Key = DateTime.Now })
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>@Html.ActionLink("登录", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                        @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "navbar-form navbar-right search-form", @role = "search" }))
+                        {
+                            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+                        }
+
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>Search</button>
-            }
-        </nav>
-      </div>
+            </nav>
+        </div>
     </div>
 
     <div class="container" id="content">
-      <div class="row">
-        <div class="col-sm-12 blog-main">
-            @RenderBody()
-        </div><!-- /.blog-main -->
-      </div><!-- /.row -->
+        <div class="row">
+            <div class="col-sm-12 blog-main">
+                @RenderBody()
+            </div><!-- /.blog-main -->
+        </div><!-- /.row -->
     </div><!-- /.container -->
 
     <footer class="blog-footer">
-      <p>Copyright crystalgroup 2016 </p>
-      <p>
-        <a href="#">Back to top</a>
-      </p>
+        <p>Copyright crystalgroup 2016 </p>
+        <p>
+            <a href="#">Back to top</a>
+        </p>
     </footer>
 
 
@@ -96,18 +212,18 @@
     @System.Web.Optimization.Scripts.Render("~/bootstrap")
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="@Url.Content("~/javascripts/ie10-viewport-bug-workaround.js")"></script>
-    
+
     <script type="text/javascript">
-        function showMarkDown(id, mdText) { 
+        function showMarkDown(id, mdText) {
             editormd.markdownToHTML(id, {
-                        htmlDecode      : "style,script,iframe",  
-                        tocm            : true,    // Using [TOCM]
-                        emoji           : true,
-                        taskList        : true,
-                        tex             : true,  // 默认不解析
-                        flowChart       : true,  // 默认不解析
-                        sequenceDiagram : true,  // 默认不解析
-                    });
+                htmlDecode: "style,script,iframe",
+                tocm: true,    // Using [TOCM]
+                emoji: true,
+                taskList: true,
+                tex: true,  // 默认不解析
+                flowChart: true,  // 默认不解析
+                sequenceDiagram: true,  // 默认不解析
+            });
         }
     </script>
     @RenderSection("scripts", required: false)

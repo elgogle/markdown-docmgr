@@ -15,6 +15,7 @@ namespace MarkdownRepository.Controllers
     using System.Text.RegularExpressions;
     using System.Web.Hosting;
 
+    [Authorize]
     public class DocumentController : Controller
     {
         const string SQLITE_PATH = "~/App_Data";
@@ -45,7 +46,7 @@ namespace MarkdownRepository.Controllers
         /// 首页，我的文档
         /// </summary>
         /// <param name="searchText"></param>
-        /// <returns></returns>
+        /// <returns></returns>        
         public ActionResult Index(string searchText, int? page)
         {
             var result = docMgr.MyDocument(UserId);
@@ -60,6 +61,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult AllDocument(int?page)
         {            
             var result = docMgr.AllDocument();
@@ -76,6 +78,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="searchText"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult Search(string searchText)
         {
             ViewBag.CurrentFilter = searchText;
@@ -104,6 +107,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="category"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult SearchByCategory(string category, bool byOwner)
         {
             ViewBag.CurrentFilter = category;
@@ -129,6 +133,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult Show(long id)
         {
             var doc = docMgr.Get(id);
@@ -210,7 +215,7 @@ namespace MarkdownRepository.Controllers
         /// 删除文档
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
+        /// <returns></returns>        
         [HttpPost]
         public ActionResult Delete(long id)
         {
