@@ -44,6 +44,7 @@ namespace MarkdownRepository.Lib
                             create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
                             create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
                             create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
+                            create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
                                     ";
                 db.Execute(sql);
             }
@@ -245,9 +246,15 @@ namespace MarkdownRepository.Lib
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                var document = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator, is_public 
-                                                    from documents a, documents_owner b 
-                                                    where a.rowid = b.id and b.id=@id",
+                var document = db.Query<Document>(@"select b.id as rowid, title, content, category, creat_at, update_at, creator, is_public, ifnull(c.count,1) as read_count
+                                                    from documents a 
+                                                    inner join documents_owner b on a.rowid = b.id
+                                                    left outer join documents_read_count c on b.id = c.doc_id 
+                                                    where b.id=@id;
+
+                                                    insert or ignore into documents_read_count(count, doc_id) values(1, @id);
+                                                    update documents_read_count set count = count + 1 where doc_id=@id;
+                                                    ",
                                                                                       new { id = id }).FirstOrDefault();
                 if (!_indexMgr.Exists(id.ToString()))
                     _indexMgr.AddOrUpdateDocIndex(new Doc { Title = document.title, Content = document.content, Category = document.category, Id = id.ToString(), Operate = Operate.AddOrUpdate });
@@ -337,5 +344,7 @@ namespace MarkdownRepository.Lib
                 return documents.ToList();
             }
         }
+
+        
     }
 }

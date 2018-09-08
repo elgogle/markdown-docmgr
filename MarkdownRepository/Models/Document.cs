@@ -15,6 +15,7 @@ namespace MarkdownRepository.Models
         public DateTime? update_at { get; set; }
         public string creator { get; set; }
         public DocumentAccess is_public { get; set; }
+        public int read_count { get; set; }
     }
 
     public class DocumentOwner
