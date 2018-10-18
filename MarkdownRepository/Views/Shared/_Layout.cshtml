@@ -162,9 +162,10 @@
                     <div class="collapse navbar-collapse" id="navbar">
                         <ul class="nav navbar-nav navbar-right">
 
-                            <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文档<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文章<span class="sr-only">(current)</span></a></li>
                             <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">创建<span class="sr-only">(current)</span></a></li>
-                            <li class="@(@ViewBag.Action == "ShowAll" ? "active" : "")"><a href="@Url.Action("AllDocument", "Document")">所有公开文档<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "MyFollow" ? "active" : "")"><a href="@Url.Action("MyFollowDocuments", "Document")">我关注的文章<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "ShowAll" ? "active" : "")"><a href="@Url.Action("AllDocument", "Document")">所有公开文章<span class="sr-only">(current)</span></a></li>
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-user"></span> @if (Request.IsAuthenticated)

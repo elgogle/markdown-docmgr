@@ -1,10 +1,9 @@
-@using MarkdownRepository.Controllers
+﻿@using MarkdownRepository.Controllers
 @using MarkdownRepository.Lib
 @model List<MarkdownRepository.Models.Document>
 
-@{    
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var myFollwedDocs = ViewBag.MyFollowedDocs as List<MarkdownRepository.Models.Document>;
 }
 
 <div class="blog-post markdown-body col-md-10">
@@ -30,24 +29,13 @@
                                         <span class="list-doc-updatetime">更新时间: </span> @doc.update_at
                                     </div>
                                 </div>
+
+                                <div class="pull-right" style="margin-top:25px;font-size:0.8em;">
+                                    <button class="followed" onclick="cancelFollowDoc(this, @doc.rowid)">
+                                        <span class="glyphicon glyphicon-eye-close" data-toggle="tooltip" title="取消关注"></span>
+                                    </button>
+                                </div>
                                 
-                                @*@if (User.Identity.IsAuthenticated)
-                                {
-                                    <div class="pull-right" style="margin-top:25px;font-size:0.8em;">
-                                        @if (myFollwedDocs.Any(t => t.rowid == doc.rowid))
-                                        {
-                                            <button class="followed">
-                                                <span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="关注"></span>
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <button class="follow-doc" onclick="followDoc(this, @doc.rowid);">
-                                                <span class="glyphicon glyphicon-eye-open" data-toggle="tooltip" title="关注"></span>
-                                            </button>
-                                        }
-                                    </div>
-                                }*@
 
                             </div>
                         </td>
@@ -70,7 +58,7 @@
                     {
                         if (!string.IsNullOrWhiteSpace(c.category as string))
                         {
-                            <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category, byOwner=false })<sup> @c.hint</sup> </li>
+                            <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category, byOwner = false })<sup> @c.hint</sup> </li>
                         }
                     }
                 </ul>
@@ -80,17 +68,13 @@
 </div>
 @section style{
     <style>
-        .doc-list{
-            float:left;
+        .doc-list {
+            float: left;
         }
-        .follow-doc{
+
+        .followed {
             background-color: inherit;
-            color: #ddd;
-            border: none;
-        }
-        .followed{
-            background-color: inherit;
-            color: red;
+            color: gray;
             border: none;
         }
     </style>
@@ -99,21 +83,21 @@
 @section scripts{
 
     <script>
-        function followDoc(e, id){
+        function cancelFollowDoc(e, id){
             var _this = e;
-            $.ajax({
-                type: "POST",
-                url: "@Url.Action("FollowDocument", "Document")",
-                data: { id: id },
-
-                success: function (data) {
-                    if(data.success){
-                        $(_this).removeClass('follow-doc').addClass('followed');
-                    }else{
+            if (confirm("确认取消关注?")) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("CancelFollow", "Document")",
+                    data: { id: id },
+                    success: function (data) {
+                        if(data.success){
+                            $(_this).closest('tr').remove();
+                        }else{
+                        }
                     }
-                }
-            });
+                });
+            }
         }
-
     </script>
 }

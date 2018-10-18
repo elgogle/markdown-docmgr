@@ -25,7 +25,7 @@
                                 <div class="list-foot">
                                     @if (!string.IsNullOrEmpty(doc.category))
                                     {
-                                        <span class="list-doc-category">文档分类: </span> @doc.category
+                                        <span class="list-doc-category">文章分类: </span> @doc.category
                                     }
                                     <span class="list-doc-updatetime">更新时间: </span> @doc.update_at
                                 </div>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="col-md-2 side-category">
-        <div class="title">文档分类</div>
+        <div class="title">文章分类</div>
         <div class="doc-category">        
         @if (ViewBag.Category != null) 
         {

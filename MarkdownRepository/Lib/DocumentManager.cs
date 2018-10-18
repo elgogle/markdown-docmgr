@@ -40,12 +40,14 @@ namespace MarkdownRepository.Lib
         {
             using (var db = this.OpenDb())
             {
-                var sql = @"create VIRTUAL table if not exists documents USING fts3(title, content, category);
-                            create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
-                            create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
-                            create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
-                            create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
-                                    ";
+                var sql = @"
+create VIRTUAL table if not exists documents USING fts3(title, content, category);
+create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
+create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
+create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
+create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
+create table if not exists documents_follow(id INTEGER primary key, user_id nvarchar(100) not null, doc_id int not null);
+                ";
                 db.Execute(sql);
             }
         }
@@ -128,6 +130,18 @@ namespace MarkdownRepository.Lib
             }
         }
 
+        public List<dynamic> GetFollowCategory(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                return db.Query<dynamic>(@"select category, count(*) hint from documents_category a, documents_owner b, documents_follow c  
+                                            where a.doc_id = b.id and b.is_public=1 and c.doc_id = a.doc_id
+                                                and c.user_id = @userId
+                                            group by category order by count(*) desc", new { userId = userId }).ToList();
+            }
+        }
+
         public List<string> GetCreator()
         {
             using (var db = this.OpenDb())
@@ -176,6 +190,7 @@ namespace MarkdownRepository.Lib
                 db.Execute("delete from documents_owner where id=@id;", new { id = id });
                 db.Execute("delete from documents where rowid=@rowid;", new { rowid = id });
                 db.Execute("delete from documents_category where doc_id=@id", new { id = id });
+                db.Execute("delete from documents_follow where doc_id=@id", new { id = id });
 
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Operate = Operate.Delete });
                 //DeleteAtachFile(id);
@@ -260,6 +275,73 @@ namespace MarkdownRepository.Lib
                     _indexMgr.AddOrUpdateDocIndex(new Doc { Title = document.title, Content = document.content, Category = document.category, Id = id.ToString(), Operate = Operate.AddOrUpdate });
 
                 return document;
+            }
+        }
+
+        /// <summary>
+        /// 获取关注的所有文章
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public List<Document> GetFollowDocuments(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var docs = db.Query<Document>(@"
+select distinct b.id as rowid, 
+    a.title, 
+    a.content, 
+    a.category,
+    b.creat_at, 
+    b.update_at, 
+    b.creator
+from documents a, documents_owner b, documents_category c, documents_follow d 
+where a.rowid = b.id 
+    and c.doc_id = b.id 
+    and d.doc_id = b.id
+    and d.user_id = @userId;
+                ", new { userId = userId });
+                return docs.ToList();
+            }
+        }
+
+        /// <summary>
+        /// 关注文章
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="docId"></param>
+        public void FollowDocument(string userId, long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                db.Execute(@"insert or replace into documents_follow(user_id, doc_id) values(@userId, @id);",
+                    new { userId = userId, id = docId });
+            }
+        }
+
+        public void CancelFollow(string userId, long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                db.Execute(@"delete from documents_follow where user_id=@userId and doc_id=@id;",
+                    new { userId = userId, id = docId });
+            }
+        }
+
+        /// <summary>
+        /// 检查是否已经关注文章
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="docId"></param>
+        /// <returns></returns>
+        public bool IsFollowed(string userId, long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                var isExists = db.Query<int>("select 1 from documents_follow where user_id=@userId and doc_id=@id;",
+                    new { userId = userId, id = docId }).FirstOrDefault();
+                return isExists == 1 ? true : false;
             }
         }
 

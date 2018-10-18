@@ -1,6 +1,7 @@
 @using MarkdownRepository.Lib
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 }
 @model MarkdownRepository.Models.Document
 
@@ -110,8 +111,27 @@
     <textarea style="display:none;">@Model.content</textarea>
 </div>
 
+@if (User.Identity.IsAuthenticated && !Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
+{
+    <div id="follow_doc" style="" class="follow-doc"><span id="follow_text" class="" data-toggle="tooltip" title="@textOfFollow">@textOfFollow</span></div>
+}
+
 @section style{
     @System.Web.Optimization.Styles.Render("~/css/editor.md")
+    <style>
+        .follow-doc{
+             position: fixed;
+             top: 50%;
+             right: 100px;
+             font-size: 0.7em;
+             width: 30px;
+             cursor: pointer;
+             border: #ddd solid 1px;
+             border-radius: 5px;
+             padding: 7px;
+            color: #999;
+        }
+    </style>
 }
 
 @section scripts{
@@ -148,6 +168,34 @@
             });
         }
 
+        $("#follow_doc").click(function () {
+            var text = $("#follow_text").text(),
+                action = "",
+                textChangeTo = "",
+                id = "@Model.rowid";
+
+            if (text === "关注文章") {
+                textChangeTo = "取消关注";
+                action ='@Url.Action("FollowDocument", "Document")';
+            } else {
+                textChangeTo = "关注文章";
+                action = '@Url.Action("CancelFollow", "Document")';
+            }
+
+            $.ajax({
+                type: "POST",
+                url: action,
+                data: { id: id },
+                success: function (data) {
+                    if (data.success) {
+                        $("#follow_text").text(textChangeTo);
+                        $("#follow_text").attr('title', textChangeTo);
+                    } else {
+                    }
+                }
+            });
+        });
     });
+
 </script>
 }

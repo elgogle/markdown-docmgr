@@ -51,8 +51,9 @@ namespace MarkdownRepository.Controllers
         {
             var result = docMgr.MyDocument(UserId);
             var category = docMgr.GetMyCategory(UserId);
-            ViewBag.Action = "MyDocs";
             ViewBag.Category = category;
+            ViewBag.Action = "MyDocs";
+            ViewBag.Title = "我的文章";
             return View(result);
         }
 
@@ -67,10 +68,58 @@ namespace MarkdownRepository.Controllers
             var result = docMgr.AllDocument();
             var category = docMgr.GetCategory();
             var creator = docMgr.GetCreator();
-            ViewBag.Action = "ShowAll";
+            var myFollowedDocs = docMgr.GetFollowDocuments(User.Identity.IsAuthenticated?UserId:"");
+            
             ViewBag.Category = category;
             ViewBag.Creator = creator;
+            ViewBag.MyFollowedDocs = myFollowedDocs;
+            ViewBag.Action = "ShowAll";
+            ViewBag.Title = "所有文章";
             return View(result);
+        }
+
+        /// <summary>
+        /// 我关注的文章
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult MyFollowDocuments()
+        {
+            var result = docMgr.GetFollowDocuments(UserId);
+            var category = docMgr.GetFollowCategory(UserId);
+            ViewBag.Category = category;
+            ViewBag.Action = "MyFollow";
+            ViewBag.Title = "我关注的文章";
+            return View(result);
+        }
+
+        /// <summary>
+        /// 关注该文章
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult FollowDocument(long id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                docMgr.FollowDocument(UserId, id);
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        /// <summary>
+        /// 取消关注该文章
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult CancelFollow(long id)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                docMgr.CancelFollow(UserId, id);
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
         }
 
         /// <summary>
@@ -140,6 +189,12 @@ namespace MarkdownRepository.Controllers
             if (doc == null)
                 return HttpNotFound();
 
+            ViewBag.IsFollowed = false;
+            if (User.Identity.IsAuthenticated)
+            {
+                ViewBag.IsFollowed = docMgr.IsFollowed(UserId, id);
+            }
+
             return View(doc);
         }
 
@@ -206,6 +261,10 @@ namespace MarkdownRepository.Controllers
                 document.title = title;
 
                 docMgr.Update(id, content, title, category, access);
+                if(access == DocumentAccess.PRIVATE)
+                {
+                    docMgr.CancelFollow(UserId, id);
+                }
             }
 
             return Json(document);
