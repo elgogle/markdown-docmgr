@@ -351,5 +351,17 @@ namespace MarkdownRepository.Controllers
                 return Json(new { success = 0, message = ex.Message, url = "" });
             }
         }
+
+        [AllowAnonymous]
+        public ActionResult Download(string filename)
+        {
+            string path = System.IO.Path.Combine(this.Server.MapPath("~/doc/files"), System.Web.HttpUtility.UrlDecode(filename));
+            if (System.IO.File.Exists(path))
+            {
+                return File(path, System.Net.Mime.MediaTypeNames.Application.Octet, filename);
+            }
+            
+            return Content("文件不存在");
+        }
     }
 }

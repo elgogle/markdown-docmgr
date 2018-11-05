@@ -263,3 +263,4 @@ __pycache__/
 # App_Data
 MarkdownRepository/App_Data/
 *.db3
+/MarkdownRepository/doc/files/编写高质量代码：陆敏技.pdf
