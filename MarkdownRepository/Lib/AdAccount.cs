@@ -13,6 +13,10 @@ namespace MarkdownRepository.Lib
         public static string GetUserNameById(string userId)
         {
             string fullName = userId;
+            var docMgr = new DocumentManager();
+            var username = docMgr.GetUserName(userId);
+            if (!string.IsNullOrWhiteSpace(username)) return username;
+
             using (PrincipalContext context = new PrincipalContext(ContextType.Domain))
             {
                 var a = userId.Split('\\');
@@ -21,6 +25,7 @@ namespace MarkdownRepository.Lib
                     if (user != null)
                     {
                         fullName = user.DisplayName;
+                        docMgr.SaveUserName(userId, fullName);
                     }
                 }
             }

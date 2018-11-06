@@ -15,6 +15,17 @@ namespace MarkdownRepository.Lib
         private string _dbPath = null;
         private IndexManager _indexMgr = null;
 
+
+        public DocumentManager()
+        {
+            const string SQLITE_PATH = "~/App_Data";
+            const string INDEX_PATH = "~/App_Data/Index/";
+
+            this._dbPath = System.IO.Path.Combine(System.Web.HttpContext.Current.Server.MapPath(SQLITE_PATH), "Documents.db3");
+            IndexManager.IndexPath = System.Web.HttpContext.Current.Server.MapPath(INDEX_PATH);
+            this._indexMgr = IndexManager.IndexMgr;
+        }
+
         public DocumentManager(string dbPath, string indexPath)
         {
             this._dbPath = dbPath;
@@ -47,8 +58,29 @@ create table if not exists documents_category(id INTEGER primary key, category n
 create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
 create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
 create table if not exists documents_follow(id INTEGER primary key, user_id nvarchar(100) not null, doc_id int not null);
+create table if not exists user(id INTEGER primary key, user_id nvarchar(100) not null, user_name nvarchar(100) not null);
                 ";
                 db.Execute(sql);
+            }
+        }
+
+        public string GetUserName(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var userName = db.Query<string>("select user_name from user where user_id=@userId", new { userId = userId }).FirstOrDefault();
+                return userName;
+            }
+        }
+
+        public void SaveUserName(string userId, string userName)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                db.Execute("insert or replace into user(user_id,user_name) values(@userId, @userName)",
+                    new { userId = userId, userName = userName });
             }
         }
 
