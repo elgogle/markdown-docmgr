@@ -14,6 +14,7 @@ namespace MarkdownRepository.Controllers
     using Dapper;
     using System.Text.RegularExpressions;
     using System.Web.Hosting;
+    using Newtonsoft.Json;
 
     [Authorize]
     public class DocumentController : Controller
@@ -54,6 +55,12 @@ namespace MarkdownRepository.Controllers
             ViewBag.Category = category;
             ViewBag.Action = "MyDocs";
             ViewBag.Title = "我的文章";
+            ViewBag.TitleWordCloud = JsonConvert.SerializeObject(
+                result.Select(t => t.title).GetWordFreq().Select(t =>
+                new {
+                    text = t.Item1,
+                    weight = t.Item2
+                }));
             return View(result);
         }
 
@@ -75,6 +82,12 @@ namespace MarkdownRepository.Controllers
             ViewBag.MyFollowedDocs = myFollowedDocs;
             ViewBag.Action = "ShowAll";
             ViewBag.Title = "所有文章";
+            ViewBag.TitleWordCloud = JsonConvert.SerializeObject(
+                result.Select(t => t.title).GetWordFreq().Select(t =>
+                new {
+                    text = t.Item1,
+                    weight = t.Item2
+                }));
             return View(result);
         }
 

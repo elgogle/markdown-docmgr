@@ -77,6 +77,10 @@
             }
         </div>
     </div>
+    <div style="margin-top:1em; font-size:0.8em;">
+        标题词云
+    </div>
+    <div id="title_word_cloud"></div>
 </div>
 @section style{
     <style>
@@ -94,10 +98,11 @@
             border: none;
         }
     </style>
+
+    <link href="~/css/jqcloud.min.css" rel="stylesheet">
 }
 
 @section scripts{
-
     <script>
         function followDoc(e, id){
             var _this = e;
@@ -115,5 +120,16 @@
             });
         }
 
+    </script>
+
+    <script src="~/javascripts/jqcloud.min.js"></script>
+    <script>
+        $(function () {
+            var words = @Html.Raw(ViewBag.TitleWordCloud);
+            $("#title_word_cloud").jQCloud(words, {
+                //width: 500,
+                height: 350
+            });
+        });
     </script>
 }

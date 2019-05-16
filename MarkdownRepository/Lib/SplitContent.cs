@@ -3,10 +3,13 @@ using System.IO;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.PanGu;
 using PanGu;
+using System.Linq;
+using Reg = System.Text.RegularExpressions;
+using System;
 
 namespace MarkdownRepository.Lib
 {
-    public class SplitContent
+    public static class SplitContent
     {
         public static string[] SplitWords(string content)
         {
@@ -44,6 +47,57 @@ namespace MarkdownRepository.Lib
             if (!string.IsNullOrWhiteSpace(result))
                 return result;
             return content;
+        }
+
+        public static bool IsWord(this string text)
+        {
+            //PanGu.Segment.Init();
+            //var seg = new PanGu.Segment();
+            //var rst = seg.DoSegment(text, new PanGu.Match.MatchOptions { FilterNumeric = true, FrequencyFirst = true, EnglishSegment = true });
+            //var a = rst.OrderByDescending(t => t.Frequency).FirstOrDefault();
+            //return a != null && a.Frequency > 0;
+
+            Reg.Regex regChina = new Reg.Regex("^[^\x00-\xFF]");
+            Reg.Regex regEnglish = new Reg.Regex("^[a-zA-Z]");
+            return (regChina.IsMatch(text) || regEnglish.IsMatch(text)) && text.Length > 1;
+        }
+
+        public static List<Tuple<string, double>> GetTermFreq(this string text)
+        {
+            Segment.Init();
+            var seg = new PanGu.Segment();
+            var rst = seg.DoSegment(text, new PanGu.Match.MatchOptions
+            {
+                FilterNumeric = true,
+                FrequencyFirst = true,
+                EnglishSegment = true,
+                IgnoreCapital = true,
+            });
+            return rst.Where(t => t.Word.Length > 1 
+                        && (
+                                t.WordType == WordType.English
+                                || ( (t.WordType == WordType.SimplifiedChinese || t.WordType == WordType.TraditionalChinese) && t.Frequency > 0)
+                            )
+                            //&& t.Pos == POS.
+                        )
+                .Select(t => new Tuple<string, double>(t.Word, t.Frequency))
+                .ToList();
+        }
+
+        public static List<Tuple<string, double>> GetWordFreq(this IEnumerable<string> article)
+        {
+            var rst = new List<Tuple<string, double>>();
+            foreach (var w in article)
+            {
+                rst.AddRange(w.GetTermFreq());
+            }
+
+            return rst
+               .GroupBy(g => g.Item1)
+               .Select(t => new Tuple<string, double>(t.Key, t.Sum(i => i.Item2)))
+               .OrderByDescending(t => t.Item2)
+               .Take(100)
+               .ToList();
         }
     }
 }

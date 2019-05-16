@@ -273,6 +273,8 @@
     <Content Include="css\highlight-styles\xcode.css" />
     <Content Include="css\highlight-styles\xt256.css" />
     <Content Include="css\highlight-styles\zenburn.css" />
+    <Content Include="css\jqcloud.css" />
+    <Content Include="css\jqcloud.min.css" />
     <Content Include="Dict\ChsDoubleName1.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -696,6 +698,8 @@
     <Content Include="javascripts\ie-emulation-modes-warning.js" />
     <Content Include="javascripts\ie10-viewport-bug-workaround.js" />
     <Content Include="javascripts\ie8-responsive-file-warning.js" />
+    <Content Include="javascripts\jqcloud.js" />
+    <Content Include="javascripts\jqcloud.min.js" />
     <Content Include="javascripts\jquery.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
