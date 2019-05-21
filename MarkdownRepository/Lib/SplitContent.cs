@@ -70,17 +70,11 @@ namespace MarkdownRepository.Lib
             {
                 FilterNumeric = true,
                 FrequencyFirst = true,
-                EnglishSegment = true,
+                //EnglishSegment = true,
                 IgnoreCapital = true,
             });
-            return rst.Where(t => t.Word.Length > 1 
-                        && (
-                                t.WordType == WordType.English
-                                || ( (t.WordType == WordType.SimplifiedChinese || t.WordType == WordType.TraditionalChinese) && t.Frequency > 0)
-                            )
-                            //&& t.Pos == POS.
-                        )
-                .Select(t => new Tuple<string, double>(t.Word, t.Frequency))
+            return rst.Where(t => t.Word.Length > 1)
+                .Select(t => new Tuple<string, double>(t.Word, 1))
                 .ToList();
         }
 
