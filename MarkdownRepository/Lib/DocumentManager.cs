@@ -405,8 +405,9 @@ where a.rowid = b.id
         /// <returns></returns>
         public List<Document> Search(string queryText, string userId = "")
         {
-            var result = _indexMgr.Search(queryText);
-            if (result != null && result.Count > 0)
+            var result = new List<Document>();
+            var indexResult = _indexMgr.Search(queryText);
+            if (indexResult != null && indexResult.Count > 0)
             {
                 using (var db = this.OpenDb())
                 {
@@ -418,8 +419,15 @@ where a.rowid = b.id
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b 
                                                     WHERE a.rowid = b.id and b.id in @list and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))",
-                                                                                                   new { list = result.Select(t => t.Id).ToList(), userId = userId });
-                    return documents.ToList();
+                                     new { list = indexResult.Select(t => t.Id).ToList(), userId = userId });
+                    //TODO: 需要改善，这里又重排序，达到与 index 搜索一致
+                    foreach (var i in indexResult)
+                    {
+                        var first = documents.FirstOrDefault(t => t.rowid.ToString() == i.Id);
+                        if (first != null) result.Add(first);
+                    }
+
+                    return result;
                 }
             }
 

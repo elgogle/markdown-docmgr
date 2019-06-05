@@ -86,7 +86,7 @@ namespace MarkdownRepository.Lib
         public void AddOrUpdateDocIndex(Doc doc)
         {
             this._docqueue.Enqueue(doc);
-            LogHelper.WriteInfo(this.GetType(), string.Format("current queue length {0}", this._docqueue.Count));
+            //LogHelper.WriteInfo(this.GetType(), string.Format("current queue length {0}", this._docqueue.Count));
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace MarkdownRepository.Lib
                 this._indexWriter.Commit();
                 this._indexWriter.Optimize();
                 this._indexWriter.Close();
-                LogHelper.WriteInfo(this.GetType(), string.Format("indexing doc {0} completed.", doc.Id));
+                //LogHelper.WriteInfo(this.GetType(), string.Format("indexing doc {0} completed.", doc.Id));
             }
             catch (Exception ex)
             {
@@ -259,7 +259,7 @@ namespace MarkdownRepository.Lib
                     multiSearch.Search(queryOr1, collector);
 
                     //TopDocs 指定0到GetTotalHits() 即所有查询结果中的文档 如果TopDocs(20,10)则意味着获取第20-30之间文档内容 达到分页的效果
-                    ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs;
+                    ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs.OrderByDescending(t => t.score).ToArray();
                     for (int i = 0; i < docs.Length; i++)
                     {
                         int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
@@ -268,7 +268,7 @@ namespace MarkdownRepository.Lib
                         d.Id = doc.Get(DocStruct.ID);
                         result.Add(d);
                     }
-                    LogHelper.WriteInfo(this.GetType(), string.Format("Searched results count:{0}", docs.Length));
+                    //LogHelper.WriteInfo(this.GetType(), string.Format("Searched results count:{0}", docs.Length));
                 }
             }
             catch (Exception ex)

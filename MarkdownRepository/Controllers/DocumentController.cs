@@ -74,11 +74,11 @@ namespace MarkdownRepository.Controllers
         {            
             var result = docMgr.AllDocument();
             var category = docMgr.GetCategory();
-            var creator = docMgr.GetCreator();
+            //var creator = docMgr.GetCreator();
             var myFollowedDocs = docMgr.GetFollowDocuments(User.Identity.IsAuthenticated?UserId:"");
             
             ViewBag.Category = category;
-            ViewBag.Creator = creator;
+            //ViewBag.Creator = creator;
             ViewBag.MyFollowedDocs = myFollowedDocs;
             ViewBag.Action = "ShowAll";
             ViewBag.Title = "所有文章";
