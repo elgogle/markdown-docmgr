@@ -116,6 +116,8 @@
     <div id="follow_doc" style="" class="follow-doc"><span id="follow_text" class="" data-toggle="tooltip" title="@textOfFollow">@textOfFollow</span></div>
 }
 
+<div id="comments"></div>
+
 @section style{
     @System.Web.Optimization.Styles.Render("~/css/editor.md")
     <style>
@@ -198,4 +200,20 @@
     });
 
 </script>
+
+
+
+<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+<script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+<script>
+    (function () {
+        Comments({
+            node: "#comments",
+            articleId: @Model.rowid,
+            userName: "@User.Identity.Name.GetUserName()",
+            apiUrl: "http://192.168.13.119/web-comment"
+        });
+    })();
+</script>
+
 }
