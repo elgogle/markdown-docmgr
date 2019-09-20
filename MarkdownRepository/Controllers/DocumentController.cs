@@ -462,15 +462,15 @@ namespace MarkdownRepository.Controllers
         /// <summary>
         /// 显示书籍详细
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="bookid"></param>
         /// <param name="docId"></param>
         /// <returns></returns>
-        public ActionResult ShowBook(long id, long docId=0)
+        public ActionResult ShowBook(long bookid, long docId=0)
         {
             BookVm book = null;
             if(docId == 0)
             {
-                book = docMgr.GetBook(id);
+                book = docMgr.GetBook(bookid);
             }
             else
             {
@@ -478,6 +478,24 @@ namespace MarkdownRepository.Controllers
             }
 
             return View(book);
+        }
+
+        /// <summary>
+        /// jsTree 需要的 Json 数据
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <returns></returns>
+        public ActionResult GetBookDirectory(long bookid)
+        {
+            var book = docMgr.GetBook(bookid);
+            var directories = book.BookDirectory.Select(t => new
+            {
+                id = t.id,
+                parent = t.parent_id,
+                text = t.title
+            }).ToList();
+
+            return Json(directories);
         }
 
         /// <summary>
