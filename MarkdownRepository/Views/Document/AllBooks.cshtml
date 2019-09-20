@@ -1,0 +1,28 @@
+﻿@using MarkdownRepository.Lib
+@{
+    ViewBag.Title = "AllBooks";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model  IList<MarkdownRepository.Models.Book>
+
+<h2>AllBooks</h2>
+
+
+<div>
+    <div>
+        <!-- 搜索框，用来搜索所有书籍 -->
+    </div>
+
+    @if(Model != null && Model.Count > 0)
+    {
+        foreach(var item in Model)
+        {
+            <div class="book">
+                <div>@item.name</div>
+                <div>@item.description</div>
+                <div>@item.creator</div>
+            </div>
+        }
+    }
+</div>

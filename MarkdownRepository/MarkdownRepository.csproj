@@ -770,6 +770,11 @@
     <Content Include="Views\Document\AllDocument.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Document\MyFollowDocuments.cshtml" />
+    <Content Include="Views\Document\CreateBook.cshtml" />
+    <Content Include="Views\Document\AllBooks.cshtml" />
+    <Content Include="Views\Document\EditBook.cshtml" />
+    <Content Include="Views\Document\ShowBook.cshtml" />
+    <Content Include="Views\Document\SearchBook.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

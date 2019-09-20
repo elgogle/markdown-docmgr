@@ -376,5 +376,139 @@ namespace MarkdownRepository.Controllers
             
             return Content("文件不存在");
         }
+
+        /// <summary>
+        /// 所有书籍页面
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult AllBooks()
+        {
+            var books = docMgr.GetBooks();
+            return View(books);
+        }
+
+        /// <summary>
+        /// 显示创建书籍页面
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult CreateBook()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// 创建书籍
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult CreateBook(string name, string description, string category)
+        {
+            try
+            {
+                var id = docMgr.CreateOrUpdateBook(this.UserId, name, description, category, "");
+                return RedirectToAction("EditBook", new { id = id });
+            }
+            catch(Exception ex)
+            {
+                TempData.Add("Error", ex.Message);
+            }
+
+            return View();
+        }
+
+        /// <summary>
+        /// 创建书籍目录
+        /// </summary>
+        /// <param name="bookId"></param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="parentId"></param>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
+        public ActionResult CreateBookDirectory(long bookId, string title, string description, long parentId, long documentId)
+        {
+            docMgr.CreateOrUpdateBookDirectory(bookId, title, description, parentId, documentId);
+            return Content("ok");
+        }
+
+        /// <summary>
+        /// 创建书籍文章
+        /// </summary>
+        /// <param name="directoryid"></param>
+        /// <param name="content"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public ActionResult CreateBookArticle(long directoryid, string content, string title)
+        {
+            docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
+            return Content("ok");
+        }
+
+        /// <summary>
+        /// 显示编辑书籍页面
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult EditBook(long id)
+        {
+            var book = docMgr.GetBook(id);
+
+            return View(book);
+        }
+
+        /// <summary>
+        /// 显示书籍详细
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="docId"></param>
+        /// <returns></returns>
+        public ActionResult ShowBook(long id, long docId=0)
+        {
+            BookVm book = null;
+            if(docId == 0)
+            {
+                book = docMgr.GetBook(id);
+            }
+            else
+            {
+                book = docMgr.GetBookByDoc(docId);
+            }
+
+            return View(book);
+        }
+
+        /// <summary>
+        /// 搜索书籍
+        /// </summary>
+        /// <param name="searchText"></param>
+        /// <returns></returns>
+        public ActionResult SearchBook(string searchText)
+        {
+            ViewBag.CurrentFilter = searchText;
+
+            if (!String.IsNullOrWhiteSpace(searchText))
+            {
+                var result = docMgr.SearchBook(searchText, UserId);
+                if (result != null && result.Count > 0)
+                {
+                    foreach (var r in result)
+                    {
+                        // 文章名称，包含了目录
+                        r.title = SplitContent.HightLight(searchText, r.title);
+                        // 书籍目录
+                        r.content = SplitContent.HightLight(searchText, r.content.StripHTML());
+                        // 书籍名称
+                        r.category = SplitContent.HightLight(searchText, r.category);
+                    }
+
+                    return View(result);
+                }
+            }
+
+            return View();
+        }
     }
 }

@@ -1,0 +1,83 @@
+﻿@using MarkdownRepository.Lib
+@{
+    ViewBag.Title = "SearchBook";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section style{
+    <style>
+        .search-box {
+            margin-top: 2em;
+        }
+
+            .search-box .form-group {
+                width: 75%;
+            }
+
+                .search-box .form-group input {
+                    width: 100%;
+                }
+
+        .search-list {
+            margin: 0.8em 0 0.7em 1em;
+            list-style: none;
+            background-color: #f9f9f9;
+            padding: 0.5em;
+            border-radius: 5px;
+            border: #ddd solid 1px;
+        }
+
+        .update-time {
+            font-size: 0.7em;
+            color: gray;
+            font-family: sans-serif;
+        }
+
+        .category {
+            padding-left: 1em;
+            color: #337ab7;
+            font-size: 0.8em;
+        }
+    </style>
+}
+
+@model List<MarkdownRepository.Models.Document>
+
+@using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
+{
+    <div class="form-group">
+        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+    </div>
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+}
+
+<div style="min-height:600px;">
+    <ul style="padding-left:0">
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                <li class="search-list">
+
+                    <div>
+                        <a href="@Url.Action("ShowBook", new { docId = item.rowid })">
+                            <h4>@Html.Raw(item.title)</h4>
+                            <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
+                                @Html.Raw(item.content)
+                            </p>
+                        </a>
+                    </div>
+
+                    <div class="category">
+                        @Html.Raw(item.category)
+                    </div>
+
+                    <div class="update-time">
+                        创建人: @AdAccount.GetUserNameById(item.creator), 更新时间: @item.update_at
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</div>

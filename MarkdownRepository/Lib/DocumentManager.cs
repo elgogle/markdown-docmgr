@@ -14,6 +14,7 @@ namespace MarkdownRepository.Lib
     {
         private string _dbPath = null;
         private IndexManager _indexMgr = null;
+        private static object _lock = new object();
 
 
         public DocumentManager()
@@ -58,7 +59,10 @@ create table if not exists documents_category(id INTEGER primary key, category n
 create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
 create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
 create table if not exists documents_follow(id INTEGER primary key, user_id nvarchar(100) not null, doc_id int not null);
-create table if not exists user(id INTEGER primary key, user_id nvarchar(100) not null, user_name nvarchar(100) not null);
+create table if not exists user(id INTEGER PRIMARY KEY, user_id nvarchar(100) not null, user_name nvarchar(100) not null);
+create table if not exists books(id INT PRIMARY KEY , creator nvarchar(100) not null, name nvarchar(256) not null, description nvarchar(512), category nvarchar(256), image_url nvarchar(512), creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime'), is_public int default(0));
+create table if not exists book_directories(id INT PRIMARY KEY, book_id int not null, title nvarchar(256) not null, description nvarchar(512), parent_id int, document_id int);
+create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
                 ";
                 db.Execute(sql);
             }
@@ -114,6 +118,150 @@ create table if not exists user(id INTEGER primary key, user_id nvarchar(100) no
             }
         }
 
+        public long CreateOrUpdateBook(string userId, string name, string description, string category, string image_url)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new Exception("书名不能为空");
+
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                lock (_lock)
+                {
+                    var bookid = db.Query<long>("select max(id) from books").FirstOrDefault() + 1;
+
+                    db.Execute("insert or replace into books(id, creator, name, description, category, image_url) values(@id, @creator, @name, @description, @category, @image_url);",
+                        new { id = bookid, creator = userId, name, description, category, image_url });
+
+                    return bookid;
+                }
+            }
+        }
+
+        public long CreateOrUpdateBookDirectory(long bookid, string title, string description, long parentid, long documentid)
+        {
+            if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
+
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                lock (_lock)
+                {
+                    var id = db.Query<long>("select max(id) from book_directories").FirstOrDefault() + 1;
+
+                    db.Execute("insert or replace into book_directories(id, book_id, title, description, parent_id, document_id) values(@id, @book_id, @title, @description, @parent_id, @document_id);",
+                        new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid });
+
+                    return id;
+                }
+            }
+        }
+
+        public void CreateOrUpdateBookArticle(long directoryid, string content, string title, string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var directory = db.Query<BookDirectory>("select * from book_directories where id=@id", new { id = directoryid }).Single();
+                var book = db.Query<Book>("select * from books where id=@book_id", new { book_id = directory.book_id }).FirstOrDefault();
+                var articleId = db.Query<long>("select document_id from book_directories where id=@id", new { id = directoryid }).FirstOrDefault();
+                var docTitle = directory.title.Trim() +
+                    (string.IsNullOrWhiteSpace(title) 
+                    ? "" 
+                    : ("/" + title.Trim()));
+                var docCategory = book.name;
+
+                if (articleId == 0)
+                {
+                    var doc = Create(content, docTitle, docCategory, userId, DocumentAccess.PUBLIC);
+
+                    db.Execute("insert into book_owner(book_id, user_id, is_owner) values(@book_id, @user_id, 1)",
+                        new { book_id = doc.rowid, user_id = userId });
+
+                    CreateOrUpdateBookDirectory(directory.book_id, directory.title, directory.description, directory.parent_id, doc.rowid);
+                }
+                else
+                {
+                    Update(articleId, content, docTitle, docCategory, DocumentAccess.PUBLIC);
+                }
+            }
+        }
+
+        public void DeleteBook(int bookid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var trans = db.BeginTransaction();
+                try
+                {
+                    var sql = @"
+delete from documents_owner a where exists(select 1 from book_directories b where b.document_id = a.id and b.book_id=@book_id); 
+delete from documents a where exists(select 1 from book_directories b where b.document_id = a.rowid and b.book_id=@book_id);
+delete from documents_category a where exists(select 1 from book_directories b where b.document_id = a.doc_id and b.book_id=@book_id);
+delete from documents_follow a where exists(select 1 from book_directories b where b.document_id = a.doc_id and b.book_id=@book_id);
+delete from book_owner where book_id=@book_id;
+delete from book_directories where book_id=@book_id;
+delete from books where id=@book_id;
+";
+                    db.Execute(sql, new { book_id = bookid });
+                    trans.Commit();
+                }
+                catch
+                {
+                    trans.Rollback();
+                }
+            }
+        }
+
+        public BookVm GetBook(long bookid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var book = db.Query<Book>("select * from books where id=@id", new { id = bookid }).Single();
+                var directories = db.Query<BookDirectory>("select * from book_directories where book_id = @book_id", new { book_id = bookid }).ToList();
+                var owner = db.Query<BookOwner>("select * from book_owner where book_id = @id", new { id = bookid }).ToList();
+                var result = new BookVm { Book = book, BookDirectory = directories, BookOwner = owner };
+
+                return result;
+            }
+        }
+
+        public BookVm GetBookByDoc(long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var directories = db.Query<BookDirectory>("select * from book_directories where document_id = @document_id", new { document_id = docId }).FirstOrDefault();
+                var book = GetBook(directories.book_id);
+                return book;
+            }
+        }
+
+        public IList<Book> GetBooks()
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var books = db.Query<Book>("select * from books where is_public=1").ToList();
+                return books;
+            }
+        }
+
+        public IList<Document> SearchBook(string keyword, string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                var articles = Search(keyword, userId);
+                return articles;
+            }
+        }
+
         /// <summary>
         /// 保存文档类别
         /// </summary>
@@ -125,6 +273,9 @@ create table if not exists user(id INTEGER primary key, user_id nvarchar(100) no
             var ca = category.Split(',');
 
             db.Execute("delete from documents_category where doc_id=@id", new { id = id });
+
+            if (string.IsNullOrWhiteSpace(category)) return;
+
             foreach (var c in ca)
             {                
                 db.Execute(@"insert or replace into documents_category(category, doc_id) values(@category, @id)",
@@ -218,12 +369,13 @@ create table if not exists user(id INTEGER primary key, user_id nvarchar(100) no
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-
-                db.Execute("delete from documents_owner where id=@id;", new { id = id });
-                db.Execute("delete from documents where rowid=@rowid;", new { rowid = id });
-                db.Execute("delete from documents_category where doc_id=@id", new { id = id });
-                db.Execute("delete from documents_follow where doc_id=@id", new { id = id });
-
+                var sql = @"
+delete from documents_owner where id=@id; 
+delete from documents where rowid=@id;
+delete from documents_category where doc_id=@id;
+delete from documents_follow where doc_id=@id;
+";
+                db.Execute(sql, new { id = id });
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Operate = Operate.Delete });
                 //DeleteAtachFile(id);
             }
@@ -392,7 +544,10 @@ where a.rowid = b.id
                                                         a.category,
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b, documents_category c 
-                                                    WHERE a.rowid = b.id and c.doc_id = b.id and c.category = @category and (b.creator = @userId or (@userId='' and b.is_public=1) )",
+                                                    WHERE a.rowid = b.id and c.doc_id = b.id 
+                                                        and c.category = @category 
+                                                        and (b.creator = @userId or (@userId='' and b.is_public=1) )
+                                                        and not exists(select 1 from book_directories d where document_id = a.rowid)",
                                                                                                new { category = category, userId = userId });
                 return documents.ToList();
             }
@@ -405,6 +560,7 @@ where a.rowid = b.id
         /// <returns></returns>
         public List<Document> Search(string queryText, string userId = "")
         {
+            // TODO: 搜索书籍
             var result = new List<Document>();
             var indexResult = _indexMgr.Search(queryText);
             if (indexResult != null && indexResult.Count > 0)
@@ -418,7 +574,9 @@ where a.rowid = b.id
                                                         category,
                                                         creat_at, update_at, creator
                                                     from documents a, documents_owner b 
-                                                    WHERE a.rowid = b.id and b.id in @list and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))",
+                                                    WHERE a.rowid = b.id and b.id in @list 
+                                                        and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))
+                                                        and not exists(select 1 from book_directories d where document_id = a.rowid) ",
                                      new { list = indexResult.Select(t => t.Id).ToList(), userId = userId });
                     //TODO: 需要改善，这里又重排序，达到与 index 搜索一致
                     foreach (var i in indexResult)
@@ -447,6 +605,7 @@ where a.rowid = b.id
                 var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at 
                                                     from documents a, documents_owner b 
                                                     where a.rowid = b.id and b.creator=@creator
+                                                        and not exists(select 1 from book_directories d where document_id = a.rowid)
                                                     order by update_at desc",
                                                                                                 new { creator = userId });
                 return documents.ToList();
@@ -462,11 +621,10 @@ where a.rowid = b.id
                 var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator
                                                     from documents a, documents_owner b 
                                                     where a.rowid = b.id and b.is_public=1
+                                                        and not exists(select 1 from book_directories d where document_id = a.rowid)
                                                     order by update_at desc");
                 return documents.ToList();
             }
         }
-
-        
     }
 }
