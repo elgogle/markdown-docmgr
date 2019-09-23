@@ -48,6 +48,9 @@ namespace MarkdownRepository.Lib
             return new SQLiteConnection("data source=" + this._dbPath);
         }
 
+        /// <summary>
+        /// 创建 Table
+        /// </summary>
         private void CreateTableIfNotExist()
         {
             using (var db = this.OpenDb())
@@ -68,6 +71,11 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
+        /// <summary>
+        /// 获取用户名
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public string GetUserName(string userId)
         {
             using (var db = this.OpenDb())
@@ -78,6 +86,11 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
+        /// <summary>
+        /// 保存用户名
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userName"></param>
         public void SaveUserName(string userId, string userName)
         {
             using (var db = this.OpenDb())
@@ -118,6 +131,15 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
+        /// <summary>
+        /// 创建或更新 Book
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="category"></param>
+        /// <param name="image_url"></param>
+        /// <returns></returns>
         public long CreateOrUpdateBook(string userId, string name, string description, string category, string image_url)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new Exception("书名不能为空");
@@ -138,6 +160,15 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
+        /// <summary>
+        /// 创建或更新书籍目录
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="parentid"></param>
+        /// <param name="documentid"></param>
+        /// <returns></returns>
         public long CreateOrUpdateBookDirectory(long bookid, string title, string description, long parentid, long documentid)
         {
             if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
@@ -157,6 +188,13 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
+        /// <summary>
+        /// 创建或更新书籍文章
+        /// </summary>
+        /// <param name="directoryid"></param>
+        /// <param name="content"></param>
+        /// <param name="title"></param>
+        /// <param name="userId"></param>
         public void CreateOrUpdateBookArticle(long directoryid, string content, string title, string userId)
         {
             using (var db = this.OpenDb())
@@ -188,11 +226,44 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
             }
         }
 
-        public void DeleteBook(int bookid)
+        /// <summary>
+        /// 删除书籍目录
+        /// </summary>
+        /// <param name="bookDirId"></param>
+        public void DeleteBookDirectory(long bookDirId)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
+
+                var bookId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
+                var sql = @"
+delete book_directories where id=@id;
+";
+                db.Execute(sql, new { id = bookDirId });
+
+                if(bookId > 0)
+                {
+                    Delete(bookId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 删除一本书籍
+        /// </summary>
+        /// <param name="bookid"></param>
+        public void DeleteBook(long bookid, string userid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1", new { book_id = bookid, user_id = userid }).FirstOrDefault();
+                if(!hasPermission)
+                {
+                    throw new Exception("你无权删除");
+                }
 
                 var trans = db.BeginTransaction();
                 try
@@ -216,6 +287,11 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 获取一本书籍的全部信息
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <returns></returns>
         public BookVm GetBook(long bookid)
         {
             using (var db = this.OpenDb())
@@ -231,6 +307,11 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 通过文章获取一本书
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <returns></returns>
         public BookVm GetBookByDoc(long docId)
         {
             using (var db = this.OpenDb())
@@ -242,6 +323,10 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 获取全部书籍
+        /// </summary>
+        /// <returns></returns>
         public IList<Book> GetBooks()
         {
             using (var db = this.OpenDb())
@@ -253,6 +338,12 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 搜索书籍，返回文章
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public IList<Document> SearchBook(string keyword, string userId)
         {
             using (var db = this.OpenDb())
@@ -313,6 +404,11 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 获取关注的文章类别
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public List<dynamic> GetFollowCategory(string userId)
         {
             using (var db = this.OpenDb())
@@ -325,6 +421,10 @@ delete from books where id=@book_id;
             }
         }
 
+        /// <summary>
+        /// 获取创建人
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetCreator()
         {
             using (var db = this.OpenDb())
@@ -381,6 +481,10 @@ delete from documents_follow where doc_id=@id;
             }
         }
 
+        /// <summary>
+        /// 删除附件
+        /// </summary>
+        /// <param name="id"></param>
         private void DeleteAtachFile(long id)
         {
             using (var db = this.OpenDb())
@@ -504,6 +608,11 @@ where a.rowid = b.id
             }
         }
 
+        /// <summary>
+        /// 取消文章的关注
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="docId"></param>
         public void CancelFollow(string userId, long docId)
         {
             using (var db = this.OpenDb())

@@ -420,6 +420,26 @@ namespace MarkdownRepository.Controllers
         }
 
         /// <summary>
+        /// 删除一本书
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <returns></returns>
+        public ActionResult DeleteBook(long bookid)
+        {
+            try
+            {
+                docMgr.DeleteBook(bookid, this.UserId);
+                return RedirectToAction("AllBooks");
+            }
+            catch(Exception ex)
+            {
+                TempData.Add("Error", ex.Message);
+            }
+
+            return View();
+        }
+
+        /// <summary>
         /// 创建书籍目录
         /// </summary>
         /// <param name="bookId"></param>
@@ -432,6 +452,24 @@ namespace MarkdownRepository.Controllers
         {
             docMgr.CreateOrUpdateBookDirectory(bookId, title, description, parentId, documentId);
             return Content("ok");
+        }
+
+        /// <summary>
+        /// 删除一本书中某一个目录
+        /// </summary>
+        /// <param name="bookDirecotryId"></param>
+        /// <returns></returns>
+        public ActionResult DeleteBookDirectory(long bookDirecotryId)
+        {
+            try
+            {
+                docMgr.DeleteBookDirectory(bookDirecotryId);
+                return Content("ok");
+            }
+            catch
+            {
+                return Content("fail");
+            }
         }
 
         /// <summary>
