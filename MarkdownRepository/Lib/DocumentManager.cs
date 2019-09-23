@@ -132,7 +132,7 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
         }
 
         /// <summary>
-        /// 创建或更新 Book
+        /// 创建 Book
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="name"></param>
@@ -140,7 +140,7 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
         /// <param name="category"></param>
         /// <param name="image_url"></param>
         /// <returns></returns>
-        public long CreateOrUpdateBook(string userId, string name, string description, string category, string image_url)
+        public long CreateBook(string userId, string name, string description, string category, string image_url, DocumentAccess access)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new Exception("书名不能为空");
 
@@ -152,8 +152,14 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
                 {
                     var bookid = db.Query<long>("select max(id) from books").FirstOrDefault() + 1;
 
-                    db.Execute("insert or replace into books(id, creator, name, description, category, image_url) values(@id, @creator, @name, @description, @category, @image_url);",
-                        new { id = bookid, creator = userId, name, description, category, image_url });
+                    db.Execute(@"
+insert into books(id, creator, name, description, category, image_url, is_public) 
+values(@id, @creator, @name, @description, @category, @image_url, @is_public);
+
+insert into book_owner(book_id, user_id, is_owner) 
+values(@id, @creator, 1);
+",
+                        new { id = bookid, creator = userId, name, description, category, image_url, is_public = access });
 
                     return bookid;
                 }
@@ -161,7 +167,31 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
         }
 
         /// <summary>
-        /// 创建或更新书籍目录
+        /// 更新书本
+        /// </summary>
+        /// <param name="userid"></param>
+        /// <param name="bookid"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="category"></param>
+        /// <param name="image_url"></param>
+        public void UpdateBook(string userid, long bookid, string name, string description, string category, string image_url, DocumentAccess access)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new Exception("书名不能为空");
+
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                CheckPermissionForUpdateBook(userid, db, bookid);
+
+                db.Execute("update books set name=@name, description=@description, category=@category, image_url=@image_url, is_public = @is_public where id=@id",
+                    new { name = name, description = description, category = category, image_url = image_url, id = bookid, is_public = access });
+            }
+        }
+
+        /// <summary>
+        /// 创建书籍目录
         /// </summary>
         /// <param name="bookid"></param>
         /// <param name="title"></param>
@@ -169,21 +199,55 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
         /// <param name="parentid"></param>
         /// <param name="documentid"></param>
         /// <returns></returns>
-        public long CreateOrUpdateBookDirectory(long bookid, string title, string description, long parentid, long documentid)
+        public long CreateBookDirectory(long bookid, string title, string description, long parentid, long documentid, string userid)
         {
             if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
 
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
+
+                CheckPermissionForUpdateBook(userid, db, bookid);
+            
                 lock (_lock)
                 {
                     var id = db.Query<long>("select max(id) from book_directories").FirstOrDefault() + 1;
 
-                    db.Execute("insert or replace into book_directories(id, book_id, title, description, parent_id, document_id) values(@id, @book_id, @title, @description, @parent_id, @document_id);",
+                    db.Execute("insert into book_directories(id, book_id, title, description, parent_id, document_id) values(@id, @book_id, @title, @description, @parent_id, @document_id);",
                         new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid });
 
                     return id;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新书籍目录
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="directoryid"></param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="userid"></param>
+        public void UpdateBookDirectory(long bookid, long directoryid, string title, string description, string userid, long documentid=0)
+        {
+            if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
+
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                CheckPermissionForUpdateBook(userid, db, bookid);
+
+                if (documentid > 0)
+                {
+                    db.Execute("update book_directories set title=@title, description = @description, document_id = @document_id  where id=@id;",
+                            new { id = directoryid, title = title, description = description, document_id = documentid });
+                }
+                else
+                {
+                    db.Execute("update book_directories set title=@title, description = @description  where id=@id;",
+                            new { id = directoryid, title = title, description = description });
                 }
             }
         }
@@ -202,27 +266,38 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
                 CreateTableIfNotExist();
 
                 var directory = db.Query<BookDirectory>("select * from book_directories where id=@id", new { id = directoryid }).Single();
+                CheckPermissionForUpdateBook(userId, db, directory.book_id);
+
                 var book = db.Query<Book>("select * from books where id=@book_id", new { book_id = directory.book_id }).FirstOrDefault();
                 var articleId = db.Query<long>("select document_id from book_directories where id=@id", new { id = directoryid }).FirstOrDefault();
                 var docTitle = directory.title.Trim() +
-                    (string.IsNullOrWhiteSpace(title) 
-                    ? "" 
+                    (string.IsNullOrWhiteSpace(title)
+                    ? ""
                     : ("/" + title.Trim()));
                 var docCategory = book.name;
 
                 if (articleId == 0)
                 {
-                    var doc = Create(content, docTitle, docCategory, userId, DocumentAccess.PUBLIC);
-
-                    db.Execute("insert into book_owner(book_id, user_id, is_owner) values(@book_id, @user_id, 1)",
-                        new { book_id = doc.rowid, user_id = userId });
-
-                    CreateOrUpdateBookDirectory(directory.book_id, directory.title, directory.description, directory.parent_id, doc.rowid);
+                    // 创建文章
+                    var doc = Create(content, docTitle, docCategory, userId, book.is_public);
+                    // 将文章关联到目录
+                    UpdateBookDirectory(directory.book_id, directoryid, directory.title, directory.description, userId, doc.rowid);
                 }
                 else
                 {
-                    Update(articleId, content, docTitle, docCategory, DocumentAccess.PUBLIC);
+                    // 更新文章
+                    Update(articleId, content, docTitle, docCategory, book.is_public);
                 }
+            }
+        }
+
+        private static void CheckPermissionForUpdateBook(string userId, DbConnection db, long bookid)
+        {
+            var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1",
+                   new { book_id = bookid, user_id = userId }).FirstOrDefault();
+            if (!hasPermission)
+            {
+                throw new Exception("你无权更新");
             }
         }
 
@@ -230,21 +305,24 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
         /// 删除书籍目录
         /// </summary>
         /// <param name="bookDirId"></param>
-        public void DeleteBookDirectory(long bookDirId)
+        public void DeleteBookDirectory(long bookDirId, string userid)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
 
-                var bookId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
-                var sql = @"
-delete book_directories where id=@id;
-";
-                db.Execute(sql, new { id = bookDirId });
-
-                if(bookId > 0)
+                var directory = db.Query<BookDirectory>("select * from book_directories where id = @id", new { id = bookDirId }).FirstOrDefault();
+                if(directory != null)
                 {
-                    Delete(bookId);
+                    CheckPermissionForUpdateBook(userid, db, directory.book_id);
+
+                    var bookId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
+                    db.Execute("delete book_directories where id=@id;", new { id = bookDirId });
+
+                    if (bookId > 0)
+                    {
+                        Delete(bookId);
+                    }
                 }
             }
         }
@@ -259,11 +337,7 @@ delete book_directories where id=@id;
             {
                 CreateTableIfNotExist();
 
-                var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1", new { book_id = bookid, user_id = userid }).FirstOrDefault();
-                if(!hasPermission)
-                {
-                    throw new Exception("你无权删除");
-                }
+                CheckPermissionForUpdateBook(userid, db, bookid);
 
                 var trans = db.BeginTransaction();
                 try
@@ -292,11 +366,21 @@ delete from books where id=@book_id;
         /// </summary>
         /// <param name="bookid"></param>
         /// <returns></returns>
-        public BookVm GetBook(long bookid)
+        public BookVm GetBook(long bookid, string userid)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
+
+                var hasPermission = db.Query<bool>(@"
+select 1 from books a where is_public=1 
+or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_id)", 
+                    new { user_id = userid }).FirstOrDefault();
+
+                if(!hasPermission)
+                {
+                    throw new Exception("你无权查看");
+                }
 
                 var book = db.Query<Book>("select * from books where id=@id", new { id = bookid }).Single();
                 var directories = db.Query<BookDirectory>("select * from book_directories where book_id = @book_id", new { book_id = bookid }).ToList();
@@ -312,13 +396,13 @@ delete from books where id=@book_id;
         /// </summary>
         /// <param name="docId"></param>
         /// <returns></returns>
-        public BookVm GetBookByDoc(long docId)
+        public BookVm GetBookByDoc(long docId, string userid)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
                 var directories = db.Query<BookDirectory>("select * from book_directories where document_id = @document_id", new { document_id = docId }).FirstOrDefault();
-                var book = GetBook(directories.book_id);
+                var book = GetBook(directories.book_id, userid);
                 return book;
             }
         }

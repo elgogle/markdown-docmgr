@@ -381,6 +381,7 @@ namespace MarkdownRepository.Controllers
         /// 所有书籍页面
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult AllBooks()
         {
             var books = docMgr.GetBooks();
@@ -404,11 +405,11 @@ namespace MarkdownRepository.Controllers
         /// <param name="category"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult CreateBook(string name, string description, string category)
+        public ActionResult CreateBook(string name, string description, string category, DocumentAccess access)
         {
             try
             {
-                var id = docMgr.CreateOrUpdateBook(this.UserId, name, description, category, "");
+                var id = docMgr.CreateBook(this.UserId, name, description, category, "", access);
                 return RedirectToAction("EditBook", new { id = id });
             }
             catch(Exception ex)
@@ -417,6 +418,37 @@ namespace MarkdownRepository.Controllers
             }
 
             return View();
+        }
+
+        public ActionResult UpdateBook(long bookid, string name, string description, string category, DocumentAccess access)
+        {
+            try
+            {
+                docMgr.UpdateBook(this.UserId, bookid, name, description, category, "", access);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        public ActionResult Success()
+        {
+            return Json(new
+            {
+                isSuccess = true,
+                Message = ""
+            });
+        }
+
+        public ActionResult Fail(string errorMessage)
+        {
+            return Json(new
+            {
+                isSuccess = false,
+                Message = errorMessage
+            });
         }
 
         /// <summary>
@@ -450,8 +482,28 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         public ActionResult CreateBookDirectory(long bookId, string title, string description, long parentId, long documentId)
         {
-            docMgr.CreateOrUpdateBookDirectory(bookId, title, description, parentId, documentId);
-            return Content("ok");
+            try
+            {
+                docMgr.CreateBookDirectory(bookId, title, description, parentId, documentId, this.UserId);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        public ActionResult UpdateBookDirectory(long bookid, long directoryid, string title, string description)
+        {
+            try
+            {
+                docMgr.UpdateBookDirectory(bookid, directoryid, title, description, this.UserId);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
         }
 
         /// <summary>
@@ -463,12 +515,12 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                docMgr.DeleteBookDirectory(bookDirecotryId);
-                return Content("ok");
+                docMgr.DeleteBookDirectory(bookDirecotryId, this.UserId);
+                return Success();
             }
-            catch
+            catch(Exception ex)
             {
-                return Content("fail");
+                return Fail(ex.Message);
             }
         }
 
@@ -479,10 +531,17 @@ namespace MarkdownRepository.Controllers
         /// <param name="content"></param>
         /// <param name="title"></param>
         /// <returns></returns>
-        public ActionResult CreateBookArticle(long directoryid, string content, string title)
+        public ActionResult CreateOrUpdateBookArticle(long directoryid, string content, string title)
         {
-            docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
-            return Content("ok");
+            try
+            {
+                docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
         }
 
         /// <summary>
@@ -492,7 +551,7 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         public ActionResult EditBook(long id)
         {
-            var book = docMgr.GetBook(id);
+            var book = docMgr.GetBook(id, this.UserId);
 
             return View(book);
         }
@@ -503,16 +562,17 @@ namespace MarkdownRepository.Controllers
         /// <param name="bookid"></param>
         /// <param name="docId"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult ShowBook(long bookid, long docId=0)
         {
             BookVm book = null;
             if(docId == 0)
             {
-                book = docMgr.GetBook(bookid);
+                book = docMgr.GetBook(bookid, this.UserId);
             }
             else
             {
-                book = docMgr.GetBookByDoc(docId);
+                book = docMgr.GetBookByDoc(docId, this.UserId);
             }
 
             return View(book);
@@ -523,9 +583,10 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="bookid"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult GetBookDirectory(long bookid)
         {
-            var book = docMgr.GetBook(bookid);
+            var book = docMgr.GetBook(bookid, this.UserId);
             var directories = book.BookDirectory.Select(t => new
             {
                 id = t.id,
@@ -541,6 +602,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="searchText"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult SearchBook(string searchText)
         {
             ViewBag.CurrentFilter = searchText;
