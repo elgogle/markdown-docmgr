@@ -213,7 +213,9 @@ values(@id, @creator, 1);
                 {
                     var id = db.Query<long>("select max(id) from book_directories").FirstOrDefault() + 1;
 
-                    db.Execute("insert into book_directories(id, book_id, title, description, parent_id, document_id) values(@id, @book_id, @title, @description, @parent_id, @document_id);",
+                    db.Execute(@"
+insert into book_directories(id, book_id, title, description, parent_id, document_id) 
+values(@id, @book_id, @title, @description, @parent_id, @document_id);",
                         new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid });
 
                     return id;
@@ -291,6 +293,12 @@ values(@id, @creator, 1);
             }
         }
 
+        /// <summary>
+        /// 检查是否有权对书籍更新
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="db"></param>
+        /// <param name="bookid"></param>
         private static void CheckPermissionForUpdateBook(string userId, DbConnection db, long bookid)
         {
             var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1",
