@@ -418,6 +418,26 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
         }
 
         /// <summary>
+        /// 通过目录查找文章
+        /// </summary>
+        /// <param name="directoryid"></param>
+        /// <returns></returns>
+        public Document GetDocumentByDirectory(long directoryid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var directory = db.Query<BookDirectory>("select * from book_directories where id = @id", new { id = directoryid }).FirstOrDefault();
+                if (directory == null || directory.document_id == 0)
+                    return null;
+
+                var doc = Get(directory.document_id);
+                return doc;
+            }
+        }
+
+        /// <summary>
         /// 获取全部书籍
         /// </summary>
         /// <returns></returns>
@@ -443,7 +463,8 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
             {
                 CreateTableIfNotExist();
 
-                var books = db.Query<Book>("select * from books a where exists(select 1 from book_owner b where b.book_id = a.id and b.user_id = @user_id and is_owner=1)", new { user_id = userid }).ToList();
+                var books = db.Query<Book>("select * from books a where exists(select 1 from book_owner b where b.book_id = a.id and b.user_id = @user_id and is_owner=1)", 
+                    new { user_id = userid }).ToList();
                 return books;
             }
         }

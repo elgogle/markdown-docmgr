@@ -442,12 +442,13 @@ namespace MarkdownRepository.Controllers
             }
         }
 
-        public ActionResult Success()
+        public ActionResult Success(object data=null)
         {
             return Json(new
             {
                 isSuccess = true,
-                Message = ""
+                message = "",
+                data = data
             });
         }
 
@@ -456,7 +457,7 @@ namespace MarkdownRepository.Controllers
             return Json(new
             {
                 isSuccess = false,
-                Message = errorMessage
+                message = errorMessage
             });
         }
 
@@ -586,6 +587,24 @@ namespace MarkdownRepository.Controllers
             }
 
             return View(book);
+        }
+
+        /// <summary>
+        /// 通过目录查找文章
+        /// </summary>
+        /// <param name="directoryid"></param>
+        /// <returns></returns>
+        public ActionResult GetDocument(long directoryid)
+        {
+            try
+            {
+                var doc = docMgr.GetDocumentByDirectory(directoryid);
+                return Success(doc);
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
         }
 
         /// <summary>

@@ -1,30 +1,370 @@
-﻿@{
+﻿@using MarkdownRepository.Lib
+
+@{
     ViewBag.Title = "EditBook";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var documentId = 0;
+}
+@model MarkdownRepository.Models.BookVm
+
+
+@section style{
+    <link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
+
+    @System.Web.Optimization.Styles.Render("~/css/editor.md")
+
+    <style>
+        .ui.input {
+            position: relative;
+            font-weight: 400;
+            font-style: normal;
+            display: inline-flex;
+            color: rgba(0,0,0,.87);
+        }
+
+            .ui.input > input {
+                margin: 0;
+                max-width: 100%;
+                flex: 1 0 auto;
+                outline: none;
+                -webkit-tap-highlight-color: rgba(255,255,255,0);
+                text-align: left;
+                line-height: 1.28571429em;
+                font-family: Helvetica Neue,NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,Microsoft Yahei,WenQuanYi Micro Hei,Arial,Helvetica,sans-serif;
+                padding: .64285714em 1em;
+                background: #fff;
+                border: 1px solid rgba(34,36,38,.15);
+                color: rgba(0,0,0,.87);
+                border-radius: .28571429rem;
+                transition: box-shadow .1s ease,border-color .1s ease;
+                box-shadow: none;
+            }
+
+        .ui.icon.input > i.icon:not(.link) {
+            pointer-events: none;
+        }
+
+        .ui.icon.input > i.icon:not(.link) {
+            pointer-events: none;
+        }
+
+        .ui.icon.input > i.icon {
+            cursor: default;
+            position: absolute;
+            line-height: 1;
+            text-align: center;
+            top: 0;
+            right: 0;
+            margin: 0;
+            height: 100%;
+            width: 2.67142857em;
+            opacity: .5;
+            border-radius: 0 .28571429rem .28571429rem 0;
+            transition: opacity .3s ease;
+        }
+
+        .ui.small.input {
+            font-size: .8em;
+        }
+
+        .ui.fluid.input {
+            display: flex;
+        }
+
+            .ui.fluid.input > input {
+                width: 0 !important;
+            }
+
+        .ui.icon.input > input {
+            padding-right: 2.67142857em !important;
+            font-size: 0.8em;
+        }
+
+        .window-container .window-head {
+            position: fixed;
+            flex: none;
+            order: 1;
+            top: 56px;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            z-index: 20;
+        }
+
+            .window-container .window-head .toolbar {
+                display: flex;
+                height: 55px;
+                padding: 0 .8em;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                align-items: stretch;
+            }
+
+                .window-container .window-head .toolbar .book-ins {
+                    flex-grow: 8;
+                }
+
+                .window-container .window-head .toolbar .extra2 {
+                    margin-left: 15px;
+                    flex-grow: 0.5;
+                    font-size: 0.7em;
+                }
+
+        .window-container .window-body.with-sidebar .sidebar {
+            left: 0;
+        }
+
+        .window-container.with-head .window-body .sidebar {
+            top: 113px;
+        }
+
+        .window-body .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            border-right: 1px solid #ddd;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            transition: left .25s ease;
+        }
+
+            .window-body .sidebar .sidebar-body {
+                flex: auto;
+                overflow: hidden;
+                position: relative;
+            }
+
+            .window-body .sidebar .sidebar-header {
+                position: relative;
+                flex: none;
+            }
+
+                .window-body .sidebar .sidebar-header .search-form {
+                    padding: 12px;
+                    border-bottom: 1px solid #ddd;
+                    flex: none;
+                }
+
+            .window-body .sidebar .sidebar-body .catalog-body {
+                padding: 12px 0;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .window-body .sidebar .sidebar-body > div {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+
+        div.window-body {
+            position: relative;
+            top: 50px;
+            margin-left: 280px;
+        }
+
+        .window-body .sidebar .sidebar-body .catalog-body > ul {
+            padding-right: 10px;
+        }
+
+        .window-body .sidebar .sidebar-body .catalog-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .window-body .sidebar .sidebar-body .catalog-body > ul > li {
+            margin-left: 0;
+        }
+
+        .window-body .sidebar .sidebar-body .catalog-body ul li {
+            line-height: 30px;
+            margin-left: 24px;
+            cursor: pointer;
+            white-space: nowrap;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
 }
 
-<h2>EditBook</h2>
-
 <div>
-    <div>顶部，显示书籍摘要</div>
-
-    <div>左部，显示目录</div>
-
-    <div>
-        右部
-        <div>
-            <div>显示目录，类似 AAA/BBB/CCC</div>
-            <div>
-                功能按钮
-                <button>创建目录</button>
-                <button>创建文章</button>
+    <div id="main">
+        <div class="window-container with-head">
+            <div class="window-head">
+                <div class="toolbar">
+                    <div class="book-ins">
+                        <h3>
+                            书名: @Model.Book.name
+                        </h3>
+                        <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
+                            作者: @AdAccount.GetUserNameById(Model.Book.creator)
+                            更新时间: @Model.Book.update_at
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div>
-            文章编辑部分
-            Edit.md 编辑 markdown
+            <div class="window-body with-sidebar">
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="search-form">
+                            <div class="ui small fluid icon input">
+                                <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-body">
+                        <div class="catalog-body">
+                            <div id="toc"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="window-body">
+                <div class="toolbar">
+                    <div>
+                    @*目录增加修改，文章保存*@
+
+                    </div>                    
+                </div>
+                <div class="doc">
+                    <div id="mkEditor">
+                        <textarea style="display:none;"></textarea>
+                    </div>
+                    
+                </div>
+            </div>
+
         </div>
     </div>
 
 </div>
+
+@section scripts{
+    <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
+
+    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+
+    <script>
+        $(document).ready(function () {
+            window.selectDirectory = {};
+
+            window.jsTree = $("#toc").jstree({
+                'plugins': ["wholerow", "types"],
+                "types": {
+                    "default": {
+                        "icon": false  // 删除默认图标
+                    }
+                },
+                'core': {
+                    'check_callback': true,
+                    "multiple": false,
+                    'animation': 0,
+                    'data': [
+                           { "id": "ajson1", "parent": "#", "text": "Simple root node" },
+                           { "id": "ajson2", "parent": "#", "text": "Root node 2" },
+                           { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
+                           { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
+                    ]
+                }
+            }).on('select_node.jstree', function (node, selected) {
+                window.selectDirectory = selected.node;
+                //如果是空目录则直接出发展开下一级功能
+                //if (selected.node.a_attr && selected.node.a_attr.disabled) {
+                //    selected.instance.toggle_node(selected.node);
+                //    return false
+                //}
+                //$(".m-manual").removeClass('manual-mobile-show-left');
+                //loadDocument(selected.node.a_attr.href, selected.node.id, selected.node.a_attr['data-version']);
+            });
+
+            var editor = editormd("mkEditor", {
+                width: "100%",
+                height: 640,
+                saveHTMLToTextarea: true,
+                autoLoadModules: false,
+                imageUpload: true,
+                imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                imageUploadURL: '@Url.Action("UploadImage", "Document")',
+                pluginPath: '@Url.Content("~/editor.md/plugins/")',
+                tex: true
+            });
+
+
+            $("#mkEditor").on('paste', function (ev) {
+                var data = ev.clipboardData;
+                var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+                for (var index in items) {
+                    var item = items[index];
+                    if (item.kind === 'file') {
+                        var blob = item.getAsFile();
+                        var reader = new FileReader();
+                        reader.onload = function (event) {
+                            var base64 = event.target.result;
+
+                            //ajax上传图片
+                            $.post('@Url.Action("UploadImageByBase64", "Document")', { base64Content: base64 }, function (ret) {
+                                if (ret.success === 1) {
+                                    //新一行的图片显示
+                                    editor.insertValue("\n![](" + ret.url + ")");
+                                } else {
+                                    console.log(ret.message);
+                                }
+                            });
+                        }
+
+                        debugger;
+                        reader.readAsDataURL(blob);
+                    }
+                }
+            });
+
+            $("#btnSave").on('click', function () {
+                $.post('@Url.Action("Create", "Document")',
+                    {
+                        content: $("#mkEditor > textarea").val(),
+                        title: $("#title").val(),
+                        category: $("#category").val(),
+                        id: $("#docId").val(),
+                        access: $("#access")[0].checked === true ? 1 : 0
+                    },
+                    function (result) {
+                        $("#docId").val(result.rowid);
+                        var msg = "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>"
+                            , $msg = $(msg);
+                        $msg.text("已保存")
+                        $("body").append($msg);
+                        $msg.animate({ top: 0, left: 0, fontSize: 0, opacity: 0 }, 2000, function () {
+                            $(this).remove();
+                        })
+                    });
+                return false;
+            });
+
+            $(document).on('keydown', function (e) {
+                var ctrlKey = e.ctrlKey || e.metaKey;
+                if (ctrlKey) {
+                    var keyCode = e.keyCode || e.which || e.charCode;
+                    // ctrl+s
+                    if (ctrlKey && keyCode == 83) {
+                        $('#btnSave').trigger('click');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        });
+
+    </script>
+}

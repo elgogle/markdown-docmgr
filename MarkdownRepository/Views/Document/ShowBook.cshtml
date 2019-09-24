@@ -226,7 +226,7 @@ div.window-body{
             <div class="window-body">
                 <div class="doc">
                     <div id="md">
-                        <textarea style="display:none;">
+                        <textarea id="md_content" style="display:none;">
                             #1  
                             #2  
                         </textarea>
@@ -247,37 +247,56 @@ div.window-body{
     @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
     <script>
-        window.jsTree = $("#toc").jstree({
-            'plugins': ["wholerow", "types"],
-            "types": {
-                "default": {
-                    "icon": false  // 删除默认图标
-                }
-            },
-            'core': {
-                'check_callback': true,
-                "multiple": false,
-                'animation': 0,
-                'data': [
-                       { "id": "ajson1", "parent": "#", "text": "Simple root node" },
-                       { "id": "ajson2", "parent": "#", "text": "Root node 2" },
-                       { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
-                       { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
-                ]
-            }
-        }).on('select_node.jstree', function (node, selected) {
-            //如果是空目录则直接出发展开下一级功能
-            //if (selected.node.a_attr && selected.node.a_attr.disabled) {
-            //    selected.instance.toggle_node(selected.node);
-            //    return false
-            //}
-            //$(".m-manual").removeClass('manual-mobile-show-left');
-            //loadDocument(selected.node.a_attr.href, selected.node.id, selected.node.a_attr['data-version']);
-        });
-
-        showMarkDown("md");
-
         $(document).ready(function () {
+            window.jsTree = $("#toc").jstree({
+                'plugins': ["wholerow", "types"],
+                "types": {
+                    "default": {
+                        "icon": false  // 删除默认图标
+                    }
+                },
+                'core': {
+                    'check_callback': true,
+                    "multiple": false,
+                    'animation': 0,
+                    'data': [
+                           { "id": "ajson1", "parent": "#", "text": "Simple root node" },
+                           { "id": "ajson2", "parent": "#", "text": "Root node 2" },
+                           { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
+                           { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
+                    ]
+                }
+            }).on('select_node.jstree', function (node, selected) {
+                //如果是空目录则直接出发展开下一级功能
+                //if (selected.node.a_attr && selected.node.a_attr.disabled) {
+                //    selected.instance.toggle_node(selected.node);
+                //    return false
+                //}
+                //$(".m-manual").removeClass('manual-mobile-show-left');
+                loadDocument(selected.node.id);
+            });
+
+            function loadDocument(directoryid){
+                $.ajax({
+                    url: '@Url.Action("GetDocument")',
+                    dataType: "json",
+                    data: { directoryid : directoryid },
+                    cache: false,
+                })
+                .success(function(res){
+                    if(res.isSuccess){
+                        $("#md_content").text(res.data.content);
+                        //TODO: refresh markdown
+                    }else{
+                        //TODO: alert error
+                    }
+                })
+                .error(function(){})
+                .complete(function(){});
+            }
+
+            showMarkDown("md");
+
             function selectText(element) {
                 var doc = document
                     , text = element
