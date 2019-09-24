@@ -702,6 +702,18 @@
     <Content Include="javascripts\jqcloud.js" />
     <Content Include="javascripts\jqcloud.min.js" />
     <Content Include="javascripts\jquery.min.js" />
+    <Content Include="javascripts\jstree\3.3.8\jstree.js" />
+    <Content Include="javascripts\jstree\3.3.8\jstree.min.js" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default-dark\32px.png" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default-dark\40px.png" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default-dark\style.css" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default-dark\style.min.css" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default-dark\throbber.gif" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default\32px.png" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default\40px.png" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default\style.css" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default\style.min.css" />
+    <Content Include="javascripts\jstree\3.3.8\themes\default\throbber.gif" />
     <Content Include="javascripts\katex.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -775,6 +787,7 @@
     <Content Include="Views\Document\EditBook.cshtml" />
     <Content Include="Views\Document\ShowBook.cshtml" />
     <Content Include="Views\Document\SearchBook.cshtml" />
+    <Content Include="Views\Document\MyBooks.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -54,6 +54,7 @@ namespace MarkdownRepository.Models
         public string description { get; set; }
         public long parent_id { get; set; }
         public long document_id { get; set; }
+        public int seq { get; set; }
     }
 
     public class BookOwner

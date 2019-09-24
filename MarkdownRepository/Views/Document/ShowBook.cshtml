@@ -1,23 +1,206 @@
-﻿@{
+﻿@using MarkdownRepository.Lib
+
+@{
     ViewBag.Title = "ShowBook";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var documentId = 0;
+}
+@model MarkdownRepository.Models.BookVm
+
+
+@section style{
+<link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
+
+@System.Web.Optimization.Styles.Render("~/css/editor.md")
+
+<style>
+
+
+.ui.input {
+    position: relative;
+    font-weight: 400;
+    font-style: normal;
+    display: inline-flex;
+    color: rgba(0,0,0,.87);
+}
+.ui.input>input {
+    margin: 0;
+    max-width: 100%;
+    flex: 1 0 auto;
+    outline: none;
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    text-align: left;
+    line-height: 1.28571429em;
+    font-family: Helvetica Neue,NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,Microsoft Yahei,WenQuanYi Micro Hei,Arial,Helvetica,sans-serif;
+    padding: .64285714em 1em;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    transition: box-shadow .1s ease,border-color .1s ease;
+    box-shadow: none;
+}
+.ui.icon.input>i.icon:not(.link) {
+    pointer-events: none;
+}
+.ui.icon.input>i.icon:not(.link) {
+    pointer-events: none;
+}
+.ui.icon.input>i.icon {
+    cursor: default;
+    position: absolute;
+    line-height: 1;
+    text-align: center;
+    top: 0;
+    right: 0;
+    margin: 0;
+    height: 100%;
+    width: 2.67142857em;
+    opacity: .5;
+    border-radius: 0 .28571429rem .28571429rem 0;
+    transition: opacity .3s ease;
+}
+.ui.small.input {
+    font-size: .8em;
+}
+.ui.fluid.input {
+    display: flex;
+}
+.ui.fluid.input>input {
+    width: 0!important;
+}
+.ui.icon.input>input {
+    padding-right: 2.67142857em!important;
+    font-size:0.8em;
 }
 
-<h2>ShowBook</h2>
+.window-container .window-head {
+    position: fixed;
+    flex: none;
+    order: 1;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    z-index: 20;
+}
+.window-container .window-head .toolbar {
+    display: flex;
+    height: 55px;
+    padding: 0 .8em;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+.window-container .window-head .toolbar .book-ins{
+    flex-grow:8;
+}
+
+.window-container .window-head .toolbar .extra2 {
+    margin-left: 15px;
+    flex-grow:0.5;
+    font-size:0.7em;
+}
+.window-container .window-body.with-sidebar .sidebar {
+    left: 0;
+}
+.window-container.with-head .window-body .sidebar {
+    top: 113px;
+}
+
+.window-body .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    border-right: 1px solid #ddd;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    transition: left .25s ease;
+}
+.window-body .sidebar .sidebar-body {
+    flex: auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.window-body .sidebar .sidebar-header {
+    position: relative;
+    flex: none;
+}
+.window-body .sidebar .sidebar-header .search-form {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    flex: none;
+}
+.window-body .sidebar .sidebar-body .catalog-body {
+    padding: 12px 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+.window-body .sidebar .sidebar-body>div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+div.window-body{
+    position:relative;
+    top: 50px;
+    margin-left: 280px;
+}
+.window-body .sidebar .sidebar-body .catalog-body>ul {
+    padding-right: 10px;
+}
+.window-body .sidebar .sidebar-body .catalog-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;    
+}
+.window-body .sidebar .sidebar-body .catalog-body>ul>li {
+    margin-left: 0;
+}
+.window-body .sidebar .sidebar-body .catalog-body ul li {
+    line-height: 30px;
+    margin-left: 24px;
+    cursor: pointer;
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+}
+
+</style>
+}
 
 <div>
     <div id="main">
         <div class="window-container with-head">
-            <img src="https://cover.kancloud.cn/mrbird/spring-cloud!middle"
-                 style="position: absolute; visibility: hidden;">
+            
             <div class="window-head">
                 <div class="toolbar">
-                    <a data-no-pjax="true" class="title" href="/mrbird/spring-cloud">
-                        书名
-                    </a>
-                    <div class="extra">
-                        <div class="ui menu small secondary"></div>
+                    <div class="book-ins">                        
+                        <h3>
+                            书名: @Model.Book.name
+                        </h3>
+                        <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
+                            作者: @AdAccount.GetUserNameById(Model.Book.creator)
+                            更新时间: @Model.Book.update_at
+                        </p>
                     </div>
+
+                    <div class="extra2">    
+                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id == User.Identity.Name.GetUserName() && t.is_owner))
+                        {
+                        <a href="@Url.Action("EditBook", new { id = Model.Book.id })"><i class="glyphicon glyphicon-edit"></i> 编辑</a>            
+                        }
+                    </div>                   
                 </div>
             </div>
             <div class="window-body with-sidebar">
@@ -31,14 +214,109 @@
                     </div>
                     <div class="sidebar-body">
                         <div class="catalog-body">
-                            <ul></ul>
+                            <div  id="toc"></div>         
                         </div>
                     </div>
-                    <div class="sidebar-copyright">本文档使用 <a href="https://www.kancloud.cn" target="_blank">看云</a> 构建</div>
+                    
                 </div>
 
+
             </div>
+
+            <div class="window-body">
+                <div class="doc">
+                    <div id="md">
+                        <textarea style="display:none;">
+                            #1  
+                            #2  
+                        </textarea>
+                    </div>
+                </div>
+
+                <div id="comments"></div>
+            </div>
+            
         </div>
     </div>
 
 </div>
+
+@section scripts{
+    <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
+
+    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+
+    <script>
+        window.jsTree = $("#toc").jstree({
+            'plugins': ["wholerow", "types"],
+            "types": {
+                "default": {
+                    "icon": false  // 删除默认图标
+                }
+            },
+            'core': {
+                'check_callback': true,
+                "multiple": false,
+                'animation': 0,
+                'data': [
+                       { "id": "ajson1", "parent": "#", "text": "Simple root node" },
+                       { "id": "ajson2", "parent": "#", "text": "Root node 2" },
+                       { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
+                       { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
+                ]
+            }
+        }).on('select_node.jstree', function (node, selected) {
+            //如果是空目录则直接出发展开下一级功能
+            //if (selected.node.a_attr && selected.node.a_attr.disabled) {
+            //    selected.instance.toggle_node(selected.node);
+            //    return false
+            //}
+            //$(".m-manual").removeClass('manual-mobile-show-left');
+            //loadDocument(selected.node.a_attr.href, selected.node.id, selected.node.a_attr['data-version']);
+        });
+
+        showMarkDown("md");
+
+        $(document).ready(function () {
+            function selectText(element) {
+                var doc = document
+                    , text = element
+                    , range, selection
+                ;
+                if (doc.body.createTextRange) { //ms
+                    range = doc.body.createTextRange();
+                    range.moveToElementText(text);
+                    range.select();
+                } else if (window.getSelection) { //all others
+                    selection = window.getSelection();
+                    range = doc.createRange();
+                    range.selectNodeContents(text);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
+
+            var pre = document.getElementsByTagName("pre");
+
+            for (var i = 0; i < pre.length; i++) {
+                pre[i].addEventListener('click', function () {
+                    selectText(this);
+                });
+            }
+        });
+
+    </script>
+
+<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+<script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+<script>
+    (function () {
+        Comments({
+            node: "#comments",
+            articleId: @documentId,
+            userName: "@User.Identity.Name.GetUserName()",
+            apiUrl: "http://192.168.13.119/web-comment"
+        });
+    })();
+</script>
+}

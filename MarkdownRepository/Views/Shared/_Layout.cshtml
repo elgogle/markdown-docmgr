@@ -163,6 +163,23 @@
                     <div class="collapse navbar-collapse" id="navbar">
                         <ul class="nav navbar-nav navbar-right">
 
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-book"></span>书籍 <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        @Html.ActionLink("写书", "CreateBook", "Document")
+                                    </li>
+                                    <li>
+                                        @Html.ActionLink("我的书籍", "MyBooks", "Document")
+                                    </li>
+                                    <li>
+                                        @Html.ActionLink("所有公开书籍", "AllBooks", "Document")
+                                    </li>                                    
+                                </ul>
+                            </li>
+
                             <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文章<span class="sr-only">(current)</span></a></li>
                             <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">创建<span class="sr-only">(current)</span></a></li>
                             <li class="@(@ViewBag.Action == "MyFollow" ? "active" : "")"><a href="@Url.Action("MyFollowDocuments", "Document")">我关注的文章<span class="sr-only">(current)</span></a></li>

@@ -8,6 +8,8 @@ using Dapper;
 using MarkdownRepository.Models;
 using System.Text.RegularExpressions;
 
+//TODO: 对书籍目录顺序的调整
+
 namespace MarkdownRepository.Lib
 {
     public class DocumentManager
@@ -63,9 +65,9 @@ create table if not exists documents_file(id INTEGER primary key, file_path nvar
 create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
 create table if not exists documents_follow(id INTEGER primary key, user_id nvarchar(100) not null, doc_id int not null);
 create table if not exists user(id INTEGER PRIMARY KEY, user_id nvarchar(100) not null, user_name nvarchar(100) not null);
-create table if not exists books(id INT PRIMARY KEY , creator nvarchar(100) not null, name nvarchar(256) not null, description nvarchar(512), category nvarchar(256), image_url nvarchar(512), creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime'), is_public int default(0));
-create table if not exists book_directories(id INT PRIMARY KEY, book_id int not null, title nvarchar(256) not null, description nvarchar(512), parent_id int, document_id int);
-create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
+create table if not exists books(id INTEGER PRIMARY KEY, creator nvarchar(100) not null, name nvarchar(256) not null, description nvarchar(512), category nvarchar(256), image_url nvarchar(512), creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
+create table if not exists book_directories(id INTEGER PRIMARY KEY, book_id int not null, title nvarchar(256) not null, description nvarchar(512), parent_id int, document_id int, seq int);
+create table if not exists book_owner(id INTEGER PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
                 ";
                 db.Execute(sql);
             }
@@ -150,7 +152,7 @@ create table if not exists book_owner(id INT PRIMARY KEY, book_id int not null, 
 
                 lock (_lock)
                 {
-                    var bookid = db.Query<long>("select max(id) from books").FirstOrDefault() + 1;
+                    var bookid = (db.Query<long?>("select max(id) as id from books").Single()??0) + 1;
 
                     db.Execute(@"
 insert into books(id, creator, name, description, category, image_url, is_public) 
@@ -185,7 +187,7 @@ values(@id, @creator, 1);
 
                 CheckPermissionForUpdateBook(userid, db, bookid);
 
-                db.Execute("update books set name=@name, description=@description, category=@category, image_url=@image_url, is_public = @is_public where id=@id",
+                db.Execute("update books set name=@name, description=@description, category=@category, image_url=@image_url, is_public = @is_public, update_at = datetime('now', 'localtime')  where id=@id",
                     new { name = name, description = description, category = category, image_url = image_url, id = bookid, is_public = access });
             }
         }
@@ -199,7 +201,7 @@ values(@id, @creator, 1);
         /// <param name="parentid"></param>
         /// <param name="documentid"></param>
         /// <returns></returns>
-        public long CreateBookDirectory(long bookid, string title, string description, long parentid, long documentid, string userid)
+        public long CreateBookDirectory(long bookid, string title, string description, long parentid, long documentid, int seq, string userid)
         {
             if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
 
@@ -211,12 +213,12 @@ values(@id, @creator, 1);
             
                 lock (_lock)
                 {
-                    var id = db.Query<long>("select max(id) from book_directories").FirstOrDefault() + 1;
+                    var id = (db.Query<long?>("select max(id) as id from book_directories").Single()??0) + 1;
 
                     db.Execute(@"
-insert into book_directories(id, book_id, title, description, parent_id, document_id) 
-values(@id, @book_id, @title, @description, @parent_id, @document_id);",
-                        new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid });
+insert into book_directories(id, book_id, title, description, parent_id, document_id, seq) 
+values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
+                        new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid, seq = seq });
 
                     return id;
                 }
@@ -231,7 +233,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id);",
         /// <param name="title"></param>
         /// <param name="description"></param>
         /// <param name="userid"></param>
-        public void UpdateBookDirectory(long bookid, long directoryid, string title, string description, string userid, long documentid=0)
+        public void UpdateBookDirectory(long bookid, long directoryid, string title, string description, int seq, string userid, long documentid=0)
         {
             if (string.IsNullOrWhiteSpace(title)) throw new Exception("目录名称不能为空");
 
@@ -243,13 +245,13 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id);",
 
                 if (documentid > 0)
                 {
-                    db.Execute("update book_directories set title=@title, description = @description, document_id = @document_id  where id=@id;",
-                            new { id = directoryid, title = title, description = description, document_id = documentid });
+                    db.Execute("update book_directories set title=@title, description = @description, document_id = @document_id, seq = @seq  where id=@id;",
+                            new { id = directoryid, title = title, description = description, document_id = documentid, seq = seq });
                 }
                 else
                 {
-                    db.Execute("update book_directories set title=@title, description = @description  where id=@id;",
-                            new { id = directoryid, title = title, description = description });
+                    db.Execute("update book_directories set title=@title, description = @description, seq = @seq where id=@id;",
+                            new { id = directoryid, title = title, description = description, seq = seq });
                 }
             }
         }
@@ -283,7 +285,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id);",
                     // 创建文章
                     var doc = Create(content, docTitle, docCategory, userId, book.is_public);
                     // 将文章关联到目录
-                    UpdateBookDirectory(directory.book_id, directoryid, directory.title, directory.description, userId, doc.rowid);
+                    UpdateBookDirectory(directory.book_id, directoryid, directory.title, directory.description, 0, userId, doc.rowid);
                 }
                 else
                 {
@@ -425,7 +427,23 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
             {
                 CreateTableIfNotExist();
 
-                var books = db.Query<Book>("select * from books where is_public=1").ToList();
+                var books = db.Query<Book>("select * from books a where is_public=1").ToList();
+                return books;
+            }
+        }
+
+        /// <summary>
+        /// 获取我的书籍
+        /// </summary>
+        /// <param name="userid"></param>
+        /// <returns></returns>
+        public IList<Book> GetMyBooks(string userid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var books = db.Query<Book>("select * from books a where exists(select 1 from book_owner b where b.book_id = a.id and b.user_id = @user_id and is_owner=1)", new { user_id = userid }).ToList();
                 return books;
             }
         }

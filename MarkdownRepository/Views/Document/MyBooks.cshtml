@@ -1,6 +1,7 @@
 ﻿@using MarkdownRepository.Lib
+
 @{
-    ViewBag.Title = "AllBooks";
+    ViewBag.Title = "MyBooks";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -13,13 +14,13 @@
             margin-top: 2em;
         }
 
-            .search-box .form-group {
-                width: 75%;
-            }
+        .search-box .form-group {
+            width: 75%;
+        }
 
-                .search-box .form-group input {
-                    width: 100%;
-                }
+        .search-box .form-group input {
+            width: 100%;
+        }
 
         .search-list {
             margin: 0.8em 0 0.7em 1em;
@@ -46,13 +47,13 @@
 
 <div>
     <div>
-       @using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
-       {
-        <div class="form-group">
-            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
-        </div>
-        <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
-       }
+        @using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
+        {
+            <div class="form-group">
+                @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+            </div>
+            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+        }
     </div>
 
     <div style="min-height:600px;">

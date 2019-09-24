@@ -5,18 +5,83 @@
 }
 @model  MarkdownRepository.Models.Book
 
+<style>
 
-<h2>CreateBook</h2>
+input[type=checkbox].form-control{
+    width:auto;
+    height:auto;
+
+}
+</style>
 
 <div>
 
-    <!-- form -->
-    <div>
-        
-        <!-- name -->
-        <!-- description -->
-        <!-- category -->
+    @if(TempData["error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["error"].ToString()
+        </div>
+    }
 
+    <!-- form -->
+    <div class="manual-reader">
+        <div class="row">
+                <div>
+
+                    @*<div class="m-box">
+                        <div class="box-head">
+                            <strong class="box-title"> 书籍管理</strong>
+                            <button type="button" class="btn btn-success btn-sm pull-right" data-toggle="modal" data-target="#transferBookModal">转让书籍</button>
+                            @if(Model.is_public == MarkdownRepository.Models.DocumentAccess.PRIVATE)
+                            {
+                            <button type="button" class="btn btn-success btn-sm pull-right" data-toggle="modal" data-target="#changePrivatelyOwnedModal" style="margin-right: 5px;">转为公有</button>
+                            }
+                            else
+                            {
+                            <button type="button" class="btn btn-danger btn-sm pull-right" data-toggle="modal" data-target="#changePrivatelyOwnedModal" style="margin-right: 5px;">转为私有</button>
+                            }
+                            <button type="button" class="btn btn-danger btn-sm pull-right" style="margin-right: 5px;" data-toggle="modal" data-target="#deleteBookModal">删除书籍</button>
+                        </div>
+                    </div>*@
+
+                    <div class="box-body" style="">
+                        <div class="col-md-6">
+                            @using (Html.BeginForm("CreateBook", "Document"))
+                            { 
+                                <div class="form-group">
+                                    <label>标题</label>
+                                    <input type="text" class="form-control" name="name" id="bookName" placeholder="书名" value="">
+                                </div>
+                            
+                                <div class="form-group">
+                                    <label>描述</label>
+                                    <textarea rows="3" class="form-control" name="description" style="height: 90px" placeholder="书的描述"></textarea>
+                                    <p class="text">描述信息不超过500个字符</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>分类</label>
+                                    <input type="text" class="form-control" name="category" placeholder="书籍分类" value="">
+                                    <p class="text">多个分类请用“;”分割</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>是否公开</label>
+                                    <input type="checkbox" class="form-control" name="is_public" >
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" id="btnSaveBookInfo" class="btn btn-success" data-loading-text="保存中...">保存修改</button>
+                                    <span id="form-error-message" class="error-message"></span>
+                                </div>
+                            }
+                        </div>
+  
+                        <div class="clearfix"></div>
+
+                    </div>
+                </div>
+            </div>
     </div>
 
 </div>

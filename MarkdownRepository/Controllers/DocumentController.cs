@@ -388,12 +388,19 @@ namespace MarkdownRepository.Controllers
             return View(books);
         }
 
+        public ActionResult MyBooks()
+        {
+            var books = docMgr.GetMyBooks(this.UserId);
+            return View(books);
+        }
+
         /// <summary>
         /// 显示创建书籍页面
         /// </summary>
         /// <returns></returns>
         public ActionResult CreateBook()
         {
+            ViewBag.Action = "CreateBook";
             return View();
         }
 
@@ -405,10 +412,12 @@ namespace MarkdownRepository.Controllers
         /// <param name="category"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult CreateBook(string name, string description, string category, DocumentAccess access)
+        public ActionResult CreateBook(string name, string description, string category)
         {
+            ViewBag.Action = "CreateBook";
             try
             {
+                DocumentAccess access = Request["is_public"] == "on" ? DocumentAccess.PUBLIC : DocumentAccess.PRIVATE;
                 var id = docMgr.CreateBook(this.UserId, name, description, category, "", access);
                 return RedirectToAction("EditBook", new { id = id });
             }
@@ -484,7 +493,7 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                docMgr.CreateBookDirectory(bookId, title, description, parentId, documentId, this.UserId);
+                docMgr.CreateBookDirectory(bookId, title, description, parentId, documentId, 0, this.UserId);
                 return Success();
             }
             catch(Exception ex)
@@ -497,7 +506,7 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                docMgr.UpdateBookDirectory(bookid, directoryid, title, description, this.UserId);
+                docMgr.UpdateBookDirectory(bookid, directoryid, title, description, 0, this.UserId);
                 return Success();
             }
             catch(Exception ex)
@@ -565,6 +574,7 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult ShowBook(long bookid, long docId=0)
         {
+            ViewBag.Action = "ShowBook";
             BookVm book = null;
             if(docId == 0)
             {
