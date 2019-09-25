@@ -518,7 +518,7 @@ namespace MarkdownRepository.Controllers
         /// <param name="parentId"></param>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public ActionResult CreateBookDirectory(long bookId, string title, string description, long parentId, long documentId)
+        public ActionResult CreateBookDirectory(long bookId, string title, string description, long parentId, long documentId=0)
         {
             try
             {
@@ -622,6 +622,10 @@ namespace MarkdownRepository.Controllers
                 book = docMgr.GetBookByDoc(docId, this.UserId);
             }
 
+            var dirNav = GetBookDirectoryNavigator(book);
+            
+            ViewBag.DirectoryNavigator = JsonConvert.SerializeObject(dirNav);
+
             return View(book);
         }
 
@@ -668,6 +672,50 @@ namespace MarkdownRepository.Controllers
             {
                 return Fail(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// 返回一个目录的顺序结构，用于前台导航
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <returns></returns>
+        private List<string> GetBookDirectoryNavigator(BookVm book)
+        {
+            var navigator = new List<string>();
+
+            var first = book.BookDirectory.OrderBy(t => t.id).FirstOrDefault();
+            if(first != null)
+            {
+                navigator.Add(first.id.ToString());
+                WalkDirectory(book.BookDirectory, navigator, first.id, first.parent_id);
+            }
+
+            return navigator;
+        }
+
+        /// <summary>
+        /// 遍历整个目录
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <param name="result"></param>
+        /// <param name="current"></param>
+        /// <param name="parent"></param>
+        private void WalkDirectory(IList<BookDirectory> directory, IList<string> result, long current, long parent)
+        {
+            if(directory.Any(t=> t.parent_id == current))
+            {
+                // 有子目录
+                var firstSub = directory.Where(t => t.parent_id == current).OrderBy(t => t.id).First();
+                result.Add(firstSub.id.ToString());
+                WalkDirectory(directory, result, firstSub.id, current);
+            }
+
+            var nextSibling = directory.Where(t => t.id > current && t.parent_id == parent).OrderBy(t=>t.id).FirstOrDefault();
+            if(nextSibling != null)
+            {
+                result.Add(nextSibling.id.ToString());
+                WalkDirectory(directory, result, nextSibling.id, parent);
+            }            
         }
 
         /// <summary>

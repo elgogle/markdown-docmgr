@@ -278,10 +278,13 @@
                                 <span class="input-group-addon">当前目录: </span>
                                 <input type="text" class="form-control" id="current_directory" value="">
                                 <span class="input-group-btn">
-                                    <button id="btn_modify_directory" class="btn btn-default" type="button">修改</button>
+                                    <button id="btn_new_directory" class="btn btn-default" type="button">新增同级目录</button>
                                 </span>
                                 <span class="input-group-btn">
-                                    <button id="btn_del_directory" class="btn btn-default" type="button">删除</button>
+                                    <button id="btn_modify_directory" class="btn btn-default" type="button">修改当前目录</button>
+                                </span>
+                                <span class="input-group-btn">
+                                    <button id="btn_del_directory" class="btn btn-default" type="button">删除当前目录</button>
                                 </span>
 
                                 <input type="hidden" id="parent_directory_id" value="" />
@@ -289,7 +292,7 @@
                                
                                 <input type="text" class="form-control" id="new_sub_directory" value="">
                                 <span class="input-group-btn">
-                                    <button id="btn_new_directory" class="btn btn-default" type="button">创建子目录</button>
+                                    <button id="btn_new_sub_directory" class="btn btn-default" type="button">创建子目录</button>
                                 </span>
 
                                 <span class="input-group-btn">
@@ -392,7 +395,6 @@
                 loadDocument(selected.node.id);
             });
 
-
             $("#btn_modify_directory").on('click', function () {
                 var dir = $currentDir.val();
                 var dirId = $currentDirId.val();
@@ -416,6 +418,28 @@
             });
 
             $("#btn_new_directory").on('click', function () {
+                var dir = $currentDir.val();
+                var dirId = $currentDirId.val();
+                var bookId = $bookId.val();
+                var newSubDir = $newSubDir.val();
+                var parentDirId = ($parentDirId.val() || '#');
+                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+
+                if (dir) {
+                    $.post('@Url.Action("CreateBookDirectory", "Document")',
+                                    {
+                                        bookid: bookId,
+                                        parentId: parentDirId,
+                                        title: dir,
+                                    },
+                                    function (res) {
+                                        // 刷新目录树
+                                        window.jsTree.jstree().refresh();
+                                    })
+                }
+            });
+
+            $("#btn_new_sub_directory").on('click', function () {
                 var dir = $currentDir.val();
                 var dirId = $currentDirId.val();
                 var bookId = $bookId.val();
@@ -523,7 +547,7 @@
                 layer.alert(message, {
                     skin: 'layui-layer-lan'
                     , closeBtn: 0
-                    , anim: 4
+                    , anim: 0                    
                 });
             }
 
@@ -612,9 +636,14 @@
                     },
                     function (res) {
                         if (res.isSuccess) {
-                            messageAlert("保存成功");
+                            layer.alert(message, {
+                                skin: 'layui-layer-lan'
+                                , closeBtn: 0
+                                , anim: 0
+                                , time: 800
+                            });
                         } else {
-                            messageAlert("保存失败");
+                            messageAlert("保存失败，错误:" + res.message);
                         }
                     });
                 return false;
@@ -626,7 +655,7 @@
                     var keyCode = e.keyCode || e.which || e.charCode;
                     // ctrl+s
                     if (ctrlKey && keyCode == 83) {
-                        $('#btnSave').trigger('click');
+                        $('#btn_save_article').trigger('click');
                         e.preventDefault();
                         return false;
                     }

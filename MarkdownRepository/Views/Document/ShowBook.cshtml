@@ -179,6 +179,27 @@ div.window-body{
        .blog-footer{
            display:none;
        }
+
+       #pre_page{
+           position:fixed;
+           left: 290px;
+            top: 20%;
+            height: 300px;
+            cursor: pointer;
+            display: flex;
+            flex-flow: column;
+            justify-content: center;
+       }
+       #next_page{
+           position:fixed;
+           right:10px;
+           top: 20%;
+            height: 300px;
+            cursor: pointer;
+            display: flex;
+            flex-flow: column;
+            justify-content: center;
+       }
 </style>
 }
 
@@ -235,10 +256,13 @@ div.window-body{
                         </textarea>
                     </div>
                 </div>
-
-                <div id="comments"></div>
             </div>
             
+            <div>
+                <input type="hidden" id="current_dir_id" />
+                <div id="pre_page"><span>上一章</span></div>
+                <div id="next_page"><span>下一章</span></div>
+            </div>            
         </div>
     </div>
 
@@ -250,8 +274,11 @@ div.window-body{
     @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
     <script>
+        window.directoryNavigator = @Html.Raw(ViewBag.DirectoryNavigator);
+
         $(document).ready(function () {
             $bookId = $("#book_id");
+            $currentDirId = $("#current_dir_id");
 
             window.jsTree = $("#toc").jstree({
                 'plugins': ["wholerow", "types"],
@@ -278,7 +305,30 @@ div.window-body{
                     }
                 }
             }).on('select_node.jstree', function (node, selected) {
+                $currentDirId.val(selected.node.id);
                 loadDocument(selected.node.id);
+            });
+
+            $('#pre_page').on('click', function () {
+                if(window.directoryNavigator){
+                    var currentIndex = directoryNavigator.indexOf($currentDirId.val());
+                    if(currentIndex > 0){
+                        var pre = directoryNavigator[currentIndex - 1];
+                        jsTree.jstree().deselect_all();
+                        jsTree.jstree().select_node([pre]);
+                    }
+                }
+            });
+
+            $('#next_page').on('click', function () {
+                if(window.directoryNavigator){
+                    var currentIndex = directoryNavigator.indexOf($currentDirId.val());
+                    if(currentIndex < (directoryNavigator.length -1)){
+                        var next = directoryNavigator[currentIndex + 1];
+                        jsTree.jstree().deselect_all();
+                        jsTree.jstree().select_node([next]);
+                    }
+                }
             });
 
             function loadDocument(directoryid){
