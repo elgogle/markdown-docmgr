@@ -40,13 +40,13 @@ namespace MarkdownRepository.Lib
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        public static string GetShortDesc(this string content)
+        public static string GetShortDesc(this string content, int length=256)
         {
             if (string.IsNullOrEmpty(content))
                 return content;
 
-            if (content.Length > 256)
-                return content.Substring(0, 256);
+            if (content.Length > length)
+                return content.Substring(0, length);
 
             return content;
         }

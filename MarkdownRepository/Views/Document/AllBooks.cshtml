@@ -49,9 +49,9 @@
        @using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
        {
         <div class="form-group">
-            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "书籍名或简介" })
         </div>
-        <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+        <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索书籍</button>
        }
     </div>
 

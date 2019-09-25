@@ -13,6 +13,9 @@
 
     @System.Web.Optimization.Styles.Render("~/css/editor.md")
 
+    <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
+    <link href="~/javascripts/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+
     <style>
         .ui.input {
             position: relative;
@@ -84,7 +87,7 @@
             position: fixed;
             flex: none;
             order: 1;
-            top: 56px;
+            top: 51px;
             left: 0;
             right: 0;
             background: #fff;
@@ -194,8 +197,42 @@
             width: 100%;
             overflow: hidden;
         }
+
+        @@media only screen and (min-width: 600px) .window-container .window-body.with-sidebar .workspace {
+            margin-left: 280px;
+        }
+
+        .window-body .workspace {
+          position: fixed;
+        left: 300px;
+        width: calc(100% - 300px);
+        padding: 0 1em;
+        height: calc(100% - 130px);
+        overflow: auto;
+        }
+
+       #content {
+           min-height: 240px;
+       }     
+        
+       .blog-footer{
+           display:none;
+       }
+
+        .window-body .workspace .article .article-head {
+        display: flex;
+        margin-bottom: 1em;
+    }
+
+        #layui-layer-shade1{
+            z-index: 999!important;
+        }
+
     </style>
 }
+
+<input type="hidden" id="book_id" value="@Model.Book.id"/>
+
 
 <div>
     <div id="main">
@@ -204,51 +241,104 @@
                 <div class="toolbar">
                     <div class="book-ins">
                         <h3>
-                            书名: @Model.Book.name
+                            <span>书名:</span><span id="label_book_name">@Model.Book.name</span>
                         </h3>
                         <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
-                            作者: @AdAccount.GetUserNameById(Model.Book.creator)
-                            更新时间: @Model.Book.update_at
+                            <span style="">简介: </span><span id="label_book_desc">@Model.Book.category.GetShortDesc()</span>
                         </p>
+                    </div>
+                    <div>
+                        <button id="btn_edit_book_title" class="btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介</button>
                     </div>
                 </div>
             </div>
 
             <div class="window-body with-sidebar">
                 <div class="sidebar">
-                    <div class="sidebar-header">
+                    @*<div class="sidebar-header">
                         <div class="search-form">
                             <div class="ui small fluid icon input">
                                 <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                     <div class="sidebar-body">
                         <div class="catalog-body">
                             <div id="toc"></div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="window-body">
-                <div class="toolbar">
-                    <div>
-                    @*目录增加修改，文章保存*@
+                <div class="workspace">
+                    <div class="article">
+                        <div class="article-head">
+                            <div class="input-group">
+                                <span class="input-group-addon">完整目录: </span>
+                                <span class="input-group-addon" id="lable_current_dir_path"></span>
+                                <span class="input-group-addon">当前目录: </span>
+                                <input type="text" class="form-control" id="current_directory" value="">
+                                <span class="input-group-btn">
+                                    <button id="btn_modify_directory" class="btn btn-default" type="button">修改</button>
+                                </span>
+                                <span class="input-group-btn">
+                                    <button id="btn_del_directory" class="btn btn-default" type="button">删除</button>
+                                </span>
 
-                    </div>                    
-                </div>
-                <div class="doc">
-                    <div id="mkEditor">
-                        <textarea style="display:none;"></textarea>
+                                <input type="hidden" id="parent_directory_id" value="" />
+                                <input type="hidden" id="current_directory_id" value="" />
+                               
+                                <input type="text" class="form-control" id="new_sub_directory" value="">
+                                <span class="input-group-btn">
+                                    <button id="btn_new_directory" class="btn btn-default" type="button">创建子目录</button>
+                                </span>
+
+                                <span class="input-group-btn">
+                                    <button id="btn_save_article" class="btn btn-default" type="button">保存文章</button>
+                                </span>
+                            </div>
+                        </div>
+
+
+                        <div class="doc">
+                            <div id="mkEditor">
+                                <textarea id="md_content" style="display:none;"></textarea>
+                            </div>
+                        </div>
                     </div>
-                    
                 </div>
             </div>
-
         </div>
     </div>
+</div>
 
+<div id="diag_edit_book_info" style="display:none">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label>标题</label>
+            <input type="text" class="form-control" name="name" id="txt_book_name" placeholder="书名" value="@Model.Book.name">
+        </div>
+
+        <div class="form-group">
+            <label>描述</label>
+            <textarea rows="3" class="form-control" id="txt_book_desc" name="description" style="height: 90px" placeholder="书的描述">@Model.Book.description</textarea>
+            <p class="text">描述信息不超过500个字符</p>
+        </div>
+
+        <div class="form-group">
+            <label>分类</label>
+            <input type="text" class="form-control" id="txt_book_category" name="category" placeholder="书籍分类" value="@Model.Book.category">
+            <p class="text">多个分类请用“;”分割</p>
+        </div>
+
+        <div class="form-group">
+            <label>是否公开</label>
+            <input type="checkbox" class="switch" id="chk_book_is_public" name="is_public" @(Model.Book.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC?"checked":"")>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" id="btn_save_book_info" class="btn btn-success" data-loading-text="保存中...">保存修改</button>
+        </div>
+    </div>
 </div>
 
 @section scripts{
@@ -256,9 +346,19 @@
 
     @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
+    <script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
+    <script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+
     <script>
         $(document).ready(function () {
-            window.selectDirectory = {};
+            $currentDir = $("#current_directory");
+            $currentDirId = $("#current_directory_id");
+            $bookId = $("#book_id");
+            $lableCurrentDirPath = $("#lable_current_dir_path");
+            $parentDirId = $("#parent_directory_id");
+            $newSubDir = $("#new_sub_directory");
+            $mdContent = $("#md_content");
+
 
             window.jsTree = $("#toc").jstree({
                 'plugins': ["wholerow", "types"],
@@ -271,25 +371,198 @@
                     'check_callback': true,
                     "multiple": false,
                     'animation': 0,
-                    'data': [
-                           { "id": "ajson1", "parent": "#", "text": "Simple root node" },
-                           { "id": "ajson2", "parent": "#", "text": "Root node 2" },
-                           { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
-                           { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
-                    ]
+                    'data': function (obj, callback) {
+                        var _this = this;
+                        $.ajax({
+                            url: '@Url.Action("GetBookDirectory")',
+                            data: { bookid: $bookId.val() },
+                            cache: false,
+                            dataType: "json",
+                        })
+                        .success(function (res) {
+                            callback.call(_this, res.data);
+                        });
+                    }
                 }
             }).on('select_node.jstree', function (node, selected) {
-                window.selectDirectory = selected.node;
-                //如果是空目录则直接出发展开下一级功能
-                //if (selected.node.a_attr && selected.node.a_attr.disabled) {
-                //    selected.instance.toggle_node(selected.node);
-                //    return false
-                //}
-                //$(".m-manual").removeClass('manual-mobile-show-left');
-                //loadDocument(selected.node.a_attr.href, selected.node.id, selected.node.a_attr['data-version']);
+                $parentDirId.val(selected.node.parent);
+                $currentDir.val(selected.node.text);
+                $currentDirId.val(selected.node.id);
+                $lableCurrentDirPath.text(getNodePath(selected.node.id));
+                loadDocument(selected.node.id);
             });
 
-            var editor = editormd("mkEditor", {
+
+            $("#btn_modify_directory").on('click', function () {
+                var dir = $currentDir.val();
+                var dirId = $currentDirId.val();
+                var bookId = $bookId.val();
+                var parentDirId = ($parentDirId.val() || '#');
+                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+
+                if (dirId) {
+                    //update
+                    $.post('@Url.Action("UpdateBookDirectory", "Document")',
+                        {
+                            bookid: bookId,
+                            directoryid: dirId,
+                            title: dir,
+                        },
+                        function (res) {
+                            // 刷新目录树
+                            window.jsTree.jstree().refresh();
+                        })
+                }
+            });
+
+            $("#btn_new_directory").on('click', function () {
+                var dir = $currentDir.val();
+                var dirId = $currentDirId.val();
+                var bookId = $bookId.val();
+                var newSubDir = $newSubDir.val();
+                var parentDirId = ($parentDirId.val() || '#');
+                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+
+                if (newSubDir) {
+                    //create
+                    $.post('@Url.Action("CreateBookDirectory", "Document")',
+                        {
+                            bookId: bookId,
+                            title: newSubDir,
+                            parentId: dirId,
+                            documentId: 0
+                        },
+                        function (res) {
+                            $newSubDir.val('');
+                            // 刷新目录树
+                            window.jsTree.jstree().refresh();
+                        });
+                }
+            });
+
+            $("#btn_del_directory").on('click', function () {
+                var dir = $currentDir.val();
+                var dirId = $currentDirId.val();
+                var bookId = $bookId.val();
+                var newSubDir = $newSubDir.val();
+                var parentDirId = ($parentDirId.val() || '#');
+                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+
+                if (dirId) {
+                    //delete
+                    $.post('@Url.Action("DeleteBookDirectory", "Document")',
+                        {
+                            bookDirecotryId: dirId
+                        },
+                        function (res) {
+                            if (res.isSuccess) {
+                                $lableCurrentDirPath.val('');
+                                $currentDir.val('');
+                                $currentDirId.val('');
+                                $parentDirId.val('');
+
+                                // 刷新目录树
+                                window.jsTree.jstree().refresh();
+                                setTimeout(function () {
+                                    if (parentDirId) {
+                                        // 选择父目录
+                                        window.jsTree.jstree().select_node([parentDirId], false);
+                                    }
+                                }, 500);
+                            }
+                        });
+                }
+            });
+
+
+            $("input.switch").bootstrapSwitch({
+                onText: '公开',
+                offText: '不公开',
+                size: 'mini',
+            });
+
+            $("#btn_edit_book_title").on('click', function () {
+                window.diagEditBookInfoIndex  = layer.open({
+                    type: 1,
+                    title: "修改书籍名称及简介",
+                    closeBtn: 1,
+                    moveType: 1,
+                    shade: 0,
+                    area: '516px',
+                    skin: 'layui-layer-rim', //加上边框
+                    content: $('#diag_edit_book_info')
+                });
+            });
+
+            $("#btn_save_book_info").on('click', function () {
+                var bookName = $("#txt_book_name").val();
+                var bookDesc = $("#txt_book_desc").val();
+                var bookCategory = $("#txt_book_category").val();
+                var access = $("#chk_book_is_public").is(':checked') ? 1 : 0;
+
+               $.post('@Url.Action("UpdateBook", "Document")',
+                        {
+                            bookid: $bookId.val(),
+                            name: bookName,
+                            description: bookDesc,
+                            category: bookCategory,
+                            access: access
+                        },
+                        function (res) {
+                            if (res.isSuccess) {
+                                layer.close(diagEditBookInfoIndex);
+                                $("#label_book_name").text(bookName);
+                                $("#label_book_desc").text(bookDesc);
+                            } else {
+                                messageAlert("保存失败，请稍后重试");
+                            }
+                        })
+            });
+
+            function messageAlert(message) {
+                layer.alert(message, {
+                    skin: 'layui-layer-lan'
+                    , closeBtn: 0
+                    , anim: 4
+                });
+            }
+
+            function getNodePath(currentNodeId) {
+                var root = "";
+                if (currentNodeId) {
+                    var p = jsTree.jstree().get_path(currentNodeId);
+                    if (p) {
+                        if (p instanceof Array) {
+                            root = p.join('/');
+                        } else if(p instanceof String) {
+                            root = p;
+                        }
+                    }
+                }
+
+                return root;
+            }
+
+            function loadDocument(directoryid) {
+                $.ajax({
+                    url: '@Url.Action("GetDocument")',
+                    dataType: "json",
+                    data: { directoryid: directoryid },
+                    cache: false,
+                })
+                .success(function (res) {
+                    if (res.isSuccess && res.data) {
+                        editor.setValue(res.data.content);
+                    } else {
+                        //TODO: alert error
+                        editor.setValue('');
+                    }
+                })
+                .error(function () { })
+                .complete(function () { });
+            }
+
+            window.editor = editormd("mkEditor", {
                 width: "100%",
                 height: 640,
                 saveHTMLToTextarea: true,
@@ -330,24 +603,19 @@
                 }
             });
 
-            $("#btnSave").on('click', function () {
-                $.post('@Url.Action("Create", "Document")',
+            $("#btn_save_article").on('click', function () {
+                $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")',
                     {
                         content: $("#mkEditor > textarea").val(),
-                        title: $("#title").val(),
-                        category: $("#category").val(),
-                        id: $("#docId").val(),
-                        access: $("#access")[0].checked === true ? 1 : 0
+                        title: '',
+                        directoryid: $("#current_directory_id").val()
                     },
-                    function (result) {
-                        $("#docId").val(result.rowid);
-                        var msg = "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>"
-                            , $msg = $(msg);
-                        $msg.text("已保存")
-                        $("body").append($msg);
-                        $msg.animate({ top: 0, left: 0, fontSize: 0, opacity: 0 }, 2000, function () {
-                            $(this).remove();
-                        })
+                    function (res) {
+                        if (res.isSuccess) {
+                            messageAlert("保存成功");
+                        } else {
+                            messageAlert("保存失败");
+                        }
                     });
                 return false;
             });

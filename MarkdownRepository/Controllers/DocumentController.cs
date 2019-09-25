@@ -429,11 +429,39 @@ namespace MarkdownRepository.Controllers
             return View();
         }
 
+        /// <summary>
+        /// 更新书籍名称等信息
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="category"></param>
+        /// <param name="access"></param>
+        /// <returns></returns>
         public ActionResult UpdateBook(long bookid, string name, string description, string category, DocumentAccess access)
         {
             try
             {
                 docMgr.UpdateBook(this.UserId, bookid, name, description, category, "", access);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 设置书籍是否公开
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="access"></param>
+        /// <returns></returns>
+        public ActionResult SetBookState(long bookid, DocumentAccess access)
+        {
+            try
+            {
+                docMgr.SetBookState(bookid, access);
                 return Success();
             }
             catch(Exception ex)
@@ -449,7 +477,7 @@ namespace MarkdownRepository.Controllers
                 isSuccess = true,
                 message = "",
                 data = data
-            });
+            }, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult Fail(string errorMessage)
@@ -458,7 +486,7 @@ namespace MarkdownRepository.Controllers
             {
                 isSuccess = false,
                 message = errorMessage
-            });
+            }, JsonRequestBehavior.AllowGet);
         }
 
         /// <summary>
@@ -494,8 +522,8 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                docMgr.CreateBookDirectory(bookId, title, description, parentId, documentId, 0, this.UserId);
-                return Success();
+                var dirId = docMgr.CreateBookDirectory(bookId, title, description, parentId, documentId, 0, this.UserId);
+                return Success(dirId);
             }
             catch(Exception ex)
             {
@@ -503,6 +531,14 @@ namespace MarkdownRepository.Controllers
             }
         }
 
+        /// <summary>
+        /// 更新书籍目录
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="directoryid"></param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
         public ActionResult UpdateBookDirectory(long bookid, long directoryid, string title, string description)
         {
             try
@@ -615,15 +651,23 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult GetBookDirectory(long bookid)
         {
-            var book = docMgr.GetBook(bookid, this.UserId);
-            var directories = book.BookDirectory.Select(t => new
+            try
             {
-                id = t.id,
-                parent = t.parent_id,
-                text = t.title
-            }).ToList();
+                var book = docMgr.GetBook(bookid, this.UserId);
 
-            return Json(directories);
+                var directories = book.BookDirectory.Select(t => new
+                {
+                    id = t.id.ToString(),
+                    parent = t.parent_id == 0 ? "#":t.parent_id.ToString(),
+                    text = t.title
+                }).ToList();
+
+                return Success(directories);
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
         }
 
         /// <summary>
@@ -643,11 +687,10 @@ namespace MarkdownRepository.Controllers
                 {
                     foreach (var r in result)
                     {
-                        // 文章名称，包含了目录
-                        r.title = SplitContent.HightLight(searchText, r.title);
-                        // 书籍目录
-                        r.content = SplitContent.HightLight(searchText, r.content.StripHTML());
-                        // 书籍名称
+                        r.name = SplitContent.HightLight(searchText, r.name);
+
+                        r.description = SplitContent.HightLight(searchText, r.description.StripHTML());
+                        
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 

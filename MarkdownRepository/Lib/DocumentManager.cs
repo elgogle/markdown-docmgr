@@ -163,6 +163,8 @@ values(@id, @creator, 1);
 ",
                         new { id = bookid, creator = userId, name, description, category, image_url, is_public = access });
 
+                    _indexMgr.AddOrUpdateDocIndex(new Doc { Id = bookid.ToString(), Category = category, Content = description, Title = name, Operate = Operate.AddOrUpdate });
+
                     return bookid;
                 }
             }
@@ -189,6 +191,8 @@ values(@id, @creator, 1);
 
                 db.Execute("update books set name=@name, description=@description, category=@category, image_url=@image_url, is_public = @is_public, update_at = datetime('now', 'localtime')  where id=@id",
                     new { name = name, description = description, category = category, image_url = image_url, id = bookid, is_public = access });
+
+                _indexMgr.AddOrUpdateDocIndex(new Doc { Id = bookid.ToString(), Category = category, Content = description, Title = name, Operate = Operate.AddOrUpdate });
             }
         }
 
@@ -327,7 +331,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                     CheckPermissionForUpdateBook(userid, db, directory.book_id);
 
                     var bookId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
-                    db.Execute("delete book_directories where id=@id;", new { id = bookDirId });
+                    db.Execute("delete from book_directories where id=@id;", new { id = bookDirId });
 
                     if (bookId > 0)
                     {
@@ -368,6 +372,21 @@ delete from books where id=@book_id;
                 {
                     trans.Rollback();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 设置书籍是否公开
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="access"></param>
+        public void SetBookState(long bookid, DocumentAccess access)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                db.Execute("update books set is_public= @is_public where id=@id", new { id = bookid, is_public = access });
             }
         }
 
@@ -475,13 +494,37 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
         /// <param name="keyword"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IList<Document> SearchBook(string keyword, string userId)
+        public IList<Book> SearchBook(string keyword, string userId)
         {
-            using (var db = this.OpenDb())
+            var result = new List<Book>();
+            var indexResult = _indexMgr.Search(keyword);
+            if (indexResult != null && indexResult.Count > 0)
             {
-                var articles = Search(keyword, userId);
-                return articles;
+                using (var db = this.OpenDb())
+                {
+                    CreateTableIfNotExist();
+
+                    var books = db.Query<Book>(@"
+select *
+from books a
+WHERE 1 = 1
+    and a.id in @list    
+    and (a.is_public = 1 or exists(select 1 from book_owner bo where bo.book_id = a.id and bo.user_id = @userId))                                             
+",
+                    new { list = indexResult.Select(t => t.Id).ToList(), userId = userId });
+
+                    //TODO: 需要改善，这里又重排序，达到与 index 搜索一致
+                    foreach (var i in indexResult)
+                    {
+                        var first = books.FirstOrDefault(t => t.id.ToString() == i.Id);
+                        if (first != null) result.Add(first);
+                    }
+
+                    return result;
+                }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -809,14 +852,27 @@ where a.rowid = b.id
                 {
                     CreateTableIfNotExist();
 
-                    var documents = db.Query<Document>(@"select b.id as rowid, title, 
-                                                        content, 
-                                                        category,
-                                                        creat_at, update_at, creator
-                                                    from documents a, documents_owner b 
-                                                    WHERE a.rowid = b.id and b.id in @list 
-                                                        and (b.creator = @userId or (b.creator <> @userId and b.is_public=1))
-                                                        and not exists(select 1 from book_directories d where document_id = a.rowid) ",
+                    var documents = db.Query<Document>(@"
+select b.id as rowid, 
+    a.title, 
+    a.content, 
+    a.category,
+    b.creat_at, 
+    b.update_at, 
+    b.creator
+from documents a
+inner join documents_owner b on b.id = a.rowid
+WHERE  b.id in @list 
+    and (b.creator = @userId 
+        or (b.creator <> @userId and b.is_public=1) 
+        or (
+            select 1 from book_directories c 
+            inner join book_owner d on d.book_id = c.book_id
+            where c.document_id = a.rowid
+                and d.user_id = @userId
+            )
+    )
+",
                                      new { list = indexResult.Select(t => t.Id).ToList(), userId = userId });
                     //TODO: 需要改善，这里又重排序，达到与 index 搜索一致
                     foreach (var i in indexResult)

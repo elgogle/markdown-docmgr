@@ -9,18 +9,20 @@
 
 
 @section style{
+    <link href="~/javascripts/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+
     <style>
         .search-box {
             margin-top: 2em;
         }
 
-        .search-box .form-group {
-            width: 75%;
-        }
+            .search-box .form-group {
+                width: 75%;
+            }
 
-        .search-box .form-group input {
-            width: 100%;
-        }
+                .search-box .form-group input {
+                    width: 100%;
+                }
 
         .search-list {
             margin: 0.8em 0 0.7em 1em;
@@ -41,6 +43,10 @@
             color: #337ab7;
             font-size: 0.7em;
         }
+
+        input.switch {
+            font-size: 1em;
+        }
     </style>
 }
 
@@ -50,9 +56,9 @@
         @using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
         {
             <div class="form-group">
-                @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+                @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "书籍名或简介" })
             </div>
-            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+            <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索书籍</button>
         }
     </div>
 
@@ -79,6 +85,12 @@
                         <div class="update-time">
                             创建人: @AdAccount.GetUserNameById(item.creator), 更新时间: @item.update_at
                         </div>
+
+                        <div class="toolbar">
+
+                            <input type="checkbox" class="switch" data-value-book-id="@item.id" @(item.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC ? "checked" : "")>
+                        </div>
+
                     </li>
                 }
             }
@@ -86,3 +98,35 @@
     </div>
 
 </div>
+
+@section scripts{
+    <script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("input.switch").bootstrapSwitch({
+                onText: '公开',
+                offText: '不公开',
+                size: 'mini',
+                onSwitchChange: function (event, state) {
+                    var bookid = event.target.dataset.valueBookId;
+                    var access = state ? 1 : 0;
+                    $.ajax({
+                        url: '@Url.Action("SetBookState")',
+                        data: { bookid: bookid, access: access },
+                        cache: false,
+                        dataType: "json",
+                    })
+                    .success(function (res) {
+                        if (res.isSuccess) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

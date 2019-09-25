@@ -176,8 +176,13 @@ div.window-body{
     overflow: hidden;
 }
 
+       .blog-footer{
+           display:none;
+       }
 </style>
 }
+
+<input type="hidden" id="book_id" value="@Model.Book.id" />
 
 <div>
     <div id="main">
@@ -205,13 +210,13 @@ div.window-body{
             </div>
             <div class="window-body with-sidebar">
                 <div class="sidebar">
-                    <div class="sidebar-header">
+                    @*<div class="sidebar-header">
                         <div class="search-form">
                             <div class="ui small fluid icon input">
                                 <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                     <div class="sidebar-body">
                         <div class="catalog-body">
                             <div  id="toc"></div>         
@@ -227,8 +232,6 @@ div.window-body{
                 <div class="doc">
                     <div id="md">
                         <textarea id="md_content" style="display:none;">
-                            #1  
-                            #2  
                         </textarea>
                     </div>
                 </div>
@@ -248,6 +251,8 @@ div.window-body{
 
     <script>
         $(document).ready(function () {
+            $bookId = $("#book_id");
+
             window.jsTree = $("#toc").jstree({
                 'plugins': ["wholerow", "types"],
                 "types": {
@@ -259,20 +264,20 @@ div.window-body{
                     'check_callback': true,
                     "multiple": false,
                     'animation': 0,
-                    'data': [
-                           { "id": "ajson1", "parent": "#", "text": "Simple root node" },
-                           { "id": "ajson2", "parent": "#", "text": "Root node 2" },
-                           { "id": "ajson3", "parent": "ajson2", "text": "Child 1" },
-                           { "id": "ajson4", "parent": "ajson2", "text": "Child 2" },
-                    ]
+                    'data': function (obj, callback) {
+                        var _this = this;
+                        $.ajax({
+                            url: '@Url.Action("GetBookDirectory")',
+                            data: { bookid: $bookId.val() },
+                            cache: false,
+                            dataType: "json",
+                        })
+                        .success(function (res) {
+                            callback.call(_this, res.data);
+                        });
+                    }
                 }
             }).on('select_node.jstree', function (node, selected) {
-                //如果是空目录则直接出发展开下一级功能
-                //if (selected.node.a_attr && selected.node.a_attr.disabled) {
-                //    selected.instance.toggle_node(selected.node);
-                //    return false
-                //}
-                //$(".m-manual").removeClass('manual-mobile-show-left');
                 loadDocument(selected.node.id);
             });
 
@@ -284,12 +289,14 @@ div.window-body{
                     cache: false,
                 })
                 .success(function(res){
-                    if(res.isSuccess){
-                        $("#md_content").text(res.data.content);
-                        //TODO: refresh markdown
+                    $("#md").empty();
+                    if(res.isSuccess && res.data.content){
+                        $("#md").append("<textarea>" + res.data.content + "</textarea>")
                     }else{
-                        //TODO: alert error
+                        $("#md").append("<textarea></textarea>")
                     }
+
+                    showMarkDown("md");
                 })
                 .error(function(){})
                 .complete(function(){});
@@ -326,10 +333,11 @@ div.window-body{
 
     </script>
 
-<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+@*<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
 <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
 <script>
     (function () {
+        
         Comments({
             node: "#comments",
             articleId: @documentId,
@@ -337,5 +345,5 @@ div.window-body{
             apiUrl: "http://192.168.13.119/web-comment"
         });
     })();
-</script>
+</script>*@
 }
