@@ -547,7 +547,7 @@
                 layer.alert(message, {
                     skin: 'layui-layer-lan'
                     , closeBtn: 0
-                    , anim: 0                    
+                    , anim: 0
                 });
             }
 
@@ -628,7 +628,10 @@
             });
 
             $("#btn_save_article").on('click', function () {
-                $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")',
+                var currentDir = $("#current_directory_id").val();
+
+                if (currentDir) {
+                    $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")',
                     {
                         content: $("#mkEditor > textarea").val(),
                         title: '',
@@ -646,6 +649,10 @@
                             messageAlert("保存失败，错误:" + res.message);
                         }
                     });
+                } else {
+                    messageAlert("请先选定文章目录");
+                }
+
                 return false;
             });
 

@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.Caching;
 using System.Web.Optimization;
+using CrystalGroup.ISD.DocumentManage.Lib;
 
 namespace CrystalGroup.ISD.DocumentManage
 {
@@ -24,6 +25,18 @@ namespace CrystalGroup.ISD.DocumentManage
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
+        }
+
+        public override void Init()
+        {
+            base.Init();
+            this.Error += MvcApplication_Error;
+        }
+
+        private void MvcApplication_Error(object sender, EventArgs e)
+        {
+            Exception ex = HttpContext.Current.Server.GetLastError();
+            LogHelper.WriteError(typeof(MvcApplication), ex);
         }
     }
 }
