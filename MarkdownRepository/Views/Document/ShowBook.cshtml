@@ -340,7 +340,7 @@ div.window-body{
                 })
                 .success(function(res){
                     $("#md").empty();
-                    if(res.isSuccess && res.data.content){
+                    if(res.isSuccess && res.data && res.data.content){
                         $("#md").append("<textarea>" + res.data.content + "</textarea>")
                     }else{
                         $("#md").append("<textarea></textarea>")
