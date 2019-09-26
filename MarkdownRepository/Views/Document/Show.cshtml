@@ -106,6 +106,7 @@
     </div>
 }
 
+<div id="toc_container"></div>
 
 <div id="md">
     <textarea style="display:none;">@Model.content</textarea>
@@ -124,7 +125,7 @@
         .follow-doc{
              position: fixed;
              top: 50%;
-             right: 100px;
+             left: 100px;
              font-size: 0.7em;
              width: 30px;
              cursor: pointer;
@@ -132,6 +133,34 @@
              border-radius: 5px;
              padding: 7px;
             color: #999;
+        }
+
+        #toc_container ol.markdown-toc-list, ul.markdown-toc-list {
+            padding: 5px;
+        }
+
+        #toc_container:hover{
+            overflow:auto;
+        }
+
+        @@media screen and (max-width: 1300px) {
+            #toc_container{
+                position:relative;
+            }
+        }
+        @@media screen and (min-width: 1301px) {
+            #toc_container{
+                position: fixed;
+                right: 20px;
+                top: 110px;
+                border: gray solid 1px;
+                border-radius: 7px;
+                overflow: hidden;
+                padding: 1em;
+                height: calc(100% - 150px);
+                width: 180px;
+                font-size: 0.8em;
+            }
         }
     </style>
 }
@@ -141,7 +170,7 @@
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
 <script>
-    showMarkDown("md");
+    showMarkDown("md", "#toc_container");
 
     $(document).ready(function () {
         function selectText(element) {

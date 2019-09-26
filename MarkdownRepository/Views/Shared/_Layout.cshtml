@@ -242,16 +242,29 @@
     <script src="@Url.Content("~/javascripts/katex.min.js")"></script>
 
     <script type="text/javascript">
-        function showMarkDown(id, mdText) {
-            editormd.markdownToHTML(id, {
-                htmlDecode: "style,script,iframe",
-                tocm: true,    // Using [TOCM]
-                emoji: true,
-                taskList: true,
-                tex: true,  // 默认不解析
-                flowChart: true,  // 默认不解析
-                sequenceDiagram: true,  // 默认不解析
-            });
+        function showMarkDown(id, tocContainer) {
+            if (tocContainer) {
+                editormd.markdownToHTML(id, {
+                    htmlDecode: "style,script,iframe",
+                    tocm: true,    // Using [TOCM]
+                    tocContainer: tocContainer,
+                    emoji: true,
+                    taskList: true,
+                    tex: true,  // 默认不解析
+                    flowChart: true,  // 默认不解析
+                    sequenceDiagram: true,  // 默认不解析
+                });
+            } else {
+                editormd.markdownToHTML(id, {
+                    htmlDecode: "style,script,iframe",
+                    tocm: true,    // Using [TOCM]
+                    emoji: true,
+                    taskList: true,
+                    tex: true,  // 默认不解析
+                    flowChart: true,  // 默认不解析
+                    sequenceDiagram: true,  // 默认不解析
+                });
+            }
         }
     </script>
     @RenderSection("scripts", required: false)
