@@ -643,6 +643,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="directoryid"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public ActionResult GetDocument(long directoryid)
         {
             try
