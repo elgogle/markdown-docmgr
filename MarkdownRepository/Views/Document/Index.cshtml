@@ -1,7 +1,8 @@
+@using PagedList.Mvc
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@model List<MarkdownRepository.Models.Document>
+@model PagedList.IPagedList<MarkdownRepository.Models.Document>
 
 @if (Model != null && Model.Count > 0)
 {
@@ -37,6 +38,9 @@
         </table>
 
         <!-- 分页 -->
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
     </div>
 
     <div class="col-md-2 side-category">

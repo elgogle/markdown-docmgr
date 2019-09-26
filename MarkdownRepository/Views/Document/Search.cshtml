@@ -1,4 +1,5 @@
-﻿@using MarkdownRepository.Lib
+﻿@using PagedList.Mvc
+@using MarkdownRepository.Lib
 @{
     ViewBag.Title = "Search";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -28,7 +29,7 @@
 </style>
 }
 
-@model List<MarkdownRepository.Models.Document>
+@model PagedList.IPagedList<MarkdownRepository.Models.Document>
 
 @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 { 
@@ -74,6 +75,14 @@
             }
         }
     </ul>
+
+    @if (Model != null)
+    { 
+        <!-- 分页 -->
+        <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
+
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page }))
+    }
 </div>
 
 @section scripts{

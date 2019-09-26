@@ -1,6 +1,7 @@
+@using PagedList.Mvc
 @using MarkdownRepository.Controllers
 @using MarkdownRepository.Lib
-@model List<MarkdownRepository.Models.Document>
+@model PagedList.IPagedList<MarkdownRepository.Models.Document>
 
 @{    
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -56,7 +57,10 @@
             </tbody>
         </table>
 
-    <!-- 分页 -->
+        <!-- 分页 -->
+        <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
+
+        @Html.PagedListPager(Model, page => Url.Action("AllDocument", new { page }))
     }
 </div>
 <div class="col-md-2">

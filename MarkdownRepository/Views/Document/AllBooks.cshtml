@@ -1,10 +1,11 @@
-﻿@using MarkdownRepository.Lib
+﻿@using PagedList.Mvc
+@using MarkdownRepository.Lib
 @{
     ViewBag.Title = "AllBooks";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@model  IList<MarkdownRepository.Models.Book>
+@model  PagedList.IPagedList<MarkdownRepository.Models.Book>
 
 
 @section style{
@@ -82,6 +83,14 @@
                 }
             }
         </ul>
+
+        @if (Model != null && Model.Count > 0)
+        {
+            <!-- 分页 -->
+            <text> Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
+
+            @Html.PagedListPager(Model, page => Url.Action("AllBooks", new { page }))
+        }
     </div>
 
 </div>

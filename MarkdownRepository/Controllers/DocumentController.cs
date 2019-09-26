@@ -15,6 +15,7 @@ namespace MarkdownRepository.Controllers
     using System.Text.RegularExpressions;
     using System.Web.Hosting;
     using Newtonsoft.Json;
+    using PagedList;
 
     [Authorize]
     public class DocumentController : Controller
@@ -50,7 +51,9 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>        
         public ActionResult Index(string searchText, int? page)
         {
-            var result = docMgr.MyDocument(UserId);
+            int pageSize = 50;
+            int pageNumber = page ?? 1;
+            var result = docMgr.MyDocument(UserId).ToPagedList(pageNumber, pageSize);
             var category = docMgr.GetMyCategory(UserId);
             ViewBag.Category = category;
             ViewBag.Action = "MyDocs";
@@ -70,9 +73,11 @@ namespace MarkdownRepository.Controllers
         /// <param name="page"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult AllDocument(int?page)
-        {            
-            var result = docMgr.AllDocument();
+        public ActionResult AllDocument(int? page)
+        {
+            int pageSize = 50;
+            int pageNumber = page ?? 1;
+            var result = docMgr.AllDocument().ToPagedList(pageNumber, pageSize);
             var category = docMgr.GetCategory();
             //var creator = docMgr.GetCreator();
             var myFollowedDocs = docMgr.GetFollowDocuments(User.Identity.IsAuthenticated?UserId:"");
@@ -141,13 +146,15 @@ namespace MarkdownRepository.Controllers
         /// <param name="searchText"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult Search(string searchText)
+        public ActionResult Search(string searchText, int? page)
         {
+            int pageSize = 50;
+            int pageNumber = page ?? 1;
             ViewBag.CurrentFilter = searchText;
 
             if (!String.IsNullOrWhiteSpace(searchText))
             {
-                var result = docMgr.Search(searchText, UserId);
+                var result = docMgr.Search(searchText, UserId).ToPagedList(pageNumber, pageSize);
                 if (result != null && result.Count > 0)
                 {
                     foreach (var r in result)
@@ -382,9 +389,11 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult AllBooks()
+        public ActionResult AllBooks(int? page)
         {
-            var books = docMgr.GetBooks();
+            int pageSize = 50;
+            int pageNumber = page ?? 1;
+            var books = docMgr.GetBooks().ToPagedList(pageNumber, pageSize);
             return View(books);
         }
 
