@@ -498,7 +498,8 @@
                                 setTimeout(function () {
                                     if (parentDirId) {
                                         // 选择父目录
-                                        window.jsTree.jstree().select_node([parentDirId], false);
+                                        jsTree.jstree().deselect_all();
+                                        jsTree.jstree().select_node([parentDirId], false);
                                     }
                                 }, 500);
                             }
