@@ -379,6 +379,13 @@ div.window-body{
                     selectText(this);
                 });
             }
+
+            setTimeout(function(){
+                if(window.directoryNavigator && directoryNavigator.length > 0){
+                    jsTree.jstree().deselect_all();
+                    jsTree.jstree().select_node([directoryNavigator[0]]);
+                }
+            }, 500);
         });
 
     </script>
