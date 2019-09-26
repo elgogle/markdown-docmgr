@@ -222,6 +222,7 @@
         .window-body .workspace .article .article-head {
         display: flex;
         margin-bottom: 1em;
+        flex-flow: column;
     }
 
         #layui-layer-shade1{
@@ -272,32 +273,39 @@
                 <div class="workspace">
                     <div class="article">
                         <div class="article-head">
-                            <div class="input-group">
-                                <span class="input-group-addon">完整目录: </span>
-                                <span class="input-group-addon" id="lable_current_dir_path"></span>
-                                <span class="input-group-addon">当前目录: </span>
-                                <input type="text" class="form-control" id="current_directory" value="">
-                                <span class="input-group-btn">
-                                    <button id="btn_new_directory" class="btn btn-default" type="button">新增同级目录</button>
-                                </span>
-                                <span class="input-group-btn">
-                                    <button id="btn_modify_directory" class="btn btn-default" type="button">修改当前目录</button>
-                                </span>
-                                <span class="input-group-btn">
-                                    <button id="btn_del_directory" class="btn btn-default" type="button">删除当前目录</button>
-                                </span>
+                            <div>
+                                <div class="input-group">
+                                    <span class="input-group-addon" style="width:100px;">完整目录: </span>
+                                    <span class="input-group-addon" style="width:99%;text-align:left" id="lable_current_dir_path"></span>
+                                </div>
+                            </div>
 
-                                <input type="hidden" id="parent_directory_id" value="" />
-                                <input type="hidden" id="current_directory_id" value="" />
-                               
-                                <input type="text" class="form-control" id="new_sub_directory" value="">
-                                <span class="input-group-btn">
-                                    <button id="btn_new_sub_directory" class="btn btn-default" type="button">创建子目录</button>
-                                </span>
+                            <div>
+                                <div class="input-group">
+                                    <span class="input-group-addon">当前目录: </span>
+                                    <input type="text" class="form-control" id="current_directory" value="">
+                                    <span class="input-group-btn">
+                                        <button id="btn_new_directory" class="btn btn-default" type="button">新增同级目录</button>
+                                    </span>
+                                    <span class="input-group-btn">
+                                        <button id="btn_modify_directory" class="btn btn-default" type="button">修改当前目录</button>
+                                    </span>
+                                    <span class="input-group-btn">
+                                        <button id="btn_del_directory" class="btn btn-default" type="button">删除当前目录</button>
+                                    </span>
 
-                                <span class="input-group-btn">
-                                    <button id="btn_save_article" class="btn btn-default" type="button">保存文章</button>
-                                </span>
+                                    <input type="hidden" id="parent_directory_id" value="" />
+                                    <input type="hidden" id="current_directory_id" value="" />
+
+                                    <input type="text" class="form-control" id="new_sub_directory" value="">
+                                    <span class="input-group-btn">
+                                        <button id="btn_new_sub_directory" class="btn btn-default" type="button">创建子目录</button>
+                                    </span>
+
+                                    <span class="input-group-btn">
+                                        <button id="btn_save_article" class="btn btn-default" type="button">保存文章</button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
