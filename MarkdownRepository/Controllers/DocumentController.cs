@@ -400,6 +400,16 @@ namespace MarkdownRepository.Controllers
         public ActionResult MyBooks()
         {
             var books = docMgr.GetMyBooks(this.UserId);
+            var transferUsers = docMgr.GetAllUserId()
+                .Where(t=> t.user_id.GetUserName() != this.UserId.GetUserName())
+                .Select(t =>
+                    new
+                    {
+                        value = t.user_id.Contains("\\") ? t.user_id.Split('\\')[1] : t.user_id,
+                        text = t.user_name
+                    }).Distinct();
+            
+            ViewBag.TransferUsers = new SelectList(transferUsers, "value", "text");
             return View(books);
         }
 
@@ -428,6 +438,7 @@ namespace MarkdownRepository.Controllers
             {
                 DocumentAccess access = Request["is_public"] == "on" ? DocumentAccess.PUBLIC : DocumentAccess.PRIVATE;
                 var id = docMgr.CreateBook(this.UserId, name, description, category, "", access);
+
                 return RedirectToAction("EditBook", new { id = id });
             }
             catch(Exception ex)
@@ -436,6 +447,38 @@ namespace MarkdownRepository.Controllers
             }
 
             return View();
+        }
+
+        private void CreateProgramSpec(long bookid)
+        {
+            // 模板式创建 (Program spec)
+            // 目录
+            var dir1 = docMgr.CreateBookDirectory(bookid, "简介", "", 0, 0, 0, this.UserId);
+            var dir2 = docMgr.CreateBookDirectory(bookid, "一、用户需求及参考资料", "", 0, 0, 0, this.UserId);
+            var dir2_1 = docMgr.CreateBookDirectory(bookid, "1. 需求文件", "", dir2, 0, 0, this.UserId);
+            var dir2_2 = docMgr.CreateBookDirectory(bookid, "2. 需求确认事项", "", dir2, 0, 0, this.UserId);
+            var dir2_3 = docMgr.CreateBookDirectory(bookid, "3. R&D 事项", "", dir2, 0, 0, this.UserId);
+            var dir2_4 = docMgr.CreateBookDirectory(bookid, "4. 部门开发标准及规范参考", "", dir2, 0, 0, this.UserId);
+
+            var dir3 = docMgr.CreateBookDirectory(bookid, "二、分析及设计", "", 0, 0, 0, this.UserId);
+            var dir3_1 = docMgr.CreateBookDirectory(bookid, "1. 系统框架设计及说明", "", dir3, 0, 0, this.UserId);
+            var dir3_2 = docMgr.CreateBookDirectory(bookid, "2. 项目功能操作流程", "", dir3, 0, 0, this.UserId);
+            var dir3_3 = docMgr.CreateBookDirectory(bookid, "3. 项目功能列表说明", "", dir3, 0, 0, this.UserId);
+            var dir3_4 = docMgr.CreateBookDirectory(bookid, "4. 项目开发时间预计及计划", "", dir3, 0, 0, this.UserId);
+            var dir3_5 = docMgr.CreateBookDirectory(bookid, "5. 数据库表设计", "", dir3, 0, 0, this.UserId);
+            var dir3_6 = docMgr.CreateBookDirectory(bookid, "6. 数据库及项目位置", "", dir3, 0, 0, this.UserId);
+            var dir3_7 = docMgr.CreateBookDirectory(bookid, "7. Web Service 的说明", "", dir3, 0, 0, this.UserId);
+
+            var dir4 = docMgr.CreateBookDirectory(bookid, "三、测试与发布", "", 0, 0, 0, this.UserId);
+            var dir4_1 = docMgr.CreateBookDirectory(bookid, "1. 测试计划", "", dir4, 0, 0, this.UserId);
+            var dir4_2 = docMgr.CreateBookDirectory(bookid, "2. 安装及发布注意事项说明", "", dir4, 0, 0, this.UserId);
+            var dir4_3 = docMgr.CreateBookDirectory(bookid, "3. 参数列表", "", dir4, 0, 0, this.UserId);
+
+            var dir5 = docMgr.CreateBookDirectory(bookid, "四、使用及维护", "", 0, 0, 0, this.UserId);
+            var dir5_1 = docMgr.CreateBookDirectory(bookid, "1. 用户使用指南", "", dir5, 0, 0, this.UserId);
+            var dir5_2 = docMgr.CreateBookDirectory(bookid, "2. 程序文件说明", "", dir5, 0, 0, this.UserId);
+            var dir5_3 = docMgr.CreateBookDirectory(bookid, "3. 维护及使用相关问题列表", "", dir5, 0, 0, this.UserId);
+            var dir5_4 = docMgr.CreateBookDirectory(bookid, "4. 改进历史记录", "", dir5, 0, 0, this.UserId);
         }
 
         /// <summary>
@@ -452,6 +495,25 @@ namespace MarkdownRepository.Controllers
             try
             {
                 docMgr.UpdateBook(this.UserId, bookid, name, description, category, "", access);
+                return Success();
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 转让书籍所有权
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="transferid"></param>
+        /// <returns></returns>
+        public ActionResult TransferBookOwner(long bookid, string transferid)
+        {
+            try
+            {
+                docMgr.TransferBookOwner(bookid, this.UserId, transferid);
                 return Success();
             }
             catch(Exception ex)

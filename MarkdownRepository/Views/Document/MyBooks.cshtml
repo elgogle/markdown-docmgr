@@ -10,6 +10,7 @@
 
 @section style{
     <link href="~/javascripts/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
 
     <style>
         .search-box {
@@ -47,6 +48,16 @@
         input.switch {
             font-size: 1em;
         }
+
+        .select-list{
+            width: 220px;
+        }
+
+        .bootstrap-switch, .bootstrap-switch.bootstrap-switch-animate .bootstrap-switch-container {
+            height: 25px;
+        }
+        
+
     </style>
 }
 
@@ -87,8 +98,9 @@
                         </div>
 
                         <div class="toolbar">
-
                             <input type="checkbox" class="switch" data-value-book-id="@item.id" @(item.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC ? "checked" : "")>
+
+                            <button class="btn-primary btn-xs" onclick="transferBook(@item.id, '@item.name')" type="button">转让书籍</button>                            
                         </div>
 
                     </li>
@@ -99,11 +111,68 @@
 
 </div>
 
+<div id="diag_transfer_book" style="display:none; padding:1em;">
+    <h4 id="transfer_book_name"></h4>
+    <input type="hidden" id="transfer_book_id" />
+    <div class="form-group">
+        <label>转让给：</label>
+        @Html.DropDownList("transfer_user_id", (SelectList)ViewBag.TransferUsers, string.Empty, new { @class = "form-control select-list" })
+    </div>
+    <div class="form-group">
+        <button id="transfer_submit" class="btn-primary" type="submit">确认</button>
+    </div>
+</div>
+
 @section scripts{
     <script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+    <script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
 
-    <script>
+    <script>        
+
+        function transferBook(bookid, bookname) {
+            $("#transfer_book_name").text("书名: " + bookname);
+            $("#transfer_book_id").val(bookid);            
+
+            window.diagEditBookInfoIndex = layer.open({
+                type: 1,
+                title: "转让书籍",
+                closeBtn: 1,
+                moveType: 1,
+                shade: 0,
+                area: '450px',
+                skin: 'layui-layer-rim', //加上边框
+                content: $('#diag_transfer_book')
+            });
+        }
+
         $(document).ready(function () {
+            window.$transferBookName = $("#transfer_book_name");
+            window.$transferBookId = $("#transfer_book_id");
+            window.$transferUserId = $("#transfer_user_id");
+
+
+            $("#transfer_submit").on('click', function () {
+                var bookid = $transferBookId.val();
+                var userId =  $transferUserId.val();
+                if (bookid && userId) {
+                    $.ajax({
+                        url: '@Url.Action("TransferBookOwner")',
+                        data: { bookid: bookid, transferid: userId },
+                        cache: false,
+                        dataType: "json",
+                    })
+                    .success(function (res) {
+                        if (res.isSuccess) {
+                            alert("转让成功");
+                            window.location.reload();
+                        } else {
+                            layer.alert(res.message);
+                        }
+                    });
+                } else {
+                    layer.alert("请选择转让人，转让人不能是自己");
+                }
+            });
 
             $("input.switch").bootstrapSwitch({
                 onText: '公开',

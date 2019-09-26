@@ -89,6 +89,20 @@ create table if not exists book_owner(id INTEGER PRIMARY KEY, book_id int not nu
         }
 
         /// <summary>
+        /// 获取所有账号
+        /// </summary>
+        /// <returns></returns>
+        public IList<UserModel> GetAllUserId()
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var users = db.Query<UserModel>("select user_id, user_name from user").ToList();
+                return users;
+            }
+        }
+
+        /// <summary>
         /// 保存用户名
         /// </summary>
         /// <param name="userId"></param>
@@ -387,6 +401,23 @@ delete from books where id=@book_id;
                 CreateTableIfNotExist();
 
                 db.Execute("update books set is_public= @is_public where id=@id", new { id = bookid, is_public = access });
+            }
+        }
+
+        /// <summary>
+        /// 转让书籍所有权
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="owner"></param>
+        /// <param name="transferid"></param>
+        public void TransferBookOwner(long bookid, string owner, string transferid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                CheckPermissionForUpdateBook(owner, db, bookid);
+
+                db.Execute("update book_owner set user_id=@transferid where book_id = @book_id and is_owner = 1 and user_id = @owner", new { book_id = bookid, owner = owner, transferid = transferid });
             }
         }
 
