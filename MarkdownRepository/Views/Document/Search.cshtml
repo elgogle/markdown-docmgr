@@ -56,7 +56,7 @@
                 }
                 
                 <div>
-                    <a href="@Url.Action("Show", new { id = item.rowid })">
+                    <a href="@(item.ref_book_id>0?Url.Action("ShowBook", new { bookid = item.ref_book_id, docId = item.rowid }):Url.Action("Show", new { id = item.rowid }))">
                         <h4>@Html.Raw(item.title)</h4>  
                         <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
                             @Html.Raw(item.content)

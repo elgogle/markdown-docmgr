@@ -483,6 +483,8 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
                     return null;
 
                 var doc = Get(directory.document_id);
+                doc.ref_book_directory_id = directory.id;
+                doc.ref_book_id = directory.document_id;
                 return doc;
             }
         }
@@ -754,10 +756,12 @@ delete from documents_follow where doc_id=@id;
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                var document = db.Query<Document>(@"select b.id as rowid, title, content, category, creat_at, update_at, creator, is_public, ifnull(c.count,1) as read_count
+                var document = db.Query<Document>(@"select b.id as rowid, a.title, a.content, a.category, b.creat_at, b.update_at, b.creator, b.is_public, 
+                                                        ifnull(c.count,1) as read_count, ifnull(d.id, 0) as ref_book_directory_id, ifnull(d.book_id, 0) as ref_book_id
                                                     from documents a 
                                                     inner join documents_owner b on a.rowid = b.id
                                                     left outer join documents_read_count c on b.id = c.doc_id 
+                                                    left outer join book_directories d on d.document_id = b.id
                                                     where b.id=@id;
 
                                                     insert or ignore into documents_read_count(count, doc_id) values(1, @id);
@@ -890,9 +894,12 @@ select b.id as rowid,
     a.category,
     b.creat_at, 
     b.update_at, 
-    b.creator
+    b.creator,
+    ifnull(d.id, 0) as ref_book_directory_id,
+    ifnull(d.book_id, 0) as ref_book_id
 from documents a
 inner join documents_owner b on b.id = a.rowid
+left outer join book_directories d on d.document_id = b.id
 WHERE  b.id in @list 
     and (b.creator = @userId 
         or (b.creator <> @userId and b.is_public=1) 

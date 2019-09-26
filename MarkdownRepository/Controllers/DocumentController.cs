@@ -691,6 +691,11 @@ namespace MarkdownRepository.Controllers
             else
             {
                 book = docMgr.GetBookByDoc(docId, this.UserId);
+                var jumpToDoc = book.BookDirectory.FirstOrDefault(t => t.document_id == docId);
+                if (jumpToDoc != null)
+                {
+                    ViewBag.JumpToDirectoryId = jumpToDoc.id;
+                }
             }
 
             var dirNav = GetBookDirectoryNavigator(book);

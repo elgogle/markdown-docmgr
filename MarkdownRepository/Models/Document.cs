@@ -16,6 +16,9 @@ namespace MarkdownRepository.Models
         public string creator { get; set; }
         public DocumentAccess is_public { get; set; }
         public int read_count { get; set; }
+
+        public long ref_book_id { get; set; }
+        public long ref_book_directory_id { get; set; }
     }
 
     public class DocumentOwner

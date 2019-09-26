@@ -275,6 +275,7 @@ div.window-body{
 
     <script>
         window.directoryNavigator = @Html.Raw(ViewBag.DirectoryNavigator);
+        window.jumpToDirectory = '@(ViewBag.JumpToDirectoryId??0)';
 
         $(document).ready(function () {
             $bookId = $("#book_id");
@@ -383,7 +384,11 @@ div.window-body{
             setTimeout(function(){
                 if(window.directoryNavigator && directoryNavigator.length > 0){
                     jsTree.jstree().deselect_all();
-                    jsTree.jstree().select_node([directoryNavigator[0]]);
+                    if(jumpToDirectory > 0){
+                        jsTree.jstree().select_node([jumpToDirectory]);
+                    }else{
+                        jsTree.jstree().select_node([directoryNavigator[0]]);
+                    }
                 }
             }, 500);
         });
