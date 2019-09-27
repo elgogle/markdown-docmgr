@@ -481,29 +481,31 @@
                 parentDirId = parentDirId == "#" ? "0" : parentDirId;
 
                 if (dirId) {
-                    //delete
-                    $.post('@Url.Action("DeleteBookDirectory", "Document")',
-                        {
-                            bookDirecotryId: dirId
-                        },
-                        function (res) {
-                            if (res.isSuccess) {
-                                $lableCurrentDirPath.val('');
-                                $currentDir.val('');
-                                $currentDirId.val('');
-                                $parentDirId.val('');
+                    if (confirm("确认要删除该目录吗？提醒：删除目录会连同关联的文章一并删除")) {
+                        //delete
+                        $.post('@Url.Action("DeleteBookDirectory", "Document")',
+                            {
+                                bookDirecotryId: dirId
+                            },
+                            function (res) {
+                                if (res.isSuccess) {
+                                    $lableCurrentDirPath.val('');
+                                    $currentDir.val('');
+                                    $currentDirId.val('');
+                                    $parentDirId.val('');
 
-                                // 刷新目录树
-                                window.jsTree.jstree().refresh();
-                                setTimeout(function () {
-                                    if (parentDirId) {
-                                        // 选择父目录
-                                        jsTree.jstree().deselect_all();
-                                        jsTree.jstree().select_node([parentDirId], false);
-                                    }
-                                }, 500);
-                            }
-                        });
+                                    // 刷新目录树
+                                    window.jsTree.jstree().refresh();
+                                    setTimeout(function () {
+                                        if (parentDirId) {
+                                            // 选择父目录
+                                            jsTree.jstree().deselect_all();
+                                            jsTree.jstree().select_node([parentDirId], false);
+                                        }
+                                    }, 500);
+                                }
+                            });
+                    }
                 }
             });
 
