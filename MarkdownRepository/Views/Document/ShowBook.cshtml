@@ -255,6 +255,8 @@ div.window-body{
                         <textarea id="md_content" style="display:none;">@Model.Book.description
                         </textarea>
                     </div>
+
+                    <div id="comments"></div>
                 </div>
             </div>
             
@@ -267,6 +269,8 @@ div.window-body{
     </div>
 
 </div>
+
+
 
 @section scripts{
     <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
@@ -341,8 +345,10 @@ div.window-body{
                 })
                 .success(function(res){
                     $("#md").empty();
+                    $("#comments").hide();
                     if(res.isSuccess && res.data && res.data.content){
                         $("#md").append("<textarea>" + res.data.content + "</textarea>")
+                        $("#comments").show();
                     }else{
                         $("#md").append("<textarea></textarea>")
                     }
@@ -395,7 +401,7 @@ div.window-body{
 
     </script>
 
-@*<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
 <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
 <script>
     (function () {
@@ -407,5 +413,6 @@ div.window-body{
             apiUrl: "http://192.168.13.119/web-comment"
         });
     })();
-</script>*@
+</script>
+
 }
