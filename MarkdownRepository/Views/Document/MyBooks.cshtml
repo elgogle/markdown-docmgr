@@ -54,7 +54,7 @@
         }
 
         .bootstrap-switch, .bootstrap-switch.bootstrap-switch-animate .bootstrap-switch-container {
-            height: 25px;
+            /*height: 25px;*/
         }
         
 
@@ -100,7 +100,9 @@
                         <div class="toolbar">
                             <input type="checkbox" class="switch" data-value-book-id="@item.id" @(item.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC ? "checked" : "")>
 
-                            <button class="btn-primary btn-xs" onclick="transferBook(@item.id, '@item.name')" type="button">转让书籍</button>                            
+                            <button class="btn btn-primary btn-xs" onclick="transferBook(@item.id, '@item.name')" type="button">转让书籍</button>   
+                            
+                            <a class="btn btn-primary btn-xs" href="@Url.Action("EditBook", new { id = item.id })"><i class="glyphicon glyphicon-edit"></i> 编辑</a>                     
                         </div>
 
                     </li>

@@ -53,7 +53,7 @@ namespace MarkdownRepository.Controllers
         {
             int pageSize = 50;
             int pageNumber = page ?? 1;
-            var result = docMgr.MyDocument(UserId).ToPagedList(pageNumber, pageSize);
+            var result = docMgr.MyDocument(UserId);
             var category = docMgr.GetMyCategory(UserId);
             ViewBag.Category = category;
             ViewBag.Action = "MyDocs";
@@ -64,7 +64,7 @@ namespace MarkdownRepository.Controllers
                     text = t.Item1,
                     weight = t.Item2
                 }));
-            return View(result);
+            return View(result.ToPagedList(pageNumber, pageSize));
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace MarkdownRepository.Controllers
         {
             int pageSize = 50;
             int pageNumber = page ?? 1;
-            var result = docMgr.AllDocument().ToPagedList(pageNumber, pageSize);
+            var result = docMgr.AllDocument();
             var category = docMgr.GetCategory();
             //var creator = docMgr.GetCreator();
             var myFollowedDocs = docMgr.GetFollowDocuments(User.Identity.IsAuthenticated?UserId:"");
@@ -93,7 +93,7 @@ namespace MarkdownRepository.Controllers
                     text = t.Item1,
                     weight = t.Item2
                 }));
-            return View(result);
+            return View(result.ToPagedList(pageNumber, pageSize));
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace MarkdownRepository.Controllers
 
             if (!String.IsNullOrWhiteSpace(searchText))
             {
-                var result = docMgr.Search(searchText, UserId).ToPagedList(pageNumber, pageSize);
+                var result = docMgr.Search(searchText, UserId);
                 if (result != null && result.Count > 0)
                 {
                     foreach (var r in result)
@@ -164,7 +164,7 @@ namespace MarkdownRepository.Controllers
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 
-                    return View(result);
+                    return View(result.ToPagedList(pageNumber, pageSize));
                 }
             }
 
@@ -177,12 +177,14 @@ namespace MarkdownRepository.Controllers
         /// <param name="category"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult SearchByCategory(string category, bool byOwner)
+        public ActionResult SearchByCategory(string category, bool byOwner, int? page)
         {
             ViewBag.CurrentFilter = category;
 
             if (!String.IsNullOrWhiteSpace(category))
             {
+                int pageSize = 50;
+                int pageNumber = page ?? 1;
                 var result = docMgr.SearchByCategory(category, byOwner?UserId:"");
                 foreach (var r in result)
                 {
@@ -191,7 +193,7 @@ namespace MarkdownRepository.Controllers
                     r.category = SplitContent.HightLight(category, r.category);
                 }
 
-                return View("Search", result);
+                return View("Search", result.ToPagedList(pageNumber, pageSize));
             }
 
             return View("Search");
@@ -393,8 +395,8 @@ namespace MarkdownRepository.Controllers
         {
             int pageSize = 50;
             int pageNumber = page ?? 1;
-            var books = docMgr.GetBooks().ToPagedList(pageNumber, pageSize);
-            return View(books);
+            var books = docMgr.GetBooks();
+            return View(books.ToPagedList(pageNumber, pageSize));
         }
 
         public ActionResult MyBooks()
