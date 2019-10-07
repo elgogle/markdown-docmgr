@@ -1,7 +1,7 @@
 @using MarkdownRepository.Lib
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
+Layout = "~/Views/Shared/_Layout.cshtml";
+var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 }
 @model MarkdownRepository.Models.Document
 
@@ -14,7 +14,7 @@
         text-align: center;
         float: right;
         color: white;
-        background-color: rgba(0,0,0,0.75);
+        background-color: rgba(0, 0, 0, 0.75);
         padding: 0 5px;
         cursor: pointer;
         pointer-events: all;
@@ -24,16 +24,18 @@
         pointer-events: none;
     }
 
-    .author-info{
-	    font-size: 0.6em;
+    .author-info {
+        font-size: 0.6em;
         color: gray;
-        margin-bottom:1em;
+        margin-bottom: 1em;
     }
-    .category-info{
-        display:flex;
+
+    .category-info {
+        display: flex;
         flex-wrap: wrap;
     }
-    a.tag-item{
+
+    a.tag-item {
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex;
@@ -49,16 +51,19 @@
         cursor: pointer;
         color: #909090;
     }
-    .tag-title{
+
+    .tag-title {
         padding: 0 .75rem;
         font-size: 1rem;
         line-height: 1.75rem;
         color: #919191;
     }
-    .tag-box{
-        margin:0.9em;
+
+    .tag-box {
+        margin: 0.9em;
     }
-    .tag-box h5{
+
+    .tag-box h5 {
         border-left-style: solid;
         border-left-color: gray;
         border-left-width: thin;
@@ -66,23 +71,24 @@
         padding: 0.2em;
         color: gray;
     }
-    .title{
-        border-bottom-style:solid;
-        border-bottom-width:2px;
-        border-bottom-color:black;
+
+    .title {
+        border-bottom-style: solid;
+        border-bottom-width: 2px;
+        border-bottom-color: black;
     }
 </style>
 
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
 {
-<div class="pull-right" style="font-size:0.7em;" >
-    <a href="@Url.Action("Create", new { id = Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>     
+<div class="pull-right" style="font-size:0.7em;">
+    <a href="@Url.Action(" Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
 </div>
 }
 
 @if (TempData["RedirectReason"] == "Unauthorized")
 {
-    <b style="color:Red">你无权修改！</b>
+<b style="color:Red">你无权修改！</b>
 }
 
 <h2 style="" class="title">@Model.title</h2>
@@ -96,14 +102,14 @@
 @if (!Model.category.IsEmpty())
 {
 
-    <div class="category-info">
-        @foreach (var c in Model.category.Split(','))
-        {
-            <a class="tag-item" href="@Url.Action("SearchByCategory", new { category = c, byOwner=false })">
-                <div class="tag-title">@c</div>
-            </a>
-        }
-    </div>
+<div class="category-info">
+    @foreach (var c in Model.category.Split(','))
+    {
+    <a class="tag-item" href="@Url.Action(" SearchByCategory", new { category=c, byOwner=false })">
+        <div class="tag-title">@c</div>
+    </a>
+    }
+</div>
 }
 
 <div id="toc_container"></div>
@@ -112,64 +118,73 @@
     <textarea style="display:none;">@Model.content</textarea>
 </div>
 
-@if (User.Identity.IsAuthenticated && !Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
+@if (User.Identity.IsAuthenticated && !Model.creator.Equals(User.Identity.Name.GetUserName(),
+StringComparison.InvariantCultureIgnoreCase))
 {
-    <div id="follow_doc" style="" class="follow-doc"><span id="follow_text" class="" data-toggle="tooltip" title="@textOfFollow">@textOfFollow</span></div>
+<div id="follow_doc" style="" class="follow-doc"><span id="follow_text" class="" data-toggle="tooltip"
+        title="@textOfFollow">@textOfFollow</span></div>
 }
 
 <div id="comments"></div>
 
 @section style{
-    @System.Web.Optimization.Styles.Render("~/css/editor.md")
-    <style>
-        .follow-doc{
-             position: fixed;
-             top: 50%;
-             left: 100px;
-             font-size: 0.7em;
-             width: 30px;
-             cursor: pointer;
-             border: #ddd solid 1px;
-             border-radius: 5px;
-             padding: 7px;
-            color: #999;
-        }
+@System.Web.Optimization.Styles.Render("~/css/editor.md")
+<style>
+    .follow-doc {
+        position: fixed;
+        top: 50%;
+        left: 100px;
+        font-size: 0.7em;
+        width: 30px;
+        cursor: pointer;
+        border: #ddd solid 1px;
+        border-radius: 5px;
+        padding: 7px;
+        color: #999;
+    }
 
-        #toc_container ol.markdown-toc-list, ul.markdown-toc-list {
-            padding: 5px;
-        }
+    #toc_container ul {
+        list-style-type: none;
+    }
 
-        #toc_container:hover{
-            overflow:auto;
-        }
+    #toc_container ol.markdown-toc-list,
+    ul.markdown-toc-list {
+        padding: 5px;
+    }
 
-        @@media screen and (max-width: 1300px) {
-            #toc_container{
-                position:relative;
-            }
-        }
-        @@media screen and (min-width: 1301px) {
-            #toc_container{
-                position: fixed;
-                right: 20px;
-                top: 110px;
-                border: gray solid 1px;
-                border-radius: 7px;
-                overflow: hidden;
-                padding: 1em;
-                height: calc(100% - 150px);
-                width: 180px;
-                font-size: 0.8em;
-            }
-        }
+    #toc_container:hover {
+        overflow: auto;
+    }
 
-        a.reference-link::before {
-            content: '';
-            display: block;
-            height: 50px;
-            margin: -30px 0 0;
+    @@media screen and (max-width: 1300px) {
+        #toc_container {
+            position: relative;
         }
-    </style>
+    }
+
+    @@media screen and (min-width: 1301px) {
+        #toc_container {
+            position: fixed;
+            right: 20px;
+            top: 110px;
+            border: gray solid 1px;
+            border-radius: 7px;
+            overflow: hidden;
+            padding: 1em;
+            height: calc(100% - 150px);
+            width: 180px;
+            font-size: 0.8em;
+        }
+    }
+
+    /** 文章锚点点击，偏移一定距离，因为顶部有导航占有一定高度 */
+    a.reference-link::before {
+        content: '';
+        display: block;
+        height: 50px;
+        margin: -30px 0 0;
+    }
+</style>
 }
 
 @section scripts{
@@ -181,10 +196,9 @@
 
     $(document).ready(function () {
         function selectText(element) {
-            var doc = document
-				, text = element
-				, range, selection
-            ;
+            var doc = document,
+                text = element,
+                range, selection;
             if (doc.body.createTextRange) { //ms
                 range = doc.body.createTextRange();
                 range.moveToElementText(text);
@@ -214,7 +228,7 @@
 
             if (text === "关注文章") {
                 textChangeTo = "取消关注";
-                action ='@Url.Action("FollowDocument", "Document")';
+                action = '@Url.Action("FollowDocument", "Document")';
             } else {
                 textChangeTo = "关注文章";
                 action = '@Url.Action("CancelFollow", "Document")';
@@ -223,18 +237,18 @@
             $.ajax({
                 type: "POST",
                 url: action,
-                data: { id: id },
+                data: {
+                    id: id
+                },
                 success: function (data) {
                     if (data.success) {
                         $("#follow_text").text(textChangeTo);
                         $("#follow_text").attr('title', textChangeTo);
-                    } else {
-                    }
+                    } else {}
                 }
             });
         });
     });
-
 </script>
 
 

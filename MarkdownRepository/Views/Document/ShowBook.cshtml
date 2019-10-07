@@ -1,9 +1,9 @@
 ﻿@using MarkdownRepository.Lib
 
 @{
-    ViewBag.Title = "ShowBook";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var documentId = 0;
+ViewBag.Title = "ShowBook";
+Layout = "~/Views/Shared/_Layout.cshtml";
+var documentId = 0;
 }
 @model MarkdownRepository.Models.BookVm
 
@@ -14,192 +14,237 @@
 @System.Web.Optimization.Styles.Render("~/css/editor.md")
 
 <style>
+    .ui.input {
+        position: relative;
+        font-weight: 400;
+        font-style: normal;
+        display: inline-flex;
+        color: rgba(0, 0, 0, .87);
+    }
 
+    .ui.input>input {
+        margin: 0;
+        max-width: 100%;
+        flex: 1 0 auto;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        text-align: left;
+        line-height: 1.28571429em;
+        font-family: Helvetica Neue, NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, Microsoft Yahei, WenQuanYi Micro Hei, Arial, Helvetica, sans-serif;
+        padding: .64285714em 1em;
+        background: #fff;
+        border: 1px solid rgba(34, 36, 38, .15);
+        color: rgba(0, 0, 0, .87);
+        border-radius: .28571429rem;
+        transition: box-shadow .1s ease, border-color .1s ease;
+        box-shadow: none;
+    }
 
-.ui.input {
-    position: relative;
-    font-weight: 400;
-    font-style: normal;
-    display: inline-flex;
-    color: rgba(0,0,0,.87);
-}
-.ui.input>input {
-    margin: 0;
-    max-width: 100%;
-    flex: 1 0 auto;
-    outline: none;
-    -webkit-tap-highlight-color: rgba(255,255,255,0);
-    text-align: left;
-    line-height: 1.28571429em;
-    font-family: Helvetica Neue,NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,Microsoft Yahei,WenQuanYi Micro Hei,Arial,Helvetica,sans-serif;
-    padding: .64285714em 1em;
-    background: #fff;
-    border: 1px solid rgba(34,36,38,.15);
-    color: rgba(0,0,0,.87);
-    border-radius: .28571429rem;
-    transition: box-shadow .1s ease,border-color .1s ease;
-    box-shadow: none;
-}
-.ui.icon.input>i.icon:not(.link) {
-    pointer-events: none;
-}
-.ui.icon.input>i.icon:not(.link) {
-    pointer-events: none;
-}
-.ui.icon.input>i.icon {
-    cursor: default;
-    position: absolute;
-    line-height: 1;
-    text-align: center;
-    top: 0;
-    right: 0;
-    margin: 0;
-    height: 100%;
-    width: 2.67142857em;
-    opacity: .5;
-    border-radius: 0 .28571429rem .28571429rem 0;
-    transition: opacity .3s ease;
-}
-.ui.small.input {
-    font-size: .8em;
-}
-.ui.fluid.input {
-    display: flex;
-}
-.ui.fluid.input>input {
-    width: 0!important;
-}
-.ui.icon.input>input {
-    padding-right: 2.67142857em!important;
-    font-size:0.8em;
-}
+    .ui.icon.input>i.icon:not(.link) {
+        pointer-events: none;
+    }
 
-.window-container .window-head {
-    position: fixed;
-    flex: none;
-    order: 1;
-    top: 51px;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border-bottom: 1px solid #ddd;
-    z-index: 20;
-}
-.window-container .window-head .toolbar {
-    display: flex;
-    height: 55px;
-    padding: 0 .8em;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: stretch;
-}
-.window-container .window-head .toolbar .book-ins{
-    flex-grow:8;
-}
+    .ui.icon.input>i.icon:not(.link) {
+        pointer-events: none;
+    }
 
-.window-container .window-head .toolbar .extra2 {
-    margin-left: 15px;
-    flex-grow:0.5;
-    font-size:0.7em;
-}
-.window-container .window-body.with-sidebar .sidebar {
-    left: 0;
-}
-.window-container.with-head .window-body .sidebar {
-    top: 111px;
-}
+    .ui.icon.input>i.icon {
+        cursor: default;
+        position: absolute;
+        line-height: 1;
+        text-align: center;
+        top: 0;
+        right: 0;
+        margin: 0;
+        height: 100%;
+        width: 2.67142857em;
+        opacity: .5;
+        border-radius: 0 .28571429rem .28571429rem 0;
+        transition: opacity .3s ease;
+    }
 
-.window-body .sidebar {
-    position: fixed;
-    left: -280px;
-    top: 0;
-    bottom: 0;
-    width: 280px;
-    border-right: 1px solid #ddd;
-    background-color: #fafafa;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    transition: left .25s ease;
-}
-.window-body .sidebar .sidebar-body {
-    flex: auto;
-    overflow: hidden;
-    position: relative;
-}
+    .ui.small.input {
+        font-size: .8em;
+    }
 
-.window-body .sidebar .sidebar-header {
-    position: relative;
-    flex: none;
-}
-.window-body .sidebar .sidebar-header .search-form {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-    flex: none;
-}
-.window-body .sidebar .sidebar-body .catalog-body {
-    padding: 12px 0;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
-.window-body .sidebar .sidebar-body>div {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-div.window-body{
-    position:relative;
-    top: 50px;
-    margin-left: 280px;
-}
-.window-body .sidebar .sidebar-body .catalog-body>ul {
-    padding-right: 10px;
-}
-.window-body .sidebar .sidebar-body .catalog-body ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;    
-}
-.window-body .sidebar .sidebar-body .catalog-body>ul>li {
-    margin-left: 0;
-}
-.window-body .sidebar .sidebar-body .catalog-body ul li {
-    line-height: 30px;
-    margin-left: 24px;
-    cursor: pointer;
-    white-space: nowrap;
-    width: 100%;
-    overflow: hidden;
-}
+    .ui.fluid.input {
+        display: flex;
+    }
 
-       .blog-footer{
-           display:none;
-       }
+    .ui.fluid.input>input {
+        width: 0 !important;
+    }
 
-       #pre_page{
-           position:fixed;
-           left: 290px;
-            top: 20%;
-            height: 300px;
-            cursor: pointer;
-            display: flex;
-            flex-flow: column;
-            justify-content: center;
-       }
-       #next_page{
-           position:fixed;
-           right:10px;
-           top: 20%;
-            height: 300px;
-            cursor: pointer;
-            display: flex;
-            flex-flow: column;
-            justify-content: center;
-       }
+    .ui.icon.input>input {
+        padding-right: 2.67142857em !important;
+        font-size: 0.8em;
+    }
+
+    .window-container .window-head {
+        position: fixed;
+        flex: none;
+        order: 1;
+        top: 51px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+        z-index: 20;
+    }
+
+    .window-container .window-head .toolbar {
+        display: flex;
+        height: 55px;
+        padding: 0 .8em;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+    }
+
+    .window-container .window-head .toolbar .book-ins {
+        flex-grow: 8;
+    }
+
+    .window-container .window-head .toolbar .extra2 {
+        margin-left: 15px;
+        flex-grow: 0.5;
+        font-size: 0.7em;
+    }
+
+    .window-container .window-body.with-sidebar .sidebar {
+        left: 0;
+    }
+
+    .window-container.with-head .window-body .sidebar {
+        top: 111px;
+    }
+
+    .window-body .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        border-right: 1px solid #ddd;
+        background-color: #fafafa;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        transition: left .25s ease;
+    }
+
+    .window-body .sidebar .sidebar-body {
+        flex: auto;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .window-body .sidebar .sidebar-header {
+        position: relative;
+        flex: none;
+    }
+
+    .window-body .sidebar .sidebar-header .search-form {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        flex: none;
+    }
+
+    .window-body .sidebar .sidebar-body .catalog-body {
+        padding: 12px 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .window-body .sidebar .sidebar-body>div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    div.window-body {
+        position: relative;
+        top: 50px;
+        margin-left: 280px;
+    }
+
+    .window-body .sidebar .sidebar-body .catalog-body>ul {
+        padding-right: 10px;
+    }
+
+    .window-body .sidebar .sidebar-body .catalog-body ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .window-body .sidebar .sidebar-body .catalog-body>ul>li {
+        margin-left: 0;
+    }
+
+    .window-body .sidebar .sidebar-body .catalog-body ul li {
+        line-height: 30px;
+        margin-left: 24px;
+        cursor: pointer;
+        white-space: nowrap;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .blog-footer {
+        display: none;
+    }
+
+    #paging_tool {
+        padding: 1em;
+    }
+
+    #pre_page,
+    #next_page {
+        cursor: pointer;
+    }
+
+    #toc_container ul {
+        list-style-type: none;
+    }
+
+    #toc_container ol.markdown-toc-list,
+    ul.markdown-toc-list {
+        padding: 5px;
+    }
+
+    #toc_container:hover {
+        overflow: auto;
+    }
+
+    @@media screen and (max-width: 1300px) {
+        #toc_container {
+            position: relative;
+        }
+
+        #toc_container ul {
+            padding-left: 1em;
+        }
+    }
+
+    @@media screen and (min-width: 1301px) {
+        #toc_container {
+            position: fixed;
+            right: 20px;
+            top: 130px;
+            border: gray solid 1px;
+            border-radius: 7px;
+            overflow: hidden;
+            padding: 1em;
+            height: calc(100% - 150px);
+            width: 180px;
+            font-size: 0.8em;
+        }
+    }
 </style>
 }
 
@@ -208,10 +253,10 @@ div.window-body{
 <div>
     <div id="main">
         <div class="window-container with-head">
-            
+
             <div class="window-head">
                 <div class="toolbar">
-                    <div class="book-ins">                        
+                    <div class="book-ins">
                         <h3>
                             书名: @Model.Book.name
                         </h3>
@@ -221,12 +266,14 @@ div.window-body{
                         </p>
                     </div>
 
-                    <div class="extra2">    
-                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id == User.Identity.Name.GetUserName() && t.is_owner))
+                    <div class="extra2">
+                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
+                        User.Identity.Name.GetUserName() && t.is_owner))
                         {
-                        <a href="@Url.Action("EditBook", new { id = Model.Book.id })"><i class="glyphicon glyphicon-edit"></i> 编辑</a>            
+                        <a href="@Url.Action(" EditBook", new { id=Model.Book.id })"><i
+                                class="glyphicon glyphicon-edit"></i> 编辑</a>
                         }
-                    </div>                   
+                    </div>
                 </div>
             </div>
             <div class="window-body with-sidebar">
@@ -240,10 +287,10 @@ div.window-body{
                     </div>*@
                     <div class="sidebar-body">
                         <div class="catalog-body">
-                            <div  id="toc"></div>         
+                            <div id="toc"></div>
                         </div>
                     </div>
-                    
+
                 </div>
 
 
@@ -251,20 +298,24 @@ div.window-body{
 
             <div class="window-body">
                 <div class="doc">
+
+                    <div id="toc_container"></div>
+
                     <div id="md">
                         <textarea id="md_content" style="display:none;">@Model.Book.description
                         </textarea>
                     </div>
 
+                    <div id="paging_tool">
+                        <input type="hidden" id="current_dir_id" />
+                        <div id="pre_page" class="pull-left"><span>上一章</span></div>
+                        <div id="next_page" class="pull-right"><span>下一章</span></div>
+                    </div>
+
                     <div id="comments"></div>
                 </div>
             </div>
-            
-            <div>
-                <input type="hidden" id="current_dir_id" />
-                <div id="pre_page"><span>上一章</span></div>
-                <div id="next_page"><span>下一章</span></div>
-            </div>            
+
         </div>
     </div>
 
@@ -273,139 +324,141 @@ div.window-body{
 
 
 @section scripts{
-    <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
+<script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
 
-    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+@System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
-    <script>
-        window.directoryNavigator = @Html.Raw(ViewBag.DirectoryNavigator);
-        window.jumpToDirectory = '@(ViewBag.JumpToDirectoryId??0)';
+<script>
+    window.directoryNavigator = @Html.Raw(ViewBag.DirectoryNavigator);
+    window.jumpToDirectory = '@(ViewBag.JumpToDirectoryId??0)';
 
-        $(document).ready(function () {
-            $bookId = $("#book_id");
-            $currentDirId = $("#current_dir_id");
+    $(document).ready(function () {
+        $bookId = $("#book_id");
+        $currentDirId = $("#current_dir_id");
 
-            window.jsTree = $("#toc").jstree({
-                'plugins': ["wholerow", "types"],
-                "types": {
-                    "default": {
-                        "icon": false  // 删除默认图标
-                    }
-                },
-                'core': {
-                    'check_callback': true,
-                    "multiple": false,
-                    'animation': 0,
-                    'data': function (obj, callback) {
-                        var _this = this;
-                        $.ajax({
+        window.jsTree = $("#toc").jstree({
+            'plugins': ["wholerow", "types"],
+            "types": {
+                "default": {
+                    "icon": false // 删除默认图标
+                }
+            },
+            'core': {
+                'check_callback': true,
+                "multiple": false,
+                'animation': 0,
+                'data': function (obj, callback) {
+                    var _this = this;
+                    $.ajax({
                             url: '@Url.Action("GetBookDirectory")',
-                            data: { bookid: $bookId.val() },
+                            data: {
+                                bookid: $bookId.val()
+                            },
                             cache: false,
                             dataType: "json",
                         })
                         .success(function (res) {
                             callback.call(_this, res.data);
                         });
-                    }
                 }
-            }).on('select_node.jstree', function (node, selected) {
-                $currentDirId.val(selected.node.id);
-                loadDocument(selected.node.id);
-            });
+            }
+        }).on('select_node.jstree', function (node, selected) {
+            $currentDirId.val(selected.node.id);
+            loadDocument(selected.node.id);
+        });
 
-            $('#pre_page').on('click', function () {
-                if(window.directoryNavigator){
-                    var currentIndex = directoryNavigator.indexOf($currentDirId.val());
-                    if(currentIndex > 0){
-                        var pre = directoryNavigator[currentIndex - 1];
-                        jsTree.jstree().deselect_all();
-                        jsTree.jstree().select_node([pre]);
-                    }
+        $('#pre_page').on('click', function () {
+            if (window.directoryNavigator) {
+                var currentIndex = directoryNavigator.indexOf($currentDirId.val());
+                if (currentIndex > 0) {
+                    var pre = directoryNavigator[currentIndex - 1];
+                    jsTree.jstree().deselect_all();
+                    jsTree.jstree().select_node([pre]);
                 }
-            });
+            }
+        });
 
-            $('#next_page').on('click', function () {
-                if(window.directoryNavigator){
-                    var currentIndex = directoryNavigator.indexOf($currentDirId.val());
-                    if(currentIndex < (directoryNavigator.length -1)){
-                        var next = directoryNavigator[currentIndex + 1];
-                        jsTree.jstree().deselect_all();
-                        jsTree.jstree().select_node([next]);
-                    }
+        $('#next_page').on('click', function () {
+            if (window.directoryNavigator) {
+                var currentIndex = directoryNavigator.indexOf($currentDirId.val());
+                if (currentIndex < (directoryNavigator.length - 1)) {
+                    var next = directoryNavigator[currentIndex + 1];
+                    jsTree.jstree().deselect_all();
+                    jsTree.jstree().select_node([next]);
                 }
-            });
+            }
+        });
 
-            function loadDocument(directoryid){
-                $.ajax({
+        function loadDocument(directoryid) {
+            $.ajax({
                     url: '@Url.Action("GetDocument")',
                     dataType: "json",
-                    data: { directoryid : directoryid },
+                    data: {
+                        directoryid: directoryid
+                    },
                     cache: false,
                 })
-                .success(function(res){
+                .success(function (res) {
                     $("#md").empty();
                     $("#comments").hide();
-                    if(res.isSuccess && res.data && res.data.content){
+                    if (res.isSuccess && res.data && res.data.content) {
                         $("#md").append("<textarea>" + res.data.content + "</textarea>")
                         $("#comments").show();
-                    }else{
+                    } else {
                         $("#md").append("<textarea></textarea>")
                     }
 
-                    showMarkDown("md");
+                    showMarkDown("md", "#toc_container");
                 })
-                .error(function(){})
-                .complete(function(){});
+                .error(function () {})
+                .complete(function () {});
+        }
+
+        //showMarkDown("md", "#toc_container");
+
+        function selectText(element) {
+            var doc = document,
+                text = element,
+                range, selection;
+            if (doc.body.createTextRange) { //ms
+                range = doc.body.createTextRange();
+                range.moveToElementText(text);
+                range.select();
+            } else if (window.getSelection) { //all others
+                selection = window.getSelection();
+                range = doc.createRange();
+                range.selectNodeContents(text);
+                selection.removeAllRanges();
+                selection.addRange(range);
             }
+        }
 
-            showMarkDown("md");
+        var pre = document.getElementsByTagName("pre");
 
-            function selectText(element) {
-                var doc = document
-                    , text = element
-                    , range, selection
-                ;
-                if (doc.body.createTextRange) { //ms
-                    range = doc.body.createTextRange();
-                    range.moveToElementText(text);
-                    range.select();
-                } else if (window.getSelection) { //all others
-                    selection = window.getSelection();
-                    range = doc.createRange();
-                    range.selectNodeContents(text);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
+        for (var i = 0; i < pre.length; i++) {
+            pre[i].addEventListener('click', function () {
+                selectText(this);
+            });
+        }
+
+        setTimeout(function () {
+            if (window.directoryNavigator && directoryNavigator.length > 0) {
+                jsTree.jstree().deselect_all();
+                if (jumpToDirectory > 0) {
+                    jsTree.jstree().select_node([jumpToDirectory]);
+                } else {
+                    jsTree.jstree().select_node([directoryNavigator[0]]);
                 }
             }
-
-            var pre = document.getElementsByTagName("pre");
-
-            for (var i = 0; i < pre.length; i++) {
-                pre[i].addEventListener('click', function () {
-                    selectText(this);
-                });
-            }
-
-            setTimeout(function(){
-                if(window.directoryNavigator && directoryNavigator.length > 0){
-                    jsTree.jstree().deselect_all();
-                    if(jumpToDirectory > 0){
-                        jsTree.jstree().select_node([jumpToDirectory]);
-                    }else{
-                        jsTree.jstree().select_node([directoryNavigator[0]]);
-                    }
-                }
-            }, 500);
-        });
-
-    </script>
+        }, 500);
+    });
+</script>
 
 <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
 <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
 <script>
     (function () {
-        
+
         Comments({
             node: "#comments",
             articleId: @documentId,
