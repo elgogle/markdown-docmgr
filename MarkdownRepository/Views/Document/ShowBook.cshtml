@@ -245,6 +245,14 @@ var documentId = 0;
             font-size: 0.8em;
         }
     }
+
+    /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
+    a.reference-link::before {
+        content: '';
+        display: block;
+        height: 130px;
+        margin: -128px 0 0;
+    }
 </style>
 }
 
