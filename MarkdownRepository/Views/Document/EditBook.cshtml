@@ -1,238 +1,237 @@
 ﻿@using MarkdownRepository.Lib
 
 @{
-    ViewBag.Title = "EditBook";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var documentId = 0;
+ViewBag.Title = "EditBook";
+Layout = "~/Views/Shared/_Layout.cshtml";
+var documentId = 0;
 }
 @model MarkdownRepository.Models.BookVm
 
 
 @section style{
-    <link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
+<link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
 
-    @System.Web.Optimization.Styles.Render("~/css/editor.md")
+@System.Web.Optimization.Styles.Render("~/css/editor.md")
 
-    <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
-    <link href="~/javascripts/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+<link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
+<link href="~/javascripts/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
 
-    <style>
-        .ui.input {
-            position: relative;
-            font-weight: 400;
-            font-style: normal;
-            display: inline-flex;
-            color: rgba(0,0,0,.87);
-        }
+<style>
+    .ui.input {
+        position: relative;
+        font-weight: 400;
+        font-style: normal;
+        display: inline-flex;
+        color: rgba(0, 0, 0, .87);
+    }
 
-            .ui.input > input {
-                margin: 0;
-                max-width: 100%;
-                flex: 1 0 auto;
-                outline: none;
-                -webkit-tap-highlight-color: rgba(255,255,255,0);
-                text-align: left;
-                line-height: 1.28571429em;
-                font-family: Helvetica Neue,NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,Microsoft Yahei,WenQuanYi Micro Hei,Arial,Helvetica,sans-serif;
-                padding: .64285714em 1em;
-                background: #fff;
-                border: 1px solid rgba(34,36,38,.15);
-                color: rgba(0,0,0,.87);
-                border-radius: .28571429rem;
-                transition: box-shadow .1s ease,border-color .1s ease;
-                box-shadow: none;
-            }
+    .ui.input>input {
+        margin: 0;
+        max-width: 100%;
+        flex: 1 0 auto;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        text-align: left;
+        line-height: 1.28571429em;
+        font-family: Helvetica Neue, NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, Microsoft Yahei, WenQuanYi Micro Hei, Arial, Helvetica, sans-serif;
+        padding: .64285714em 1em;
+        background: #fff;
+        border: 1px solid rgba(34, 36, 38, .15);
+        color: rgba(0, 0, 0, .87);
+        border-radius: .28571429rem;
+        transition: box-shadow .1s ease, border-color .1s ease;
+        box-shadow: none;
+    }
 
-        .ui.icon.input > i.icon:not(.link) {
-            pointer-events: none;
-        }
+    .ui.icon.input>i.icon:not(.link) {
+        pointer-events: none;
+    }
 
-        .ui.icon.input > i.icon:not(.link) {
-            pointer-events: none;
-        }
+    .ui.icon.input>i.icon:not(.link) {
+        pointer-events: none;
+    }
 
-        .ui.icon.input > i.icon {
-            cursor: default;
-            position: absolute;
-            line-height: 1;
-            text-align: center;
-            top: 0;
-            right: 0;
-            margin: 0;
-            height: 100%;
-            width: 2.67142857em;
-            opacity: .5;
-            border-radius: 0 .28571429rem .28571429rem 0;
-            transition: opacity .3s ease;
-        }
+    .ui.icon.input>i.icon {
+        cursor: default;
+        position: absolute;
+        line-height: 1;
+        text-align: center;
+        top: 0;
+        right: 0;
+        margin: 0;
+        height: 100%;
+        width: 2.67142857em;
+        opacity: .5;
+        border-radius: 0 .28571429rem .28571429rem 0;
+        transition: opacity .3s ease;
+    }
 
-        .ui.small.input {
-            font-size: .8em;
-        }
+    .ui.small.input {
+        font-size: .8em;
+    }
 
-        .ui.fluid.input {
-            display: flex;
-        }
+    .ui.fluid.input {
+        display: flex;
+    }
 
-            .ui.fluid.input > input {
-                width: 0 !important;
-            }
+    .ui.fluid.input>input {
+        width: 0 !important;
+    }
 
-        .ui.icon.input > input {
-            padding-right: 2.67142857em !important;
-            font-size: 0.8em;
-        }
+    .ui.icon.input>input {
+        padding-right: 2.67142857em !important;
+        font-size: 0.8em;
+    }
 
-        .window-container .window-head {
-            position: fixed;
-            flex: none;
-            order: 1;
-            top: 51px;
-            left: 0;
-            right: 0;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-            z-index: 20;
-        }
+    .window-container .window-head {
+        position: fixed;
+        flex: none;
+        order: 1;
+        top: 51px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+        z-index: 20;
+    }
 
-            .window-container .window-head .toolbar {
-                display: flex;
-                height: 55px;
-                padding: 0 .8em;
-                flex-direction: row;
-                flex-wrap: nowrap;
-                justify-content: flex-start;
-                align-items: stretch;
-            }
+    .window-container .window-head .toolbar {
+        display: flex;
+        height: 55px;
+        padding: 0 .8em;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;
+    }
 
-                .window-container .window-head .toolbar .book-ins {
-                    flex-grow: 8;
-                }
+    .window-container .window-head .toolbar .book-ins {
+        flex-grow: 8;
+    }
 
-                .window-container .window-head .toolbar .extra2 {
-                    margin-left: 15px;
-                    flex-grow: 0.5;
-                    font-size: 0.7em;
-                }
+    .window-container .window-head .toolbar .extra2 {
+        margin-left: 15px;
+        flex-grow: 0.5;
+        font-size: 0.7em;
+    }
 
-        .window-container .window-body.with-sidebar .sidebar {
-            left: 0;
-        }
+    .window-container .window-body.with-sidebar .sidebar {
+        left: 0;
+    }
 
-        .window-container.with-head .window-body .sidebar {
-            top: 113px;
-        }
+    .window-container.with-head .window-body .sidebar {
+        top: 113px;
+    }
 
-        .window-body .sidebar {
-            position: fixed;
-            left: -280px;
-            top: 0;
-            bottom: 0;
-            width: 280px;
-            border-right: 1px solid #ddd;
-            background-color: #fafafa;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: nowrap;
-            transition: left .25s ease;
-        }
+    .window-body .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        border-right: 1px solid #ddd;
+        background-color: #fafafa;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        transition: left .25s ease;
+    }
 
-            .window-body .sidebar .sidebar-body {
-                flex: auto;
-                overflow: hidden;
-                position: relative;
-            }
+    .window-body .sidebar .sidebar-body {
+        flex: auto;
+        overflow: hidden;
+        position: relative;
+    }
 
-            .window-body .sidebar .sidebar-header {
-                position: relative;
-                flex: none;
-            }
+    .window-body .sidebar .sidebar-header {
+        position: relative;
+        flex: none;
+    }
 
-                .window-body .sidebar .sidebar-header .search-form {
-                    padding: 12px;
-                    border-bottom: 1px solid #ddd;
-                    flex: none;
-                }
+    .window-body .sidebar .sidebar-header .search-form {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        flex: none;
+    }
 
-            .window-body .sidebar .sidebar-body .catalog-body {
-                padding: 12px 0;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-            }
+    .window-body .sidebar .sidebar-body .catalog-body {
+        padding: 12px 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
 
-            .window-body .sidebar .sidebar-body > div {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
+    .window-body .sidebar .sidebar-body>div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
 
-        div.window-body {
-            position: relative;
-            top: 50px;
-            margin-left: 280px;
-        }
+    div.window-body {
+        position: relative;
+        top: 50px;
+        margin-left: 280px;
+    }
 
-        .window-body .sidebar .sidebar-body .catalog-body > ul {
-            padding-right: 10px;
-        }
+    .window-body .sidebar .sidebar-body .catalog-body>ul {
+        padding-right: 10px;
+    }
 
-        .window-body .sidebar .sidebar-body .catalog-body ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    .window-body .sidebar .sidebar-body .catalog-body ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
 
-        .window-body .sidebar .sidebar-body .catalog-body > ul > li {
-            margin-left: 0;
-        }
+    .window-body .sidebar .sidebar-body .catalog-body>ul>li {
+        margin-left: 0;
+    }
 
-        .window-body .sidebar .sidebar-body .catalog-body ul li {
-            line-height: 30px;
-            margin-left: 24px;
-            cursor: pointer;
-            white-space: nowrap;
-            width: 100%;
-            overflow: hidden;
-        }
+    .window-body .sidebar .sidebar-body .catalog-body ul li {
+        line-height: 30px;
+        margin-left: 24px;
+        cursor: pointer;
+        white-space: nowrap;
+        width: 100%;
+        overflow: hidden;
+    }
 
-        @@media only screen and (min-width: 600px) .window-container .window-body.with-sidebar .workspace {
-            margin-left: 280px;
-        }
+    @@media only screen and (min-width: 600px) .window-container .window-body.with-sidebar .workspace {
+        margin-left: 280px;
+    }
 
-        .window-body .workspace {
-          position: fixed;
+    .window-body .workspace {
+        position: fixed;
         left: 300px;
         width: calc(100% - 300px);
         padding: 0 1em;
         height: calc(100% - 130px);
         overflow: auto;
-        }
+    }
 
-       #content {
-           min-height: 240px;
-       }     
-        
-       .blog-footer{
-           display:none;
-       }
+    #content {
+        min-height: 240px;
+    }
 
-        .window-body .workspace .article .article-head {
+    .blog-footer {
+        display: none;
+    }
+
+    .window-body .workspace .article .article-head {
         display: flex;
         margin-bottom: 1em;
         flex-flow: column;
     }
 
-        #layui-layer-shade1{
-            z-index: 999!important;
-        }
-
-    </style>
+    #layui-layer-shade1 {
+        z-index: 999 !important;
+    }
+</style>
 }
 
-<input type="hidden" id="book_id" value="@Model.Book.id"/>
+<input type="hidden" id="book_id" value="@Model.Book.id" />
 
 
 <div>
@@ -245,11 +244,13 @@
                             <span>书名:</span><span id="label_book_name">@Model.Book.name</span>
                         </h3>
                         <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
-                            <span style="">简介: </span><span id="label_book_desc">@Model.Book.description.GetShortDesc()</span>
+                            <span style="">简介: </span><span
+                                id="label_book_desc">@Model.Book.description.GetShortDesc()</span>
                         </p>
                     </div>
                     <div>
-                        <button id="btn_edit_book_title" class="btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介</button>
+                        <button id="btn_edit_book_title" class="btn-default btn-xs"><i
+                                class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介</button>
                     </div>
                 </div>
             </div>
@@ -276,7 +277,8 @@
                             <div>
                                 <div class="input-group">
                                     <span class="input-group-addon" style="width:100px;">完整目录: </span>
-                                    <span class="input-group-addon" style="width:99%;text-align:left" id="lable_current_dir_path"></span>
+                                    <span class="input-group-addon" style="width:99%;text-align:left"
+                                        id="lable_current_dir_path"></span>
                                 </div>
                             </div>
 
@@ -285,13 +287,16 @@
                                     <span class="input-group-addon">当前目录: </span>
                                     <input type="text" class="form-control" id="current_directory" value="">
                                     <span class="input-group-btn">
-                                        <button id="btn_new_directory" class="btn btn-default" type="button">新增同级目录</button>
+                                        <button id="btn_new_directory" class="btn btn-default"
+                                            type="button">新增同级目录</button>
                                     </span>
                                     <span class="input-group-btn">
-                                        <button id="btn_modify_directory" class="btn btn-default" type="button">修改当前目录</button>
+                                        <button id="btn_modify_directory" class="btn btn-default"
+                                            type="button">修改当前目录</button>
                                     </span>
                                     <span class="input-group-btn">
-                                        <button id="btn_del_directory" class="btn btn-default" type="button">删除当前目录</button>
+                                        <button id="btn_del_directory" class="btn btn-default"
+                                            type="button">删除当前目录</button>
                                     </span>
 
                                     <input type="hidden" id="parent_directory_id" value="" />
@@ -299,11 +304,13 @@
 
                                     <input type="text" class="form-control" id="new_sub_directory" value="">
                                     <span class="input-group-btn">
-                                        <button id="btn_new_sub_directory" class="btn btn-default" type="button">创建子目录</button>
+                                        <button id="btn_new_sub_directory" class="btn btn-default"
+                                            type="button">创建子目录</button>
                                     </span>
 
                                     <span class="input-group-btn">
-                                        <button id="btn_save_article" class="btn btn-default" type="button">保存文章</button>
+                                        <button id="btn_save_article" class="btn btn-default"
+                                            type="button">保存文章</button>
                                     </span>
                                 </div>
                             </div>
@@ -326,263 +333,267 @@
     <div class="col-md-6">
         <div class="form-group">
             <label>标题</label>
-            <input type="text" class="form-control" name="name" id="txt_book_name" placeholder="书名" value="@Model.Book.name">
+            <input type="text" class="form-control" name="name" id="txt_book_name" placeholder="书名"
+                value="@Model.Book.name">
         </div>
 
         <div class="form-group">
             <label>描述</label>
-            <textarea rows="3" class="form-control" id="txt_book_desc" name="description" style="height: 90px" placeholder="书的描述">@Model.Book.description</textarea>
+            <textarea rows="3" class="form-control" id="txt_book_desc" name="description" style="height: 90px"
+                placeholder="书的描述">@Model.Book.description</textarea>
             <p class="text">描述信息不超过500个字符</p>
         </div>
 
         <div class="form-group">
             <label>分类</label>
-            <input type="text" class="form-control" id="txt_book_category" name="category" placeholder="书籍分类" value="@Model.Book.category">
+            <input type="text" class="form-control" id="txt_book_category" name="category" placeholder="书籍分类"
+                value="@Model.Book.category">
             <p class="text">多个分类请用“;”分割</p>
         </div>
 
         <div class="form-group">
             <label>是否公开</label>
-            <input type="checkbox" class="switch" id="chk_book_is_public" name="is_public" @(Model.Book.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC?"checked":"")>
+            <input type="checkbox" class="switch" id="chk_book_is_public" name="is_public"
+                @(Model.Book.is_public==MarkdownRepository.Models.DocumentAccess.PUBLIC?"checked":"")>
         </div>
 
         <div class="form-group">
-            <button type="submit" id="btn_save_book_info" class="btn btn-success" data-loading-text="保存中...">保存修改</button>
+            <button type="submit" id="btn_save_book_info" class="btn btn-success"
+                data-loading-text="保存中...">保存修改</button>
         </div>
     </div>
 </div>
 
 @section scripts{
-    <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
+<script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
 
-    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+@System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
-    <script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
-    <script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+<script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
+<script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
 
-    <script>
-        $(document).ready(function () {
-            $currentDir = $("#current_directory");
-            $currentDirId = $("#current_directory_id");
-            $bookId = $("#book_id");
-            $lableCurrentDirPath = $("#lable_current_dir_path");
-            $parentDirId = $("#parent_directory_id");
-            $newSubDir = $("#new_sub_directory");
-            $mdContent = $("#md_content");
+<script>
+    $(document).ready(function () {
+        $currentDir = $("#current_directory");
+        $currentDirId = $("#current_directory_id");
+        $bookId = $("#book_id");
+        $lableCurrentDirPath = $("#lable_current_dir_path");
+        $parentDirId = $("#parent_directory_id");
+        $newSubDir = $("#new_sub_directory");
+        $mdContent = $("#md_content");
 
 
-            window.jsTree = $("#toc").jstree({
-                'plugins': ["wholerow", "types"],
-                "types": {
-                    "default": {
-                        "icon": false  // 删除默认图标
-                    }
-                },
-                'core': {
-                    'check_callback': true,
-                    "multiple": false,
-                    'animation': 0,
-                    'data': function (obj, callback) {
-                        var _this = this;
-                        $.ajax({
+        window.jsTree = $("#toc").jstree({
+            'plugins': ["wholerow", "types"],
+            "types": {
+                "default": {
+                    "icon": false // 删除默认图标
+                }
+            },
+            'core': {
+                'check_callback': true,
+                "multiple": false,
+                'animation': 0,
+                'data': function (obj, callback) {
+                    var _this = this;
+                    $.ajax({
                             url: '@Url.Action("GetBookDirectory")',
-                            data: { bookid: $bookId.val() },
+                            data: {
+                                bookid: $bookId.val()
+                            },
                             cache: false,
                             dataType: "json",
                         })
                         .success(function (res) {
                             callback.call(_this, res.data);
                         });
-                    }
                 }
-            }).on('select_node.jstree', function (node, selected) {
-                $parentDirId.val(selected.node.parent);
-                $currentDir.val(selected.node.text);
-                $currentDirId.val(selected.node.id);
-                $lableCurrentDirPath.text(getNodePath(selected.node.id));
-                loadDocument(selected.node.id);
-            });
+            }
+        }).on('select_node.jstree', function (node, selected) {
+            $parentDirId.val(selected.node.parent);
+            $currentDir.val(selected.node.text);
+            $currentDirId.val(selected.node.id);
+            $lableCurrentDirPath.text(getNodePath(selected.node.id));
+            loadDocument(selected.node.id);
+        });
 
-            $("#btn_modify_directory").on('click', function () {
-                var dir = $currentDir.val();
-                var dirId = $currentDirId.val();
-                var bookId = $bookId.val();
-                var parentDirId = ($parentDirId.val() || '#');
-                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+        $("#btn_modify_directory").on('click', function () {
+            var dir = $currentDir.val();
+            var dirId = $currentDirId.val();
+            var bookId = $bookId.val();
+            var parentDirId = ($parentDirId.val() || '#');
+            parentDirId = parentDirId == "#" ? "0" : parentDirId;
 
-                if (dirId) {
-                    //update
-                    $.post('@Url.Action("UpdateBookDirectory", "Document")',
-                        {
-                            bookid: bookId,
-                            directoryid: dirId,
-                            title: dir,
-                        },
-                        function (res) {
-                            // 刷新目录树
-                            window.jsTree.jstree().refresh();
-                        })
-                }
-            });
+            if (dirId) {
+                //update
+                $.post('@Url.Action("UpdateBookDirectory", "Document")', {
+                        bookid: bookId,
+                        directoryid: dirId,
+                        title: dir,
+                    },
+                    function (res) {
+                        // 刷新目录树
+                        window.jsTree.jstree().refresh();
+                    })
+            }
+        });
 
-            $("#btn_new_directory").on('click', function () {
-                var dir = $currentDir.val();
-                var dirId = $currentDirId.val();
-                var bookId = $bookId.val();
-                var newSubDir = $newSubDir.val();
-                var parentDirId = ($parentDirId.val() || '#');
-                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+        $("#btn_new_directory").on('click', function () {
+            var dir = $currentDir.val();
+            var dirId = $currentDirId.val();
+            var bookId = $bookId.val();
+            var newSubDir = $newSubDir.val();
+            var parentDirId = ($parentDirId.val() || '#');
+            parentDirId = parentDirId == "#" ? "0" : parentDirId;
 
-                if (dir) {
-                    $.post('@Url.Action("CreateBookDirectory", "Document")',
-                                    {
-                                        bookid: bookId,
-                                        parentId: parentDirId,
-                                        title: dir,
-                                    },
-                                    function (res) {
-                                        // 刷新目录树
-                                        window.jsTree.jstree().refresh();
-                                    })
-                }
-            });
+            if (dir) {
+                $.post('@Url.Action("CreateBookDirectory", "Document")', {
+                        bookid: bookId,
+                        parentId: parentDirId,
+                        title: dir,
+                    },
+                    function (res) {
+                        // 刷新目录树
+                        window.jsTree.jstree().refresh();
+                    })
+            }
+        });
 
-            $("#btn_new_sub_directory").on('click', function () {
-                var dir = $currentDir.val();
-                var dirId = $currentDirId.val();
-                var bookId = $bookId.val();
-                var newSubDir = $newSubDir.val();
-                var parentDirId = ($parentDirId.val() || '#');
-                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+        $("#btn_new_sub_directory").on('click', function () {
+            var dir = $currentDir.val();
+            var dirId = $currentDirId.val();
+            var bookId = $bookId.val();
+            var newSubDir = $newSubDir.val();
+            var parentDirId = ($parentDirId.val() || '#');
+            parentDirId = parentDirId == "#" ? "0" : parentDirId;
 
-                if (newSubDir) {
-                    //create
-                    $.post('@Url.Action("CreateBookDirectory", "Document")',
-                        {
-                            bookId: bookId,
-                            title: newSubDir,
-                            parentId: dirId,
-                            documentId: 0
-                        },
-                        function (res) {
-                            $newSubDir.val('');
-                            // 刷新目录树
-                            window.jsTree.jstree().refresh();
-                        });
-                }
-            });
+            if (newSubDir) {
+                //create
+                $.post('@Url.Action("CreateBookDirectory", "Document")', {
+                        bookId: bookId,
+                        title: newSubDir,
+                        parentId: dirId,
+                        documentId: 0
+                    },
+                    function (res) {
+                        $newSubDir.val('');
+                        // 刷新目录树
+                        window.jsTree.jstree().refresh();
+                    });
+            }
+        });
 
-            $("#btn_del_directory").on('click', function () {
-                var dir = $currentDir.val();
-                var dirId = $currentDirId.val();
-                var bookId = $bookId.val();
-                var newSubDir = $newSubDir.val();
-                var parentDirId = ($parentDirId.val() || '#');
-                parentDirId = parentDirId == "#" ? "0" : parentDirId;
+        $("#btn_del_directory").on('click', function () {
+            var dir = $currentDir.val();
+            var dirId = $currentDirId.val();
+            var bookId = $bookId.val();
+            var newSubDir = $newSubDir.val();
+            var parentDirId = ($parentDirId.val() || '#');
+            parentDirId = parentDirId == "#" ? "0" : parentDirId;
 
-                if (dirId) {
-                    if (confirm("确认要删除该目录吗？提醒：删除目录会连同关联的文章一并删除")) {
-                        //delete
-                        $.post('@Url.Action("DeleteBookDirectory", "Document")',
-                            {
-                                bookDirecotryId: dirId
-                            },
-                            function (res) {
-                                if (res.isSuccess) {
-                                    $lableCurrentDirPath.val('');
-                                    $currentDir.val('');
-                                    $currentDirId.val('');
-                                    $parentDirId.val('');
-
-                                    // 刷新目录树
-                                    window.jsTree.jstree().refresh();
-                                    setTimeout(function () {
-                                        if (parentDirId) {
-                                            // 选择父目录
-                                            jsTree.jstree().deselect_all();
-                                            jsTree.jstree().select_node([parentDirId], false);
-                                        }
-                                    }, 500);
-                                }
-                            });
-                    }
-                }
-            });
-
-
-            $("input.switch").bootstrapSwitch({
-                onText: '公开',
-                offText: '不公开',
-                size: 'mini',
-            });
-
-            $("#btn_edit_book_title").on('click', function () {
-                window.diagEditBookInfoIndex  = layer.open({
-                    type: 1,
-                    title: "修改书籍名称及简介",
-                    closeBtn: 1,
-                    moveType: 1,
-                    shade: 0,
-                    area: '516px',
-                    skin: 'layui-layer-rim', //加上边框
-                    content: $('#diag_edit_book_info')
-                });
-            });
-
-            $("#btn_save_book_info").on('click', function () {
-                var bookName = $("#txt_book_name").val();
-                var bookDesc = $("#txt_book_desc").val();
-                var bookCategory = $("#txt_book_category").val();
-                var access = $("#chk_book_is_public").is(':checked') ? 1 : 0;
-
-               $.post('@Url.Action("UpdateBook", "Document")',
-                        {
-                            bookid: $bookId.val(),
-                            name: bookName,
-                            description: bookDesc,
-                            category: bookCategory,
-                            access: access
+            if (dirId) {
+                if (confirm("确认要删除该目录吗？提醒：删除目录会连同关联的文章一并删除")) {
+                    //delete
+                    $.post('@Url.Action("DeleteBookDirectory", "Document")', {
+                            bookDirecotryId: dirId
                         },
                         function (res) {
                             if (res.isSuccess) {
-                                layer.close(diagEditBookInfoIndex);
-                                $("#label_book_name").text(bookName);
-                                $("#label_book_desc").text(bookDesc);
-                            } else {
-                                messageAlert("保存失败，请稍后重试");
+                                $lableCurrentDirPath.val('');
+                                $currentDir.val('');
+                                $currentDirId.val('');
+                                $parentDirId.val('');
+
+                                // 刷新目录树
+                                window.jsTree.jstree().refresh();
+                                setTimeout(function () {
+                                    if (parentDirId) {
+                                        // 选择父目录
+                                        jsTree.jstree().deselect_all();
+                                        jsTree.jstree().select_node([parentDirId], false);
+                                    }
+                                }, 500);
                             }
-                        })
-            });
-
-            function messageAlert(message) {
-                layer.alert(message, {
-                    skin: 'layui-layer-lan'
-                    , closeBtn: 0
-                    , anim: 0
-                });
+                        });
+                }
             }
+        });
 
-            function getNodePath(currentNodeId) {
-                var root = "";
-                if (currentNodeId) {
-                    var p = jsTree.jstree().get_path(currentNodeId);
-                    if (p) {
-                        if (p instanceof Array) {
-                            root = p.join('/');
-                        } else if(p instanceof String) {
-                            root = p;
-                        }
+
+        $("input.switch").bootstrapSwitch({
+            onText: '公开',
+            offText: '不公开',
+            size: 'mini',
+        });
+
+        $("#btn_edit_book_title").on('click', function () {
+            window.diagEditBookInfoIndex = layer.open({
+                type: 1,
+                title: "修改书籍名称及简介",
+                closeBtn: 1,
+                moveType: 1,
+                shade: 0,
+                area: '516px',
+                skin: 'layui-layer-rim', //加上边框
+                content: $('#diag_edit_book_info')
+            });
+        });
+
+        $("#btn_save_book_info").on('click', function () {
+            var bookName = $("#txt_book_name").val();
+            var bookDesc = $("#txt_book_desc").val();
+            var bookCategory = $("#txt_book_category").val();
+            var access = $("#chk_book_is_public").is(':checked') ? 1 : 0;
+
+            $.post('@Url.Action("UpdateBook", "Document")', {
+                    bookid: $bookId.val(),
+                    name: bookName,
+                    description: bookDesc,
+                    category: bookCategory,
+                    access: access
+                },
+                function (res) {
+                    if (res.isSuccess) {
+                        layer.close(diagEditBookInfoIndex);
+                        $("#label_book_name").text(bookName);
+                        $("#label_book_desc").text(bookDesc);
+                    } else {
+                        messageAlert("保存失败，请稍后重试");
+                    }
+                })
+        });
+
+        function messageAlert(message) {
+            layer.alert(message, {
+                skin: 'layui-layer-lan',
+                closeBtn: 0,
+                anim: 0
+            });
+        }
+
+        function getNodePath(currentNodeId) {
+            var root = "";
+            if (currentNodeId) {
+                var p = jsTree.jstree().get_path(currentNodeId);
+                if (p) {
+                    if (p instanceof Array) {
+                        root = p.join('/');
+                    } else if (p instanceof String) {
+                        root = p;
                     }
                 }
-
-                return root;
             }
 
-            function loadDocument(directoryid) {
-                $.ajax({
+            return root;
+        }
+
+        function loadDocument(directoryid) {
+            $.ajax({
                     url: '@Url.Action("GetDocument")',
                     dataType: "json",
-                    data: { directoryid: directoryid },
+                    data: {
+                        directoryid: directoryid
+                    },
                     cache: false,
                 })
                 .success(function (res) {
@@ -593,57 +604,59 @@
                         editor.setValue('');
                     }
                 })
-                .error(function () { })
-                .complete(function () { });
-            }
+                .error(function () {})
+                .complete(function () {});
+        }
 
-            window.editor = editormd("mkEditor", {
-                width: "100%",
-                height: 640,
-                saveHTMLToTextarea: true,
-                autoLoadModules: false,
-                imageUpload: true,
-                imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                imageUploadURL: '@Url.Action("UploadImage", "Document")',
-                pluginPath: '@Url.Content("~/editor.md/plugins/")',
-                tex: true
-            });
+        window.editor = editormd("mkEditor", {
+            width: "100%",
+            height: 640,
+            saveHTMLToTextarea: true,
+            autoLoadModules: false,
+            imageUpload: true,
+            imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL: '@Url.Action("UploadImage", "Document")',
+            pluginPath: '@Url.Content("~/editor.md/plugins/")',
+            tex: true,
+            flowChart : true
+        });
 
 
-            $("#mkEditor").on('paste', function (ev) {
-                var data = ev.clipboardData;
-                var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-                for (var index in items) {
-                    var item = items[index];
-                    if (item.kind === 'file') {
-                        var blob = item.getAsFile();
-                        var reader = new FileReader();
-                        reader.onload = function (event) {
-                            var base64 = event.target.result;
+        $("#mkEditor").on('paste', function (ev) {
+            var data = ev.clipboardData;
+            var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (var index in items) {
+                var item = items[index];
+                if (item.kind === 'file') {
+                    var blob = item.getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        var base64 = event.target.result;
 
-                            //ajax上传图片
-                            $.post('@Url.Action("UploadImageByBase64", "Document")', { base64Content: base64 }, function (ret) {
-                                if (ret.success === 1) {
-                                    //新一行的图片显示
-                                    editor.insertValue("\n![](" + ret.url + ")");
-                                } else {
-                                    console.log(ret.message);
-                                }
-                            });
-                        }
-
-                        debugger;
-                        reader.readAsDataURL(blob);
+                        //ajax上传图片
+                        $.post('@Url.Action("UploadImageByBase64", "Document")', {
+                            base64Content: base64
+                        }, function (ret) {
+                            if (ret.success === 1) {
+                                //新一行的图片显示
+                                editor.insertValue("\n![](" + ret.url + ")");
+                            } else {
+                                console.log(ret.message);
+                            }
+                        });
                     }
+
+                    debugger;
+                    reader.readAsDataURL(blob);
                 }
-            });
+            }
+        });
 
-            $("#btn_save_article").on('click', function () {
-                var currentDir = $("#current_directory_id").val();
+        $("#btn_save_article").on('click', function () {
+            var currentDir = $("#current_directory_id").val();
 
-                if (currentDir) {
-                    $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")',
-                    {
+            if (currentDir) {
+                $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")', {
                         content: $("#mkEditor > textarea").val(),
                         title: '',
                         directoryid: $("#current_directory_id").val()
@@ -651,35 +664,34 @@
                     function (res) {
                         if (res.isSuccess) {
                             layer.alert("保存成功", {
-                                skin: 'layui-layer-lan'
-                                , closeBtn: 0
-                                , anim: 0
-                                , time: 800
+                                skin: 'layui-layer-lan',
+                                closeBtn: 0,
+                                anim: 0,
+                                time: 800
                             });
                         } else {
                             messageAlert("保存失败，错误:" + res.message);
                         }
                     });
-                } else {
-                    messageAlert("请先选定文章目录");
-                }
+            } else {
+                messageAlert("请先选定文章目录");
+            }
 
-                return false;
-            });
-
-            $(document).on('keydown', function (e) {
-                var ctrlKey = e.ctrlKey || e.metaKey;
-                if (ctrlKey) {
-                    var keyCode = e.keyCode || e.which || e.charCode;
-                    // ctrl+s
-                    if (ctrlKey && keyCode == 83) {
-                        $('#btn_save_article').trigger('click');
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
+            return false;
         });
 
-    </script>
+        $(document).on('keydown', function (e) {
+            var ctrlKey = e.ctrlKey || e.metaKey;
+            if (ctrlKey) {
+                var keyCode = e.keyCode || e.which || e.charCode;
+                // ctrl+s
+                if (ctrlKey && keyCode == 83) {
+                    $('#btn_save_article').trigger('click');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    });
+</script>
 }

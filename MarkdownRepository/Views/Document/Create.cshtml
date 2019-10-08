@@ -1,10 +1,10 @@
 ﻿@using MarkdownRepository.Models
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model MarkdownRepository.Models.Document
 @{
-    var doc = Model ?? new MarkdownRepository.Models.Document() ;    
+var doc = Model ?? new MarkdownRepository.Models.Document() ;
 }
 
 <div id="message" class=""></div>
@@ -12,118 +12,128 @@
 <input id="docId" type="hidden" value="@doc.rowid" />
 
 <label style="font-size:0.8em">标题
-    <input id="title" class="form-control col-sm-4"  type="text" value="@doc.title" class="" />
+    <input id="title" class="form-control col-sm-4" type="text" value="@doc.title" class="" />
 </label>
 
 <label style="font-size:0.8em">文章分类
-    <input id="category" class="form-control col-sm-4" placeholder="使用','分隔" type="text" value="@doc.category" class="" list="categories" />
+    <input id="category" class="form-control col-sm-4" placeholder="使用','分隔" type="text" value="@doc.category" class=""
+        list="categories" />
 </label>
 
 <datalist id="categories">
     @if(ViewBag.Categories != null) {
-        foreach (var c in ViewBag.Categories)
-        {
-            <option value="@c"/>
-        }
+    foreach (var c in ViewBag.Categories)
+    {
+    <option value="@c" />
+    }
     }
 </datalist>
 
 <label style="font-size:0.8em">是否公开
-    <input id="access" type="checkbox" @(doc.is_public == DocumentAccess.PUBLIC?"checked":"") />
+    <input id="access" type="checkbox" @(doc.is_public==DocumentAccess.PUBLIC?"checked":"") />
 </label>
 
-<button id="btnSave" class="btn btn-default pull-right"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> 保存</button>
+<button id="btnSave" class="btn btn-default pull-right"><span class="glyphicon glyphicon-floppy-save"
+        aria-hidden="true"></span> 保存</button>
 
 <div id="mkEditor">
     <textarea style="display:none;">@doc.content</textarea>
 </div>
 
 @section style{
-    @System.Web.Optimization.Styles.Render("~/css/editor.md")    
+@System.Web.Optimization.Styles.Render("~/css/editor.md")
 }
 
 @section scripts{
 
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
-    <script>
-        $(function () {
-            var editor = editormd("mkEditor", {
-                width: "100%",
-                height: 640,
-                saveHTMLToTextarea: true,
-                autoLoadModules: false,
-                imageUpload: true,
-                imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                imageUploadURL: '@Url.Action("UploadImage", "Document")',
-                pluginPath: '@Url.Content("~/editor.md/plugins/")',
-                tex  : true                
-            });
-
-
-            $("#mkEditor").on('paste', function (ev) {
-                var data = ev.clipboardData;
-                var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-                for (var index in items) {
-                    var item = items[index];
-                    if (item.kind === 'file') {
-                        var blob = item.getAsFile();
-                        var reader = new FileReader();
-                        reader.onload = function (event) {
-                            var base64 = event.target.result;
-
-                            //ajax上传图片
-                            $.post('@Url.Action("UploadImageByBase64", "Document")', { base64Content: base64 }, function (ret) {
-                                if (ret.success === 1) {
-                                    //新一行的图片显示
-                                    editor.insertValue("\n![](" + ret.url + ")");
-                                } else {
-                                    console.log(ret.message);
-                                }
-                            });
-                        }
-
-                        debugger;
-                        reader.readAsDataURL(blob);
-                    }
-                }
-            });
-
-            $("#btnSave").on('click', function () {
-                $.post('@Url.Action("Create", "Document")',
-                    {
-                        content: $("#mkEditor > textarea").val(),
-                        title: $("#title").val(),
-                        category: $("#category").val(),
-                        id: $("#docId").val(),
-                        access: $("#access")[0].checked === true ? 1 : 0
-                    },
-                    function (result) {
-                        $("#docId").val(result.rowid);
-                        var msg = "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>"
-                            ,$msg = $(msg);
-                        $msg.text("已保存")
-                        $("body").append($msg);
-                        $msg.animate({ top: 0, left:0, fontSize: 0, opacity: 0 }, 2000, function () {
-                            $(this).remove();
-                        })
-                    });
-                return false;
-            });
-
-            $(document).on('keydown', function (e) {
-                var ctrlKey = e.ctrlKey || e.metaKey;
-                if (ctrlKey) {
-                    var keyCode = e.keyCode || e.which || e.charCode;
-                    // ctrl+s
-                    if (ctrlKey && keyCode == 83) {
-                        $('#btnSave').trigger('click');
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-
+<script>
+    $(function () {
+        var editor = editormd("mkEditor", {
+            width: "100%",
+            height: 640,
+            saveHTMLToTextarea: true,
+            autoLoadModules: false,
+            imageUpload: true,
+            imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL: '@Url.Action("UploadImage", "Document")',
+            pluginPath: '@Url.Content("~/editor.md/plugins/")',
+            tex: true,
+            flowChart : true
         });
-    </script>
+
+
+        $("#mkEditor").on('paste', function (ev) {
+            var data = ev.clipboardData;
+            var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (var index in items) {
+                var item = items[index];
+                if (item.kind === 'file') {
+                    var blob = item.getAsFile();
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        var base64 = event.target.result;
+
+                        //ajax上传图片
+                        $.post('@Url.Action("UploadImageByBase64", "Document")', {
+                            base64Content: base64
+                        }, function (ret) {
+                            if (ret.success === 1) {
+                                //新一行的图片显示
+                                editor.insertValue("\n![](" + ret.url + ")");
+                            } else {
+                                console.log(ret.message);
+                            }
+                        });
+                    }
+
+                    debugger;
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+
+        $("#btnSave").on('click', function () {
+            $.post('@Url.Action("Create", "Document")', {
+                    content: $("#mkEditor > textarea").val(),
+                    title: $("#title").val(),
+                    category: $("#category").val(),
+                    id: $("#docId").val(),
+                    access: $("#access")[0].checked === true ? 1 : 0
+                },
+                function (result) {
+                    $("#docId").val(result.rowid);
+                    var msg =
+                        "<div id='test' style='padding:0.2em; border-radius:1.5em;color:#fff;font-size:3em;z-index:999;position:absolute;top:50%;left:50%;opacity:0.8; background-color:#000'></div>",
+                        $msg = $(msg);
+                    $msg.text("已保存")
+                    $("body").append($msg);
+                    $msg.animate({
+                        top: 0,
+                        left: 0,
+                        fontSize: 0,
+                        opacity: 0
+                    }, 2000, function () {
+                        $(this).remove();
+                    })
+                });
+            return false;
+        });
+
+        $(document).on('keydown', function (e) {
+            var ctrlKey = e.ctrlKey || e.metaKey;
+            if (ctrlKey) {
+                var keyCode = e.keyCode || e.which || e.charCode;
+                // ctrl+s
+                if (ctrlKey && keyCode == 83) {
+                    $('#btnSave').trigger('click');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+    });
+</script>
 }
