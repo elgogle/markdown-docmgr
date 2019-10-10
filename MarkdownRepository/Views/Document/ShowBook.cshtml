@@ -169,7 +169,7 @@ var documentId = 0;
     div.window-body {
         position: relative;
         top: 50px;
-        margin-left: 280px;
+        /*margin-left: 280px;*/
     }
 
     .window-body .sidebar .sidebar-body .catalog-body>ul {
@@ -210,6 +210,7 @@ var documentId = 0;
 
     #toc_container ul {
         list-style-type: none;
+        padding-left: 15px;
     }
 
     #toc_container ol.markdown-toc-list,
@@ -243,6 +244,18 @@ var documentId = 0;
             height: calc(100% - 150px);
             width: 180px;
             font-size: 0.8em;
+        }
+    }
+
+    @@media screen and (max-width:1724px) {
+        div.window-body {
+            margin-left: 280px;
+        }
+    }
+
+    @@media screen and (min-width:1725px) {
+        div.window-body {
+            margin-left: 0;
         }
     }
 
