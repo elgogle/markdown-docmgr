@@ -7,9 +7,9 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.Caching;
 using System.Web.Optimization;
-using CrystalGroup.ISD.DocumentManage.Lib;
+using MarkdownRepository.Lib;
 
-namespace CrystalGroup.ISD.DocumentManage
+namespace MarkdownRepository
 {
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
@@ -25,6 +25,7 @@ namespace CrystalGroup.ISD.DocumentManage
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
+            new Lib.DocumentManager().BackupFile();
         }
 
         public override void Init()

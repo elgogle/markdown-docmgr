@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using HtmlAgilityPack;
 
 
-namespace CrystalGroup.ISD.DocumentManage.Lib
+namespace MarkdownRepository.Lib
 {
     public class RssHelper
     {

@@ -15,7 +15,6 @@ using Lucene.Net.Store;
 using System.IO;
 using Lucene.Net.Analysis.PanGu;
 using System.Threading.Tasks;
-using CrystalGroup.ISD.DocumentManage.Lib;
 using System.Text.RegularExpressions;
 
 namespace MarkdownRepository.Lib

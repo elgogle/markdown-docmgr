@@ -18,15 +18,42 @@ namespace MarkdownRepository.Lib
         private IndexManager _indexMgr = null;
         private static object _lock = new object();
 
+        const string SQLITE_PATH = "~/App_Data";
+        const string SQLITE_BACKUP_PATH = "~/App_Data/DataBackup";
+        const string INDEX_PATH = "~/App_Data/Index/";
 
         public DocumentManager()
         {
-            const string SQLITE_PATH = "~/App_Data";
-            const string INDEX_PATH = "~/App_Data/Index/";
-
             this._dbPath = System.IO.Path.Combine(System.Web.HttpContext.Current.Server.MapPath(SQLITE_PATH), "Documents.db3");
             IndexManager.IndexPath = System.Web.HttpContext.Current.Server.MapPath(INDEX_PATH);
             this._indexMgr = IndexManager.IndexMgr;
+        }
+
+        public void BackupFile()
+        {
+            var backupPath = System.Web.HttpContext.Current.Server.MapPath(SQLITE_BACKUP_PATH);
+
+            if (System.IO.Directory.Exists(backupPath) == false) System.IO.Directory.CreateDirectory(backupPath);
+
+            var backupFileName = System.IO.Path.Combine(backupPath, string.Format("Documents_{0}.db3", DateTime.Now.ToString("yyyyMMdd")));
+
+            if (System.IO.File.Exists(backupFileName)) return;
+
+            System.IO.File.Copy(this._dbPath, backupFileName);
+
+            // 删除10天前的备份文件
+            var allFiles = System.IO.Directory.GetFiles(backupPath);
+            var old = DateTime.Now.AddDays(-10).ToString("yyyyMMdd");
+            foreach (var f in allFiles)
+            {
+                var fname = System.IO.Path.GetFileNameWithoutExtension(f);
+                var day = fname.Right(10);
+
+                if (day.IsNum() && old.CompareTo(day) > 0)
+                {
+                    System.IO.File.Delete(f);
+                }
+            }
         }
 
         public DocumentManager(string dbPath, string indexPath)

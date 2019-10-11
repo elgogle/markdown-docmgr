@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 
 [assembly: log4net.Config.DOMConfigurator(ConfigFile = "web.config", Watch = true)]
-namespace CrystalGroup.ISD.DocumentManage.Lib
+namespace MarkdownRepository.Lib
 {
     public class LogHelper
     {

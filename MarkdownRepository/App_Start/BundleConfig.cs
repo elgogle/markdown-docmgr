@@ -1,4 +1,4 @@
-﻿namespace CrystalGroup.ISD.DocumentManage
+﻿namespace MarkdownRepository
 {
     using System.Web;
     using System.Web.Optimization;

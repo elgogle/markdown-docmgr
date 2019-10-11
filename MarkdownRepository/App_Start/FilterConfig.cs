@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Mvc;
 
-namespace CrystalGroup.ISD.DocumentManage
+namespace MarkdownRepository
 {
     public class FilterConfig
     {
