@@ -682,27 +682,44 @@ namespace MarkdownRepository.Controllers
         /// <param name="docId"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult ShowBook(long bookid, long docId=0)
+        public ActionResult ShowBook(long bookid, long docId=0, long dirId=0)
         {
             ViewBag.Action = "ShowBook";
-            BookVm book = null;
-            if(docId == 0)
+
+            var book = docMgr.GetBook(bookid, this.UserId);
+            var dirNav = GetBookDirectoryNavigator(book);
+            var currentDirectoryId = dirNav[0];
+
+            if (dirId != 0)
             {
-                book = docMgr.GetBook(bookid, this.UserId);
+                currentDirectoryId = dirId;
             }
-            else
+            else if (docId != 0)           
             {
-                book = docMgr.GetBookByDoc(docId, this.UserId);
                 var jumpToDoc = book.BookDirectory.FirstOrDefault(t => t.document_id == docId);
                 if (jumpToDoc != null)
                 {
-                    ViewBag.JumpToDirectoryId = jumpToDoc.id;
+                    currentDirectoryId = jumpToDoc.id;
                 }
             }
 
-            var dirNav = GetBookDirectoryNavigator(book);
-            
-            ViewBag.DirectoryNavigator = JsonConvert.SerializeObject(dirNav);
+            ViewBag.CurrentDiretoryId = currentDirectoryId;
+            var currentIndex = dirNav.IndexOf(currentDirectoryId);
+            ViewBag.PreDirectoryId = currentIndex > 0 ? dirNav[currentIndex - 1] : -1;
+            ViewBag.NextDirectoryId = currentIndex < (dirNav.Count - 1) ? dirNav[currentIndex + 1] : -1;
+            ViewBag.Document = docMgr.GetDocumentByDirectory(currentDirectoryId);
+
+            var directories = book.BookDirectory.Select(t => new
+            {
+                id = t.id.ToString(),
+                parent = t.parent_id == 0 ? "#" : t.parent_id.ToString(),
+                text = t.title,
+                state = new
+                {
+                    selected = t.id == currentDirectoryId ? true : false
+                }
+            }).ToList();
+            ViewBag.DirectoryJson = JsonConvert.SerializeObject(directories);
 
             return View(book);
         }
@@ -732,7 +749,7 @@ namespace MarkdownRepository.Controllers
         /// <param name="bookid"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult GetBookDirectory(long bookid)
+        public ActionResult GetBookDirectory(long bookid, long dirId=0)
         {
             try
             {
@@ -741,8 +758,12 @@ namespace MarkdownRepository.Controllers
                 var directories = book.BookDirectory.Select(t => new
                 {
                     id = t.id.ToString(),
-                    parent = t.parent_id == 0 ? "#":t.parent_id.ToString(),
-                    text = t.title
+                    parent = t.parent_id == 0 ? "#" : t.parent_id.ToString(),
+                    text = t.title,
+                    state = new
+                    {
+                        selected = t.id == dirId ? true : false
+                    }
                 }).ToList();
 
                 return Success(directories);
@@ -758,14 +779,14 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="bookid"></param>
         /// <returns></returns>
-        private List<string> GetBookDirectoryNavigator(BookVm book)
+        private List<long> GetBookDirectoryNavigator(BookVm book)
         {
-            var navigator = new List<string>();
+            var navigator = new List<long>();
 
             var first = book.BookDirectory.OrderBy(t => t.id).FirstOrDefault();
             if(first != null)
             {
-                navigator.Add(first.id.ToString());
+                navigator.Add(first.id);
                 WalkDirectory(book.BookDirectory, navigator, first.id, first.parent_id);
             }
 
@@ -779,20 +800,20 @@ namespace MarkdownRepository.Controllers
         /// <param name="result"></param>
         /// <param name="current"></param>
         /// <param name="parent"></param>
-        private void WalkDirectory(IList<BookDirectory> directory, IList<string> result, long current, long parent)
+        private void WalkDirectory(IList<BookDirectory> directory, IList<long> result, long current, long parent)
         {
             if(directory.Any(t=> t.parent_id == current))
             {
                 // 有子目录
                 var firstSub = directory.Where(t => t.parent_id == current).OrderBy(t => t.id).First();
-                result.Add(firstSub.id.ToString());
+                result.Add(firstSub.id);
                 WalkDirectory(directory, result, firstSub.id, current);
             }
 
             var nextSibling = directory.Where(t => t.id > current && t.parent_id == parent).OrderBy(t=>t.id).FirstOrDefault();
             if(nextSibling != null)
             {
-                result.Add(nextSibling.id.ToString());
+                result.Add(nextSibling.id);
                 WalkDirectory(directory, result, nextSibling.id, parent);
             }            
         }

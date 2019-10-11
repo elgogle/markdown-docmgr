@@ -3,7 +3,7 @@
 @{
 ViewBag.Title = "ShowBook";
 Layout = "~/Views/Shared/_Layout.cshtml";
-var documentId = 0;
+
 }
 @model MarkdownRepository.Models.BookVm
 
@@ -283,7 +283,7 @@ var documentId = 0;
                         </h3>
                         <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
                             作者: @AdAccount.GetUserNameById(Model.Book.creator)
-                            更新时间: @Model.Book.update_at
+                            创建时间: @Model.Book.creat_at
                         </p>
                     </div>
 
@@ -323,14 +323,29 @@ var documentId = 0;
                     <div id="toc_container"></div>
 
                     <div id="md">
-                        <textarea id="md_content" style="display:none;">@Model.Book.description
+                        <textarea id="md_content" style="display:none;">
+                            @if (ViewBag.Document != null)
+                            {
+                               @Html.Raw(ViewBag.Document.content)
+                            }
                         </textarea>
                     </div>
 
                     <div id="paging_tool">
-                        <input type="hidden" id="current_dir_id" />
-                        <div id="pre_page" class="pull-left"><span>上一章</span></div>
-                        <div id="next_page" class="pull-right"><span>下一章</span></div>
+                        <input type="hidden" id="current_dir_id" value="@ViewBag.CurrentDiretoryId" />
+                        
+                        @if (ViewBag.PreDirectoryId >= 0)
+                        {
+                        <div id="pre_page" class="pull-left">@Html.ActionLink("上一章", "ShowBook", new { bookid =
+                            Model.Book.id, dirId = ViewBag.PreDirectoryId })</div>
+                        }
+
+                        @if (ViewBag.NextDirectoryId >= 0)
+                        {
+                        <div id="next_page" class="pull-right">@Html.ActionLink("下一章", "ShowBook", new { bookid =
+                            Model.Book.id, dirId = ViewBag.NextDirectoryId })</div>
+                        }
+
                     </div>
 
                     <div id="comments"></div>
@@ -350,8 +365,7 @@ var documentId = 0;
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
 <script>
-    window.directoryNavigator = @Html.Raw(ViewBag.DirectoryNavigator);
-    window.jumpToDirectory = '@(ViewBag.JumpToDirectoryId??0)';
+    window.jumpToDirectory = '@(ViewBag.CurrentDiretoryId ?? 0)';
 
     $(document).ready(function () {
         $bookId = $("#book_id");
@@ -368,74 +382,22 @@ var documentId = 0;
                 'check_callback': true,
                 "multiple": false,
                 'animation': 0,
-                'data': function (obj, callback) {
-                    var _this = this;
-                    $.ajax({
-                            url: '@Url.Action("GetBookDirectory")',
-                            data: {
-                                bookid: $bookId.val()
-                            },
-                            cache: false,
-                            dataType: "json",
-                        })
-                        .success(function (res) {
-                            callback.call(_this, res.data);
-                        });
-                }
+                'data': @Html.Raw(ViewBag.DirectoryJson)
             }
         }).on('select_node.jstree', function (node, selected) {
-            $currentDirId.val(selected.node.id);
-            loadDocument(selected.node.id);
-        });
-
-        $('#pre_page').on('click', function () {
-            if (window.directoryNavigator) {
-                var currentIndex = directoryNavigator.indexOf($currentDirId.val());
-                if (currentIndex > 0) {
-                    var pre = directoryNavigator[currentIndex - 1];
-                    jsTree.jstree().deselect_all();
-                    jsTree.jstree().select_node([pre]);
+            var href = window.location.href;
+            if (href.search(/dirId=/) >= 0) {
+                window.location.href = href.replace(/dirId=\d+/, "dirId=" + selected.node.id);
+            } else {
+                if (href.indexOf("?") < 0) {
+                    window.location.href = href + "?dirId=" + selected.node.id;
+                } else {
+                    window.location.href = href + "&dirId=" + selected.node.id;
                 }
             }
         });
 
-        $('#next_page').on('click', function () {
-            if (window.directoryNavigator) {
-                var currentIndex = directoryNavigator.indexOf($currentDirId.val());
-                if (currentIndex < (directoryNavigator.length - 1)) {
-                    var next = directoryNavigator[currentIndex + 1];
-                    jsTree.jstree().deselect_all();
-                    jsTree.jstree().select_node([next]);
-                }
-            }
-        });
-
-        function loadDocument(directoryid) {
-            $.ajax({
-                    url: '@Url.Action("GetDocument")',
-                    dataType: "json",
-                    data: {
-                        directoryid: directoryid
-                    },
-                    cache: false,
-                })
-                .success(function (res) {
-                    $("#md").empty();
-                    $("#comments").hide();
-                    if (res.isSuccess && res.data && res.data.content) {
-                        $("#md").append("<textarea>" + res.data.content + "</textarea>")
-                        $("#comments").show();
-                    } else {
-                        $("#md").append("<textarea></textarea>")
-                    }
-
-                    showMarkDown("md", "#toc_container");
-                })
-                .error(function () {})
-                .complete(function () {});
-        }
-
-        //showMarkDown("md", "#toc_container");
+        showMarkDown("md", "#toc_container");
 
         function selectText(element) {
             var doc = document,
@@ -462,16 +424,12 @@ var documentId = 0;
             });
         }
 
-        setTimeout(function () {
-            if (window.directoryNavigator && directoryNavigator.length > 0) {
-                jsTree.jstree().deselect_all();
-                if (jumpToDirectory > 0) {
-                    jsTree.jstree().select_node([jumpToDirectory]);
-                } else {
-                    jsTree.jstree().select_node([directoryNavigator[0]]);
-                }
-            }
-        }, 500);
+        @if(ViewBag.Document != null && ViewBag.Document.content.Trim().Length > 0) {
+            <text> $("#comments").show(); </text>
+        }
+        else {
+            <text> $("#comments").hide(); </text>
+        }
     });
 </script>
 
@@ -482,7 +440,7 @@ var documentId = 0;
 
         Comments({
             node: "#comments",
-            articleId: @documentId,
+            articleId: @(ViewBag.Document != null ? ViewBag.Document.rowid : 0),
             userName: "@User.Identity.Name.GetUserName()",
             apiUrl: "http://192.168.13.119/web-comment"
         });
