@@ -616,10 +616,17 @@ WHERE 1 = 1
         {
             using (var db = this.OpenDb())
             {
-                return db.Query<dynamic>(@"select category, count(*) hint 
-                                           from documents_category a, documents_owner b 
-                                            where a.doc_id = b.id and b.creator=@creator
-                                            group by category order by count(*) desc", new { creator = userId }).ToList();
+                var sql = @"
+select category, count(*) hint 
+from documents_category a, documents_owner b 
+where a.doc_id = b.id and b.creator=@creator
+and not exists(
+    select 1 from book_directories d where d.document_id = b.id
+)
+group by category 
+order by count(*) desc";
+
+                return db.Query<dynamic>(sql, new { creator = userId }).ToList();
             }
         }
 
@@ -632,9 +639,17 @@ WHERE 1 = 1
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                return db.Query<dynamic>(@"select category, count(*) hint from documents_category a, documents_owner b 
-                                            where a.doc_id = b.id and b.is_public=1 
-                                            group by category order by count(*) desc").ToList();
+                var sql = @"
+select category, count(*) hint 
+from documents_category a, documents_owner b 
+where a.doc_id = b.id and b.is_public=1 
+and not exists(
+    select 1 from book_directories d where d.document_id = b.id
+)
+group by category 
+order by count(*) desc";
+
+                return db.Query<dynamic>(sql).ToList();
             }
         }
 
