@@ -82,7 +82,7 @@ var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
 {
 <div class="pull-right" style="font-size:0.7em;">
-    <a href="@Url.Action(" Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
+    <a href="@Url.Action("Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
 </div>
 }
 
@@ -105,7 +105,7 @@ var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 <div class="category-info">
     @foreach (var c in Model.category.Split(','))
     {
-    <a class="tag-item" href="@Url.Action(" SearchByCategory", new { category=c, byOwner=false })">
+    <a class="tag-item" href="@Url.Action("SearchByCategory", new { category=c, byOwner=false })">
         <div class="tag-title">@c</div>
     </a>
     }

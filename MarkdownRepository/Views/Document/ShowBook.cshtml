@@ -291,7 +291,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
                         User.Identity.Name.GetUserName() && t.is_owner))
                         {
-                        <a href="@Url.Action(" EditBook", new { id=Model.Book.id })"><i
+                        <a href="@Url.Action("EditBook", new { id=Model.Book.id })"><i
                                 class="glyphicon glyphicon-edit"></i> 编辑</a>
                         }
                     </div>
