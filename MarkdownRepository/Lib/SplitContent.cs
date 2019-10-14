@@ -46,7 +46,7 @@ namespace MarkdownRepository.Lib
             var result = highlighter.GetBestFragment(keyword, content);
             if (!string.IsNullOrWhiteSpace(result))
                 return result;
-            return content;
+            return content.Left(200);
         }
 
         public static bool IsWord(this string text)

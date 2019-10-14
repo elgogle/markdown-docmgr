@@ -65,7 +65,7 @@
                     <li class="search-list">
                         <div>
                             <a href="@Url.Action("ShowBook", new { bookid = item.id })">
-                                <h4>书名: @Html.Raw(item.name)</h4>
+                                <h4>@Html.Raw(item.name)</h4>
                                 <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
                                     简介: @Html.Raw(item.description)
                                 </p>
