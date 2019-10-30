@@ -39,6 +39,8 @@ namespace MarkdownRepository.Lib
 
             if (System.IO.File.Exists(backupFileName)) return;
 
+            if (!System.IO.File.Exists(this._dbPath)) return;
+
             System.IO.File.Copy(this._dbPath, backupFileName);
 
             // 删除10天前的备份文件

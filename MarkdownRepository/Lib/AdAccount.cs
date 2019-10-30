@@ -17,18 +17,22 @@ namespace MarkdownRepository.Lib
             var username = docMgr.GetUserName(userId);
             if (!string.IsNullOrWhiteSpace(username)) return username;
 
-            using (PrincipalContext context = new PrincipalContext(ContextType.Domain))
+            try
             {
-                var a = userId.Split('\\');
-                using (UserPrincipal user = UserPrincipal.FindByIdentity(context, a.Length>1?a[1]:a[0]))
+                using (PrincipalContext context = new PrincipalContext(ContextType.Domain))
                 {
-                    if (user != null)
+                    var a = userId.Split('\\');
+                    using (UserPrincipal user = UserPrincipal.FindByIdentity(context, a.Length > 1 ? a[1] : a[0]))
                     {
-                        fullName = user.DisplayName;
-                        docMgr.SaveUserName(userId, fullName);
+                        if (user != null)
+                        {
+                            fullName = user.DisplayName;
+                            docMgr.SaveUserName(userId, fullName);
+                        }
                     }
                 }
             }
+            catch { }
 
             return fullName;
         }
