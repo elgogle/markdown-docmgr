@@ -1,272 +1,275 @@
 ﻿@using MarkdownRepository.Lib
 
 @{
-ViewBag.Title = "ShowBook";
-Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "ShowBook";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 
 }
 @model MarkdownRepository.Models.BookVm
 
 
 @section style{
-<link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
+    <link href="~/javascripts/jstree/3.3.8/themes/default/style.min.css" rel="stylesheet">
 
-@System.Web.Optimization.Styles.Render("~/css/editor.md")
+    @System.Web.Optimization.Styles.Render("~/css/editor.md")
 
-<style>
-    .ui.input {
-        position: relative;
-        font-weight: 400;
-        font-style: normal;
-        display: inline-flex;
-        color: rgba(0, 0, 0, .87);
-    }
+    <style>
+            .ui.input {
+                position: relative;
+                font-weight: 400;
+                font-style: normal;
+                display: inline-flex;
+                color: rgba(0, 0, 0, .87);
+            }
 
-    .ui.input>input {
-        margin: 0;
-        max-width: 100%;
-        flex: 1 0 auto;
-        outline: none;
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-        text-align: left;
-        line-height: 1.28571429em;
-        font-family: Helvetica Neue, NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, Microsoft Yahei, WenQuanYi Micro Hei, Arial, Helvetica, sans-serif;
-        padding: .64285714em 1em;
-        background: #fff;
-        border: 1px solid rgba(34, 36, 38, .15);
-        color: rgba(0, 0, 0, .87);
-        border-radius: .28571429rem;
-        transition: box-shadow .1s ease, border-color .1s ease;
-        box-shadow: none;
-    }
+            .ui.input > input {
+                margin: 0;
+                max-width: 100%;
+                flex: 1 0 auto;
+                outline: none;
+                -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+                text-align: left;
+                line-height: 1.28571429em;
+                font-family: Helvetica Neue, NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, Microsoft Yahei, WenQuanYi Micro Hei, Arial, Helvetica, sans-serif;
+                padding: .64285714em 1em;
+                background: #fff;
+                border: 1px solid rgba(34, 36, 38, .15);
+                color: rgba(0, 0, 0, .87);
+                border-radius: .28571429rem;
+                transition: box-shadow .1s ease, border-color .1s ease;
+                box-shadow: none;
+            }
 
-    .ui.icon.input>i.icon:not(.link) {
-        pointer-events: none;
-    }
+            .ui.icon.input > i.icon:not(.link) {
+                pointer-events: none;
+            }
 
-    .ui.icon.input>i.icon:not(.link) {
-        pointer-events: none;
-    }
+            .ui.icon.input > i.icon:not(.link) {
+                pointer-events: none;
+            }
 
-    .ui.icon.input>i.icon {
-        cursor: default;
-        position: absolute;
-        line-height: 1;
-        text-align: center;
-        top: 0;
-        right: 0;
-        margin: 0;
-        height: 100%;
-        width: 2.67142857em;
-        opacity: .5;
-        border-radius: 0 .28571429rem .28571429rem 0;
-        transition: opacity .3s ease;
-    }
+            .ui.icon.input > i.icon {
+                cursor: default;
+                position: absolute;
+                line-height: 1;
+                text-align: center;
+                top: 0;
+                right: 0;
+                margin: 0;
+                height: 100%;
+                width: 2.67142857em;
+                opacity: .5;
+                border-radius: 0 .28571429rem .28571429rem 0;
+                transition: opacity .3s ease;
+            }
 
-    .ui.small.input {
-        font-size: .8em;
-    }
+            .ui.small.input {
+                font-size: .8em;
+            }
 
-    .ui.fluid.input {
-        display: flex;
-    }
+            .ui.fluid.input {
+                display: flex;
+            }
 
-    .ui.fluid.input>input {
-        width: 0 !important;
-    }
+            .ui.fluid.input > input {
+                width: 0 !important;
+            }
 
-    .ui.icon.input>input {
-        padding-right: 2.67142857em !important;
-        font-size: 0.8em;
-    }
+            .ui.icon.input > input {
+                padding-right: 2.67142857em !important;
+                font-size: 0.8em;
+            }
 
-    .window-container .window-head {
-        position: fixed;
-        flex: none;
-        order: 1;
-        top: 51px;
-        left: 0;
-        right: 0;
-        background: #fff;
-        border-bottom: 1px solid #ddd;
-        z-index: 20;
-    }
+            .window-container .window-head {
+                position: fixed;
+                flex: none;
+                order: 1;
+                top: 51px;
+                left: 0;
+                right: 0;
+                background: #fff;
+                border-bottom: 1px solid #ddd;
+                z-index: 20;
+            }
 
-    .window-container .window-head .toolbar {
-        display: flex;
-        height: 55px;
-        padding: 0 .8em;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        align-items: stretch;
-    }
+            .window-container .window-head .toolbar {
+                display: flex;
+                height: 55px;
+                padding: 0 .8em;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                align-items: stretch;
+            }
 
-    .window-container .window-head .toolbar .book-ins {
-        flex-grow: 8;
-    }
+            .window-container .window-head .toolbar .book-ins {
+                flex-grow: 8;
+            }
 
-    .window-container .window-head .toolbar .extra2 {
-        margin-left: 15px;
-        flex-grow: 0.5;
-        font-size: 0.7em;
-    }
+            .window-container .window-head .toolbar .extra2 {
+                margin-left: 15px;
+                flex-grow: 0.5;
+                font-size: 0.7em;
+            }
 
-    .window-container .window-body.with-sidebar .sidebar {
-        left: 0;
-    }
+            .window-container .window-body.with-sidebar .sidebar {
+                left: 0;
+            }
 
-    .window-container.with-head .window-body .sidebar {
-        top: 111px;
-    }
+            .window-container.with-head .window-body .sidebar {
+                top: 111px;
+            }
 
-    .window-body .sidebar {
-        position: fixed;
-        left: -280px;
-        top: 0;
-        bottom: 0;
-        width: 280px;
-        border-right: 1px solid #ddd;
-        background-color: #fafafa;
-        display: flex;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        transition: left .25s ease;
-    }
+            .window-body .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                border-right: 1px solid #ddd;
+                background-color: #fafafa;
+                display: flex;
+                flex-direction: column;
+                flex-wrap: nowrap;
+                transition: left .25s ease;
+            }
 
-    .window-body .sidebar .sidebar-body {
-        flex: auto;
-        overflow: hidden;
-        position: relative;
-    }
+            .window-body .sidebar .sidebar-body {
+                flex: auto;
+                overflow: hidden;
+                position: relative;
+            }
 
-    .window-body .sidebar .sidebar-header {
-        position: relative;
-        flex: none;
-    }
+            .window-body .sidebar .sidebar-header {
+                position: relative;
+                flex: none;
+            }
 
-    .window-body .sidebar .sidebar-header .search-form {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-        flex: none;
-    }
+            .window-body .sidebar .sidebar-header .search-form {
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+                flex: none;
+            }
 
-    .window-body .sidebar .sidebar-body .catalog-body {
-        padding: 12px 0;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-    }
+            .window-body .sidebar .sidebar-body .catalog-body {
+                padding: 12px 0;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
 
-    .window-body .sidebar .sidebar-body>div {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
+            .window-body .sidebar .sidebar-body > div {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
 
-    div.window-body {
-        position: relative;
-        top: 50px;
-        /*margin-left: 280px;*/
-    }
+            div.window-body {
+                position: relative;
+                top: 50px;
+                /*margin-left: 280px;*/
+            }
 
-    .window-body .sidebar .sidebar-body .catalog-body>ul {
-        padding-right: 10px;
-    }
+            .window-body .sidebar .sidebar-body .catalog-body > ul {
+                padding-right: 10px;
+            }
 
-    .window-body .sidebar .sidebar-body .catalog-body ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+            .window-body .sidebar .sidebar-body .catalog-body ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
 
-    .window-body .sidebar .sidebar-body .catalog-body>ul>li {
-        margin-left: 0;
-    }
+            .window-body .sidebar .sidebar-body .catalog-body > ul > li {
+                margin-left: 0;
+            }
 
-    .window-body .sidebar .sidebar-body .catalog-body ul li {
-        line-height: 30px;
-        margin-left: 24px;
-        cursor: pointer;
-        white-space: nowrap;
-        width: 100%;
-        overflow: hidden;
-    }
+            .window-body .sidebar .sidebar-body .catalog-body ul li {
+                line-height: 30px;
+                margin-left: 24px;
+                cursor: pointer;
+                white-space: nowrap;
+                width: 100%;
+                overflow: hidden;
+            }
 
-    .blog-footer {
-        display: none;
-    }
+            .blog-footer {
+                display: none;
+            }
 
-    #paging_tool {
-        padding: 1em;
-    }
+            #paging_tool {
+                padding: 1em;
+            }
 
-    #pre_page,
-    #next_page {
-        cursor: pointer;
-    }
+            #pre_page,
+            #next_page {
+                cursor: pointer;
+            }
 
-    #toc_container ul {
-        list-style-type: none;
-        padding-left: 15px;
-    }
+            #toc_container ul {
+                list-style-type: none;
+                padding-left: 15px;
+            }
 
-    #toc_container ol.markdown-toc-list,
-    ul.markdown-toc-list {
-        padding: 5px;
-    }
+            #toc_container ul:first-child {
+                padding-left: 0px !important;
+            }
 
-    #toc_container:hover {
-        overflow: auto;
-    }
+            #toc_container ol.markdown-toc-list,
+            ul.markdown-toc-list {
+                padding: 5px;
+            }
 
-    @@media screen and (max-width: 1300px) {
-        #toc_container {
-            position: relative;
-        }
+            #toc_container:hover {
+                overflow: auto;
+            }
 
-        #toc_container ul {
-            padding-left: 1em;
-        }
-    }
+            @@media screen and (max-width: 1300px) {
+                #toc_container {
+                    position: relative;
+                }
 
-    @@media screen and (min-width: 1301px) {
-        #toc_container {
-            position: fixed;
-            right: 20px;
-            top: 130px;
-            border: gray solid 1px;
-            border-radius: 7px;
-            overflow: hidden;
-            padding: 1em;
-            height: calc(100% - 150px);
-            width: 180px;
-            font-size: 0.8em;
-        }
-    }
+                #toc_container ul {
+                    padding-left: 1em;
+                }
+            }
 
-    @@media screen and (max-width:1724px) {
-        div.window-body {
-            margin-left: 280px;
-        }
-    }
+            @@media screen and (min-width: 1301px) {
+                #toc_container {
+                    position: fixed;
+                    right: 20px;
+                    border: gray solid 1px;
+                    border-radius: 7px;
+                    overflow: hidden;
+                    padding: 1em;
+                    max-height: calc(100% - 150px);
+                    width: 180px;
+                    font-size: 0.8em;
+                }
+            }
 
-    @@media screen and (min-width:1725px) {
-        div.window-body {
-            margin-left: 0;
-        }
-    }
+            @@media screen and (max-width:1724px) {
+                div.window-body {
+                    margin-left: 280px;
+                }
+            }
 
-    /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
-    /*a.reference-link::before {
-        content: '';
-        display: block;
-        height: 130px;
-        margin: -128px 0 0;
-    }*/
-</style>
+            @@media screen and (min-width:1725px) {
+                div.window-body {
+                    margin-left: 0;
+                }
+            }
+
+            /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
+            /*a.reference-link::before {
+            content: '';
+            display: block;
+            height: 130px;
+            margin: -128px 0 0;
+        }*/
+    </style>
 }
 
 <input type="hidden" id="book_id" value="@Model.Book.id" />
@@ -291,8 +294,9 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
                         User.Identity.Name.GetUserName() && t.is_owner))
                         {
-                        <a href="@Url.Action("EditBook", new { id=Model.Book.id })"><i
-                                class="glyphicon glyphicon-edit"></i> 编辑</a>
+                            <a href="@Url.Action("EditBook", new { id=Model.Book.id })">
+                                <i class="glyphicon glyphicon-edit"></i> 编辑
+                            </a>
                         }
                     </div>
                 </div>
@@ -300,12 +304,12 @@ Layout = "~/Views/Shared/_Layout.cshtml";
             <div class="window-body with-sidebar">
                 <div class="sidebar">
                     @*<div class="sidebar-header">
-                        <div class="search-form">
-                            <div class="ui small fluid icon input">
-                                <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
+                            <div class="search-form">
+                                <div class="ui small fluid icon input">
+                                    <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
+                                </div>
                             </div>
-                        </div>
-                    </div>*@
+                        </div>*@
                     <div class="sidebar-body">
                         <div class="catalog-body">
                             <div id="toc"></div>
@@ -326,24 +330,34 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <textarea id="md_content" style="display:none;">
                             @if (ViewBag.Document != null)
                             {
-                               @Html.Raw(ViewBag.Document.content)
+                                @Html.Raw(ViewBag.Document.content)
                             }
                         </textarea>
                     </div>
 
                     <div id="paging_tool">
                         <input type="hidden" id="current_dir_id" value="@ViewBag.CurrentDiretoryId" />
-                        
+
                         @if (ViewBag.PreDirectoryId >= 0)
                         {
-                        <div id="pre_page" class="pull-left">@Html.ActionLink("上一章", "ShowBook", new { bookid =
-                            Model.Book.id, dirId = ViewBag.PreDirectoryId })</div>
+                            <div id="pre_page" class="pull-left">
+                                @Html.ActionLink("上一章", "ShowBook", new
+                                                        {
+                                                            bookid = Model.Book.id,
+                                                            dirId = ViewBag.PreDirectoryId
+                                                        })
+                            </div>
                         }
 
                         @if (ViewBag.NextDirectoryId >= 0)
                         {
-                        <div id="next_page" class="pull-right">@Html.ActionLink("下一章", "ShowBook", new { bookid =
-                            Model.Book.id, dirId = ViewBag.NextDirectoryId })</div>
+                            <div id="next_page" class="pull-right">
+                                @Html.ActionLink("下一章", "ShowBook", new
+                                                          {
+                                                              bookid = Model.Book.id,
+                                                              dirId = ViewBag.NextDirectoryId
+                                                          })
+                            </div>
                         }
 
                     </div>
@@ -360,11 +374,11 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
 
 @section scripts{
-<script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
+    <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
 
-@System.Web.Optimization.Scripts.Render("~/script/editor.md")
+    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
-<script>
+    <script>
     window.jumpToDirectory = '@(ViewBag.CurrentDiretoryId ?? 0)';
 
     $(document).ready(function () {
@@ -430,12 +444,19 @@ Layout = "~/Views/Shared/_Layout.cshtml";
         else {
             <text> $("#comments").hide(); </text>
         }
-    });
-</script>
 
-<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
-<script src="//192.168.13.119/web-comment/Script/comment.js"></script>
-<script>
+        // 当没有目录时，隐藏目录容器
+        setTimeout(function () {
+            if($("ul.markdown-toc-list").children().length === 0){
+                $("#toc_container").hide();
+            }
+        }, 500);
+    });
+    </script>
+
+    <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+    <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+    <script>
     (function () {
 
         Comments({
@@ -445,6 +466,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
             apiUrl: "http://192.168.13.119/web-comment"
         });
     })();
-</script>
+    </script>
 
 }

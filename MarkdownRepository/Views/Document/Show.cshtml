@@ -1,7 +1,7 @@
 @using MarkdownRepository.Lib
 @{
-Layout = "~/Views/Shared/_Layout.cshtml";
-var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 }
 @model MarkdownRepository.Models.Document
 
@@ -81,14 +81,14 @@ var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 
 @if (Model.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
 {
-<div class="pull-right" style="font-size:0.7em;">
-    <a href="@Url.Action("Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
-</div>
+    <div class="pull-right" style="font-size:0.7em;">
+        <a href="@Url.Action("Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
+    </div>
 }
 
 @if (TempData["RedirectReason"] == "Unauthorized")
 {
-<b style="color:Red">你无权修改！</b>
+    <b style="color:Red">你无权修改！</b>
 }
 
 <h2 style="" class="title">@Model.title</h2>
@@ -102,96 +102,104 @@ var textOfFollow = ViewBag.IsFollowed ? "取消关注" : "关注文章";
 @if (!Model.category.IsEmpty())
 {
 
-<div class="category-info">
-    @foreach (var c in Model.category.Split(','))
-    {
-    <a class="tag-item" href="@Url.Action("SearchByCategory", new { category=c, byOwner=false })">
-        <div class="tag-title">@c</div>
-    </a>
-    }
-</div>
+    <div class="category-info">
+        @foreach (var c in Model.category.Split(','))
+        {
+            <a class="tag-item" href="@Url.Action("SearchByCategory", new { category=c, byOwner=false })">
+                <div class="tag-title">@c</div>
+            </a>
+        }
+    </div>
 }
 
-<div id="toc_container"></div>
+<div id="toc_container">
+</div>
 
 <div id="md">
     <textarea style="display:none;">@Model.content</textarea>
 </div>
 
 @if (User.Identity.IsAuthenticated && !Model.creator.Equals(User.Identity.Name.GetUserName(),
-StringComparison.InvariantCultureIgnoreCase))
+            StringComparison.InvariantCultureIgnoreCase))
 {
-<div id="follow_doc" style="" class="follow-doc"><span id="follow_text" class="" data-toggle="tooltip"
-        title="@textOfFollow">@textOfFollow</span></div>
+    <div id="follow_doc" style="" class="follow-doc">
+        <span id="follow_text" class="" data-toggle="tooltip"
+              title="@textOfFollow">@textOfFollow</span>
+    </div>
 }
 
 <div id="comments"></div>
 
 @section style{
-@System.Web.Optimization.Styles.Render("~/css/editor.md")
-<style>
-    .follow-doc {
-        position: fixed;
-        top: 50%;
-        left: 100px;
-        font-size: 0.7em;
-        width: 30px;
-        cursor: pointer;
-        border: #ddd solid 1px;
-        border-radius: 5px;
-        padding: 7px;
-        color: #999;
-    }
-
-    #toc_container ul {
-        list-style-type: none;
-    }
-
-    #toc_container ol.markdown-toc-list,
-    ul.markdown-toc-list {
-        padding: 5px;
-    }
-
-    #toc_container:hover {
-        overflow: auto;
-    }
-
-    @@media screen and (max-width: 1300px) {
-        #toc_container {
-            position: relative;
-        }
-    }
-
-    @@media screen and (min-width: 1301px) {
-        #toc_container {
+    @System.Web.Optimization.Styles.Render("~/css/editor.md")
+    <style>
+        .follow-doc {
             position: fixed;
-            right: 20px;
-            top: 110px;
-            border: gray solid 1px;
-            border-radius: 7px;
-            overflow: hidden;
-            padding: 1em;
-            height: calc(100% - 150px);
-            width: 180px;
-            font-size: 0.8em;
+            top: 50%;
+            left: 100px;
+            font-size: 0.7em;
+            width: 30px;
+            cursor: pointer;
+            border: #ddd solid 1px;
+            border-radius: 5px;
+            padding: 7px;
+            color: #999;
         }
-    }
 
-    /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
-    a.reference-link::before {
-        content: '';
-        display: block;
-        height: 50px;
-        margin: -30px 0 0;
-    }
-</style>
+        #toc_container ul {
+            list-style-type: none;
+            padding-left: 1em;
+            white-space: nowrap;
+        }
+
+        #toc_container ul:first-child {
+            padding-left: 0px !important;
+        }
+
+        #toc_container ul > li {
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+
+        #toc_container:hover {
+            overflow: auto;
+        }
+
+        @@media screen and (max-width: 1300px) {
+            #toc_container {
+                position: relative;
+            }
+        }
+
+        @@media screen and (min-width: 1301px) {
+            #toc_container {
+                position: fixed;
+                right: 20px;
+                border: gray solid 1px;
+                border-radius: 7px;
+                overflow: hidden;
+                padding: 1em;
+                width: 180px;
+                font-size: 0.8em;
+                max-height: calc(100% - 250px);
+            }
+        }
+
+        /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
+        a.reference-link::before {
+            content: '';
+            display: block;
+            height: 50px;
+            margin: -30px 0 0;
+        }
+    </style>
 }
 
 @section scripts{
 
-@System.Web.Optimization.Scripts.Render("~/script/editor.md")
+    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
-<script>
+    <script>
     showMarkDown("md", "#toc_container");
 
     $(document).ready(function () {
@@ -248,14 +256,21 @@ StringComparison.InvariantCultureIgnoreCase))
                 }
             });
         });
+
+        // 当没有目录时，隐藏目录容器
+        setTimeout(function () {
+            if($("ul.markdown-toc-list").children().length === 0){
+                $("#toc_container").hide();
+            }
+        }, 500);
     });
-</script>
+    </script>
 
 
 
-<link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
-<script src="//192.168.13.119/web-comment/Script/comment.js"></script>
-<script>
+    <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+    <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+    <script>
     (function () {
         Comments({
             node: "#comments",
@@ -264,6 +279,6 @@ StringComparison.InvariantCultureIgnoreCase))
             apiUrl: "http://192.168.13.119/web-comment"
         });
     })();
-</script>
+    </script>
 
 }
