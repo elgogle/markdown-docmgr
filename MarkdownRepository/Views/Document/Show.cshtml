@@ -83,6 +83,13 @@
 {
     <div class="pull-right" style="font-size:0.7em;">
         <a href="@Url.Action("Create", new { id=Model.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a>
+        <a href="@Url.Action("Slide", new { id=Model.rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
+    </div>
+}
+else
+{
+    <div class="pull-right" style="font-size:0.7em;">
+        <a href="@Url.Action("Slide", new { id=Model.rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
     </div>
 }
 

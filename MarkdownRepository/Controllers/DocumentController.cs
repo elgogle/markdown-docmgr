@@ -221,6 +221,21 @@ namespace MarkdownRepository.Controllers
         }
 
         /// <summary>
+        /// slide presentatin
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult Slide(long id)
+        {
+            var doc = docMgr.Get(id);
+            if (doc == null)
+                return HttpNotFound();
+
+            return View(doc);
+        }
+
+        /// <summary>
         /// 创建或修改
         /// </summary>
         /// <param name="id"></param>

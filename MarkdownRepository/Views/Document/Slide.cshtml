@@ -1,0 +1,49 @@
+﻿@{
+    Layout = null;
+}
+@model MarkdownRepository.Models.Document
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@Model.title</title>
+    <meta charset="utf-8">
+    <link rel="icon" href="~/images/favicon.ico">
+    <style>
+        body {
+            font-family: 'Droid Serif';
+        }
+
+        h1, h2, h3 {
+            font-family: 'Yanone Kaffeesatz';
+            font-weight: normal;
+        }
+
+        .remark-code, .remark-inline-code {
+            font-family: 'Ubuntu Mono';
+        }
+
+        /*blockquote {
+            padding: 1em;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+
+        .remark-slide-content h1 {
+            background-color: #f8f8f8;
+            padding: 1em;
+            border-radius: 10px;
+        }*/
+    </style>
+</head>
+<body>
+    <textarea id="source">
+        @Html.Raw(Model.content)     
+    </textarea>
+    
+    <script src="@Url.Content("~/javascripts/remark-latest.min.js")"></script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+</body>
+</html>

@@ -737,6 +737,7 @@
     <Content Include="javascripts\layer-v3.1.1\layer\theme\default\loading-2.gif" />
     <Content Include="javascripts\layer-v3.1.1\test.html" />
     <Content Include="javascripts\layer-v3.1.1\更新日志.txt" />
+    <Content Include="javascripts\remark-latest.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -815,6 +816,7 @@
     <Content Include="Views\Document\ShowBook.cshtml" />
     <Content Include="Views\Document\SearchBook.cshtml" />
     <Content Include="Views\Document\MyBooks.cshtml" />
+    <Content Include="Views\Document\Slide.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
