@@ -211,6 +211,11 @@ namespace MarkdownRepository.Controllers
             if (doc == null)
                 return HttpNotFound();
 
+            if(doc.is_public == DocumentAccess.PRIVATE && doc.creator != UserId)
+            {
+                return View("NoPermission");
+            }
+
             ViewBag.IsFollowed = false;
             if (User.Identity.IsAuthenticated)
             {
@@ -231,6 +236,11 @@ namespace MarkdownRepository.Controllers
             var doc = docMgr.Get(id);
             if (doc == null)
                 return HttpNotFound();
+
+            if (doc.is_public == DocumentAccess.PRIVATE && doc.creator != UserId)
+            {
+                return View("NoPermission");
+            }
 
             return View(doc);
         }

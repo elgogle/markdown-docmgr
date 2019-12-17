@@ -817,6 +817,7 @@
     <Content Include="Views\Document\SearchBook.cshtml" />
     <Content Include="Views\Document\MyBooks.cshtml" />
     <Content Include="Views\Document\Slide.cshtml" />
+    <Content Include="Views\Document\NoPermission.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
