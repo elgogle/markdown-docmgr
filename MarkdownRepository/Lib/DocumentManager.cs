@@ -49,7 +49,7 @@ namespace MarkdownRepository.Lib
             foreach (var f in allFiles)
             {
                 var fname = System.IO.Path.GetFileNameWithoutExtension(f);
-                var day = fname.Right(10);
+                var day = fname.Right(8);
 
                 if (day.IsNum() && old.CompareTo(day) > 0)
                 {
