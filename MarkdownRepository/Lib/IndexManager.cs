@@ -250,7 +250,7 @@ namespace MarkdownRepository.Lib
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
 
                     //TopScoreDocCollector盛放查询结果的容器
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(300, true);
 
                     //searcher.Search(query, null, collector);//根据query查询条件进行查询，查询结果放入collector容器
                     //searcher.Search(queryOr, null, collector);
