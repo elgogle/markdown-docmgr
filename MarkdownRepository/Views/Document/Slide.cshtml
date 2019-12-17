@@ -23,6 +23,22 @@
             font-family: 'Ubuntu Mono';
         }
 
+        .remark-slide {
+            border-top: red solid;
+            border-bottom: red solid;
+            border-radius: 5px;
+        }
+
+        .remark-slide-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: .05;            
+            background-image: url(@Url.Content("~/Images/slide_background.jpg"));
+        }
         /*blockquote {
             padding: 1em;
             background-color: #f8f8f8;

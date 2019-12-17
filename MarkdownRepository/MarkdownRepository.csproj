@@ -702,6 +702,7 @@
     <Content Include="images\logos\editormd-logo-72x72.png" />
     <Content Include="images\logos\editormd-logo-96x96.png" />
     <Content Include="images\logos\vi.png" />
+    <Content Include="images\slide_background.jpg" />
     <Content Include="images\subscribe.png" />
     <Content Include="javascripts\bootstrap-switch\css\bootstrap3\bootstrap-switch.min.css" />
     <Content Include="javascripts\bootstrap-switch\js\bootstrap-switch.min.js" />
