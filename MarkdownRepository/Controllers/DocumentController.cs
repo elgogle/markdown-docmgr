@@ -250,6 +250,7 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult LastestDocuments()
         {
+            var markdownTransfer = new MarkdownSharp.Markdown();
             var latestDocs = docMgr.GetLatestDocuments();
             var items = latestDocs.Select(t =>
             {
@@ -262,7 +263,7 @@ namespace MarkdownRepository.Controllers
 
                 Uri uri = urlBuilder.Uri;
 
-                return new SyndicationItem(t.title, t.content.Left(200), uri);
+                return new SyndicationItem(t.title, markdownTransfer.Transform(t.content), uri);
             }).ToList();
             SyndicationFeed feed = new SyndicationFeed("Markdown Documents", "CSC Markdown Documents RSS Feed", Request.Url, items);
             return new RssResult(feed);
