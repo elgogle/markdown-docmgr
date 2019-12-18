@@ -64,6 +64,9 @@
     }
 </div>
 <div class="col-md-2">
+    <div class="subscribe">
+        <img src="@Url.Content("~/images/subscribe.png")"/> @Html.ActionLink("订阅更新", "LastestDocuments")
+    </div>
     <div class="side-category">
         <div class="title">文章分类</div>
         <div class="doc-category">
@@ -100,6 +103,14 @@
             background-color: inherit;
             color: red;
             border: none;
+        }
+        .subscribe{
+            border: gray solid;
+            font-size: 0.7em;
+            padding: 3px;
+        }
+        .subscribe img{
+            height: 17px;
         }
     </style>
 
