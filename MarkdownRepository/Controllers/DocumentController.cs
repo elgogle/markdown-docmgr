@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Data.SQLite;
+using System.ServiceModel.Syndication;
 
 namespace MarkdownRepository.Controllers
 {
@@ -243,6 +244,28 @@ namespace MarkdownRepository.Controllers
             }
 
             return View(doc);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult LastestDocuments()
+        {
+            var latestDocs = docMgr.GetLatestDocuments();
+            var items = latestDocs.Select(t =>
+            {
+                var urlBuilder =
+                    new System.UriBuilder(Request.Url.AbsoluteUri)
+                    {
+                        Path = Url.Action("Show", new { id = t.rowid }),
+                        Query = null,
+                    };
+
+                Uri uri = urlBuilder.Uri;
+
+                return new SyndicationItem(t.title, t.content.Left(200), uri);
+            }).ToList();
+            SyndicationFeed feed = new SyndicationFeed("Markdown Documents", "CSC Markdown Documents RSS Feed", Request.Url, items);
+            return new RssResult(feed);
         }
 
         /// <summary>

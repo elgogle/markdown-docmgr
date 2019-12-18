@@ -6,58 +6,31 @@ using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using HtmlAgilityPack;
-
+using System.Web.Mvc;
+using System.ServiceModel.Syndication;
 
 namespace MarkdownRepository.Lib
 {
-    public class RssHelper
+    public class RssResult : ActionResult
     {
-        const string RSS_PATH = "/RssFeeds/rss.xml";
-        public static void WriteItem(string title, string link, string description)
+        public SyndicationFeed Feed { get; set; }
+
+        public RssResult() { }
+
+        public RssResult(SyndicationFeed feed)
         {
-            var fullPath = HttpContext.Current.Server.MapPath(RSS_PATH);
-            if (File.Exists(fullPath))
+            this.Feed = feed;
+        }
+
+        public override void ExecuteResult(ControllerContext context)
+        {
+            context.HttpContext.Response.ContentType = "application/rss+xml";
+
+            Rss20FeedFormatter formatter = new Rss20FeedFormatter(this.Feed);
+
+            using (XmlWriter writer = XmlWriter.Create(context.HttpContext.Response.Output))
             {
-                try
-                {
-                    var doc = new XmlDocument();
-                    doc.Load(fullPath);
-                    var channel = doc.DocumentElement.SelectSingleNode("/rss/channel");
-
-                    XmlNodeList items = doc.DocumentElement.SelectNodes("/rss/channel/item");
-                    foreach (XmlNode node in items)
-                    {
-                        XmlNode pubDate = node.SelectSingleNode("pubDate");
-                        if (pubDate != null)
-                        {
-                            if (Convert.ToDateTime(pubDate.InnerText).AddDays(7) < DateTime.Now)
-                                channel.RemoveChild(node);
-                        }
-                    }
-
-
-                    XmlElement createNewItem = doc.CreateElement("item");
-                    XmlElement titleElement = doc.CreateElement("title");
-                    titleElement.InnerText = title;
-                    XmlElement linkElement = doc.CreateElement("link");
-                    linkElement.InnerText = link;
-                    XmlElement descriptionElement = doc.CreateElement("description");
-                    descriptionElement.InnerText = description;
-                    XmlElement pubDateElement = doc.CreateElement("pubDate");
-                    pubDateElement.InnerText = DateTime.Now.ToString();
-
-                    createNewItem.AppendChild(titleElement);
-                    createNewItem.AppendChild(linkElement);
-                    createNewItem.AppendChild(descriptionElement);
-                    createNewItem.AppendChild(pubDateElement);
-                    
-                    channel.AppendChild(createNewItem);
-                    doc.Save(fullPath);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteError(typeof(RssHelper), ex);
-                }
+                formatter.WriteTo(writer);
             }
         }
     }

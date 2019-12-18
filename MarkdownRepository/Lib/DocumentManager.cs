@@ -848,6 +848,33 @@ where a.rowid = b.id
         }
 
         /// <summary>
+        /// 获取最近更新的文件
+        /// </summary>
+        /// <param name="days">过去几天</param>
+        /// <returns></returns>
+        public List<Document> GetLatestDocuments(int days = -15)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var docs = db.Query<Document>(@"
+select distinct b.id as rowid, 
+    a.title, 
+    a.content, 
+    a.category,
+    b.creat_at, 
+    b.update_at, 
+    b.creator
+from documents a, documents_owner b
+where a.rowid = b.id
+    and b.is_public = 1
+    and b.update_at > @updateAt
+", new { updateAt = DateTime.Now.AddDays(days) });
+                return docs.ToList();
+            }
+        }
+
+        /// <summary>
         /// 关注文章
         /// </summary>
         /// <param name="userId"></param>
