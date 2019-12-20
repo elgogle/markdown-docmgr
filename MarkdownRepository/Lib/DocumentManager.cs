@@ -808,7 +808,7 @@ delete from documents_follow where doc_id=@id;
                                                     left outer join book_directories d on d.document_id = b.id
                                                     where b.id=@id;
 
-                                                    insert or ignore into documents_read_count(count, doc_id) values(1, @id);
+                                                    insert into documents_read_count(count, doc_id) select 1, @id where not exists(select 1 from documents_read_count where doc_id=@id);
                                                     update documents_read_count set count = count + 1 where doc_id=@id;
                                                     ",
                                                                                       new { id = id }).FirstOrDefault();
@@ -1017,18 +1017,38 @@ WHERE  b.id in @list
             }
         }
 
-        public List<Document> AllDocument()
+        /// <summary>
+        /// 获取全部公开文章
+        /// </summary>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
+        public IEnumerable<Document> AllDocument(string orderBy)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
+                var sql = @"
+select id as rowid, title, content, category, creat_at, update_at, creator
+from documents a, documents_owner b 
+where a.rowid = b.id and b.is_public=1
+    and not exists(select 1 from book_directories d where document_id = a.rowid)
+order by update_at desc
+";
+                if(orderBy.IsNullOrEmpty() == false && orderBy.ToLower().Equals("read_count"))
+                {
+                    sql = @"
+select distinct b.id as rowid, a.title, a.content, a.category, b.creat_at, b.update_at, b.creator
+from documents a
+inner join documents_owner b on a.rowid = b.id and b.is_public=1
+left outer join documents_read_count c on b.id = c.doc_id
+where not exists(select 1 from book_directories d where document_id = a.rowid)
+order by ifnull(c.count,1) desc
+";
+                }
+               
 
-                var documents = db.Query<Document>(@"select id as rowid, title, content, category, creat_at, update_at, creator
-                                                    from documents a, documents_owner b 
-                                                    where a.rowid = b.id and b.is_public=1
-                                                        and not exists(select 1 from book_directories d where document_id = a.rowid)
-                                                    order by update_at desc");
-                return documents.ToList();
+                var documents = db.Query<Document>(sql);
+                return documents;
             }
         }
     }

@@ -74,15 +74,16 @@ namespace MarkdownRepository.Controllers
         /// <param name="page"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult AllDocument(int? page)
+        public ActionResult AllDocument(int? page, string orderBy)
         {
             int pageSize = 50;
             int pageNumber = page ?? 1;
-            var result = docMgr.AllDocument();
+            var result = docMgr.AllDocument(orderBy);
             var category = docMgr.GetCategory();
             //var creator = docMgr.GetCreator();
             var myFollowedDocs = docMgr.GetFollowDocuments(User.Identity.IsAuthenticated?UserId:"");
-            
+
+            ViewBag.OrderBy = orderBy;
             ViewBag.Category = category;
             //ViewBag.Creator = creator;
             ViewBag.MyFollowedDocs = myFollowedDocs;

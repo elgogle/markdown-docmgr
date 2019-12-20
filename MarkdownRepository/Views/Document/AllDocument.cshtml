@@ -11,6 +11,11 @@
 <div class="blog-post markdown-body col-md-10">
     @if (Model != null && Model.Count > 0)
     {
+        <div>
+            <span class="doc-order @(ViewBag.OrderBy != "read_count"?"active":"inactive")">@Html.ActionLink("最新", "AllDocument", new { orderBy = "create_time" })</span>
+            | <span class="doc-order @(ViewBag.OrderBy == "read_count" ? "active" : "inactive")">@Html.ActionLink("热门", "AllDocument", new { orderBy = "read_count" })</span>
+        </div>
+
         <table class="table table-striped">
             <tbody>
                 @foreach (var doc in Model)
@@ -60,7 +65,7 @@
         <!-- 分页 -->
         <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
 
-        @Html.PagedListPager(Model, page => Url.Action("AllDocument", new { page }))
+        @Html.PagedListPager(Model, page => Url.Action("AllDocument", new { page, orderBy = ViewBag.OrderBy }))
     }
 </div>
 <div class="col-md-2">
@@ -111,6 +116,16 @@
         }
         .subscribe img{
             height: 17px;
+        }
+        span.doc-order{
+            padding: 1em;
+            font-size: 0.75em;
+        }
+        span.active{
+            font-weight: bold;
+        }
+        span.inactive a{
+            color: rgb(135, 131, 124);
         }
     </style>
 
