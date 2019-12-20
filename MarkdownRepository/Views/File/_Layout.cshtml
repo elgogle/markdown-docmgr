@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.css" />
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/<?php echo FM_HIGHLIGHTJS_STYLE ?>.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/vs.min.css">
     
     <style>
         body {
@@ -330,29 +330,29 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="newItemModalLabel"><i class="fa fa-plus-square fa-fw"></i><?php echo lng('CreateNewItem') ?></h5>
+                        <h5 class="modal-title" id="newItemModalLabel"><i class="fa fa-plus-square fa-fw"></i>增加</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p><label for="newfile"><?php echo lng('ItemType') ?> </label></p>
+                        <p><label for="newfile">类别 </label></p>
 
                         <div class="custom-control custom-radio custom-control-inline">
                             <input type="radio" id="customRadioInline1" name="newfile" value="file" class="custom-control-input">
-                            <label class="custom-control-label" for="customRadioInline1"><?php echo lng('File') ?></label>
+                            <label class="custom-control-label" for="customRadioInline1">文件</label>
                         </div>
 
                         <div class="custom-control custom-radio custom-control-inline">
                             <input type="radio" id="customRadioInline2" name="newfile" value="folder" class="custom-control-input" checked="">
-                            <label class="custom-control-label" for="customRadioInline2"><?php echo lng('Folder') ?></label>
+                            <label class="custom-control-label" for="customRadioInline2">目录</label>
                         </div>
 
-                        <p class="mt-3"><label for="newfilename"><?php echo lng('ItemName') ?> </label></p>
+                        <p class="mt-3"><label for="newfilename">名称 </label></p>
                         <input type="text" name="newfilename" id="newfilename" value="" class="form-control">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> <?php echo lng('Cancel') ?></button>
+                        <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> 取消</button>
                         <button type="button" class="btn btn-success" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="fa fa-check-circle"></i> <?php echo lng('CreateNow') ?></button>
                     </div>
                 </div>
@@ -374,7 +374,7 @@
                             <%this.content%>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> <?php echo lng('Cancel') ?></button>
+                            <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> 取消</button>
                             <%if(this.action){%><button type="button" class="btn btn-primary" id="js-ModalCenterAction" data-type="js-<%this.action%>"><%this.action%></button><%}%>
                         </div>
                     </div>
@@ -387,7 +387,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad(); var isHighlightingEnabled = true;</script>
 
@@ -400,8 +399,6 @@
         });
     });
     //TFM Config
-    window.curi = "https://tinyfilemanager.github.io/config.json", window.config = null;
-    function fm_get_config(){ if(!!window.name){ window.config = JSON.parse(window.name); } else { $.getJSON(window.curi).done(function(c) { if(!!c) { window.name = JSON.stringify(c), window.config = c; } }); }}
     function template(html,options){
         var re=/<\%([^\%>]+)?\%>/g,reExp=/(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g,code='var r=[];\n',cursor=0,match;var add=function(line,js){js?(code+=line.match(reExp)?line+'\n':'r.push('+line+');\n'):(code+=line!=''?'r.push("'+line.replace(/"/g,'\\"')+'");\n':'');return add}
         while(match=re.exec(html)){add(html.slice(cursor,match.index))(match[1],!0);cursor=match.index+match[0].length}
@@ -427,42 +424,7 @@
     }
     // Toast message
     function toast(txt) { var x = document.getElementById("snackbar");x.innerHTML=txt;x.className = "show";setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); }
-    //Save file
-    function edit_save(e, t) {
-        var n = "ace" == t ? editor.getSession().getValue() : document.getElementById("normal-editor").value;
-        if (n) {
-            if(true){
-                var data = {ajax: true, content: n, type: 'save'};
 
-                $.ajax({
-                    type: "POST",
-                    url: window.location,
-                    // The key needs to match your method's input parameter (case-sensitive).
-                    data: JSON.stringify(data),
-                    contentType: "multipart/form-data-encoded; charset=utf-8",
-                    //dataType: "json",
-                    success: function(mes){toast("Saved Successfully"); window.onbeforeunload = function() {return}},
-                    failure: function(mes) {toast("Error: try again");}
-                });
-
-            }
-            else{
-                var a = document.createElement("form");
-                a.setAttribute("method", "POST"), a.setAttribute("action", "");
-                var o = document.createElement("textarea");
-                o.setAttribute("type", "textarea"), o.setAttribute("name", "savedata");
-                var c = document.createTextNode(n);
-                o.appendChild(c), a.appendChild(o), document.body.appendChild(a), a.submit()
-            }
-        }
-    }
-    //Check latest version
-    function latest_release_info(v) {
-        if(!!window.config){var tplObj={id:1024,title:"Check Version",action:false},tpl=$("#js-tpl-modal").html();
-        if(window.config.version!=v){tplObj.content=window.config.newUpdate;}else{tplObj.content=window.config.noUpdate;}
-        $('#wrapper').append(template(tpl,tplObj));$("#js-ModalCenter-1024").modal('show');}else{fm_get_config();}
-    }
-    function show_new_pwd() { $(".js-new-pwd").toggleClass('hidden'); }
     //Save Settings
     function save_settings($this) {
         let form = $($this);
@@ -471,14 +433,7 @@
             success: function (data) {if(data) { window.location.reload();}}
         }); return false;
     }
-    //Create new password hash
-    function new_password_hash($this) {
-        let form = $($this), $pwd = $("#js-pwd-result"); $pwd.val('');
-        $.ajax({
-            type: form.attr('method'), url: form.attr('action'), data: form.serialize()+"&ajax="+true,
-            success: function (data) { if(data) { $pwd.val(data); } }
-        }); return false;
-    }
+
     //Upload files using URL param {Object}
     function upload_from_url($this) {
         let form = $($this), resultWrapper = $("div#js-url-upload__list");
@@ -501,8 +456,6 @@
     }
     // Dom Ready Event
     $(document).ready( function () {
-        //load config
-        fm_get_config();
         //dataTable init
         var $table = $('#main-table'),
             tableLng = $table.find('th').length,
