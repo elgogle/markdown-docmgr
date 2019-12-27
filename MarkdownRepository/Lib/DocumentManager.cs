@@ -396,25 +396,18 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
 
                 CheckPermissionForUpdateBook(userid, db, bookid);
 
-                var trans = db.BeginTransaction();
-                try
-                {
-                    var sql = @"
-delete from documents_owner a where exists(select 1 from book_directories b where b.document_id = a.id and b.book_id=@book_id); 
-delete from documents a where exists(select 1 from book_directories b where b.document_id = a.rowid and b.book_id=@book_id);
-delete from documents_category a where exists(select 1 from book_directories b where b.document_id = a.doc_id and b.book_id=@book_id);
-delete from documents_follow a where exists(select 1 from book_directories b where b.document_id = a.doc_id and b.book_id=@book_id);
+                var sql = @"
+BEGIN TRANSACTION;
+delete from documents_owner where exists(select 1 from book_directories b where b.document_id = documents_owner.id and b.book_id=@book_id); 
+delete from documents where exists(select 1 from book_directories b where b.document_id = documents.rowid and b.book_id=@book_id);
+delete from documents_category where exists(select 1 from book_directories b where b.document_id = documents_category.doc_id and b.book_id=@book_id);
+delete from documents_follow where exists(select 1 from book_directories b where b.document_id = documents_follow.doc_id and b.book_id=@book_id);
 delete from book_owner where book_id=@book_id;
 delete from book_directories where book_id=@book_id;
 delete from books where id=@book_id;
+COMMIT;
 ";
-                    db.Execute(sql, new { book_id = bookid });
-                    trans.Commit();
-                }
-                catch
-                {
-                    trans.Rollback();
-                }
+                db.Execute(sql, new { book_id = bookid });
             }
         }
 

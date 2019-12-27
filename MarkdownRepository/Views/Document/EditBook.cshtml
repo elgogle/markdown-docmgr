@@ -374,14 +374,17 @@ var documentId = 0;
 
 <script>
     $(document).ready(function () {
-        $currentDir = $("#current_directory");
-        $currentDirId = $("#current_directory_id");
-        $bookId = $("#book_id");
-        $lableCurrentDirPath = $("#lable_current_dir_path");
-        $parentDirId = $("#parent_directory_id");
-        $newSubDir = $("#new_sub_directory");
-        $mdContent = $("#md_content");
-
+        var $currentDir = $("#current_directory"),
+            $currentDirId = $("#current_directory_id"),
+            $bookId = $("#book_id"),
+            $lableCurrentDirPath = $("#lable_current_dir_path"),
+            $parentDirId = $("#parent_directory_id"),
+            $newSubDir = $("#new_sub_directory"),
+            $mdContent = $("#md_content");
+        
+        // 在首次打开页面时，加载参数中的目录
+        var openDirId = "@ViewBag.OpenDirId", opened = false;
+        
 
         window.jsTree = $("#toc").jstree({
             'plugins': ["wholerow", "types"],
@@ -399,13 +402,20 @@ var documentId = 0;
                     $.ajax({
                             url: '@Url.Action("GetBookDirectory")',
                             data: {
-                                bookid: $bookId.val()
+                                bookid: $bookId.val()                                
                             },
                             cache: false,
                             dataType: "json",
                         })
                         .success(function (res) {
                             callback.call(_this, res.data);
+                            if (opened == false) {
+                                opened = true;
+                                setTimeout(function () {
+                                    jsTree.jstree().deselect_all();
+                                    jsTree.jstree().select_node([openDirId], false);
+                                }, 500);
+                            }
                         });
                 }
             }

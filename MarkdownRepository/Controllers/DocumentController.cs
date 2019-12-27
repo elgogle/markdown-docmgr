@@ -622,7 +622,7 @@ namespace MarkdownRepository.Controllers
             try
             {
                 docMgr.DeleteBook(bookid, this.UserId);
-                return RedirectToAction("AllBooks");
+                return RedirectToAction("MyBooks");
             }
             catch(Exception ex)
             {
@@ -704,6 +704,11 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
+                if(directoryid <= 0)
+                {
+                    throw new Exception("请选择目录后，再写文章和保存");
+                }
+
                 docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
                 return Success();
             }
@@ -718,9 +723,10 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public ActionResult EditBook(long id)
+        public ActionResult EditBook(long id, long dirId = 0)
         {
             var book = docMgr.GetBook(id, this.UserId);
+            ViewBag.OpenDirId = dirId;
 
             return View(book);
         }

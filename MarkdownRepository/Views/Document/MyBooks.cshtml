@@ -103,6 +103,7 @@
                             <button class="btn btn-primary btn-xs" onclick="transferBook(@item.id, '@item.name')" type="button">转让书籍</button>   
                             
                             <a class="btn btn-primary btn-xs" href="@Url.Action("EditBook", new { id = item.id })"><i class="glyphicon glyphicon-edit"></i> 编辑</a>                     
+                            <a class="btn btn-primary btn-xs" href="#" onclick="return confirmDelete('@item.name', '@item.id');"><i class="glyphicon glyphicon-trash"></i> 删除</a>  
                         </div>
 
                     </li>
@@ -130,6 +131,11 @@
     <script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
 
     <script>        
+        function confirmDelete(name, id) {
+            if(confirm("确认删除 《" + name + "》")){
+                location.href = "@Url.Action("DeleteBook")" + "?bookid=" + id;
+            }
+        }
 
         function transferBook(bookid, bookname) {
             $("#transfer_book_name").text("书名: " + bookname);

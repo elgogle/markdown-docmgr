@@ -295,7 +295,7 @@
                         @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
                         User.Identity.Name.GetUserName() && t.is_owner))
                         {
-                            <a href="@Url.Action("EditBook", new { id=Model.Book.id })">
+                            <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })">
                                 <i class="glyphicon glyphicon-edit"></i> 编辑
                             </a>
                         }
@@ -378,6 +378,7 @@
     <script src="~/javascripts/jstree/3.3.8/jstree.min.js"></script>
 
     @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+
 
     <script>
     window.jumpToDirectory = '@(ViewBag.CurrentDiretoryId ?? 0)';
