@@ -93,10 +93,6 @@
                             分类: @Html.Raw(item.category)
                         </div>
 
-                        <div class="update-time">
-                            创建人: @AdAccount.GetUserNameById(item.creator), 更新时间: @item.update_at
-                        </div>
-
                         <div class="toolbar">
                             <input type="checkbox" class="switch" data-value-book-id="@item.id" @(item.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC ? "checked" : "")>
 

@@ -446,12 +446,21 @@ namespace MarkdownRepository.Controllers
             int pageSize = 50;
             int pageNumber = page ?? 1;
             var books = docMgr.GetBooks();
-            return View(books.ToPagedList(pageNumber, pageSize));
+            var result = books.ToPagedList(pageNumber, pageSize);
+            var owners = docMgr.GetBookOwner();
+            foreach(var item in result)
+            {
+                var owner = owners.FirstOrDefault(t => t.book_id == item.id);
+                if (owner != null)
+                    item.creator = owner.user_id;
+            }
+
+            return View(result);
         }
 
         public ActionResult MyBooks()
         {
-            var books = docMgr.GetMyBooks(this.UserId);
+            var books = docMgr.GetMyBooks(this.UserId);            
             var transferUsers = docMgr.GetAllUserId()
                 .Where(t=> t.user_id.GetUserName() != this.UserId.GetUserName())
                 .Select(t =>

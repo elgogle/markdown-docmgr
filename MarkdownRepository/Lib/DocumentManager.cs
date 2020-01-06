@@ -339,6 +339,8 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                     // 更新文章
                     Update(articleId, content, docTitle, docCategory, book.is_public);
                 }
+
+                db.Execute("update books set update_at = datetime('now', 'localtime')  where id=@id", new {  id = book.id });
             }
         }
 
@@ -469,6 +471,19 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
                 var owner = db.Query<BookOwner>("select * from book_owner where book_id = @id", new { id = bookid }).ToList();
                 var result = new BookVm { Book = book, BookDirectory = directories, BookOwner = owner };
 
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 获取所有书本的拥有人
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<BookOwner> GetBookOwner()
+        {
+            using (var db = this.OpenDb())
+            {
+                var result = db.Query<BookOwner>("select * from book_owner ");
                 return result;
             }
         }
