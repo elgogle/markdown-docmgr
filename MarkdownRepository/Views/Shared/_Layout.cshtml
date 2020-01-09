@@ -39,7 +39,7 @@
     <![endif]-->
     <style>
         /** 小于 1200 像素时，导航菜单折叠 */
-        @@media (max-width: 1201px) {
+        /*@@media (max-width: 1201px) {
           .navbar-header {
               float: none;
           }
@@ -74,7 +74,8 @@
           .collapse.in{
               display:block !important;
           }
-        }
+        }*/
+
         .sidebar-module li.active-doc {
             background-color: #DBEAF1;
         }
@@ -199,8 +200,8 @@
                     </div>
                     <div class="collapse navbar-collapse" id="navbar">
                         <ul class="nav navbar-nav navbar-right">
-                            <li class="@(@ViewBag.Action == "MyFiles" ? "active" : "")"><a href="@Url.Action("Index", "File")">我的文件<span class="sr-only">(current)</span></a></li>
-
+                            <li class="@(@ViewBag.Action == "MyFiles" ? "active" : "")"><a href="@Url.Action("Index", "File")"><span class="glyphicon glyphicon-folder-open"></span> 文件<span class="sr-only">(current)</span></a></li>
+                            
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-book"></span>书籍 <b class="caret"></b>
@@ -218,10 +219,26 @@
                                 </ul>
                             </li>
 
-                            <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文章<span class="sr-only">(current)</span></a></li>
-                            <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">写文章<span class="sr-only">(current)</span></a></li>
-                            <li class="@(@ViewBag.Action == "MyFollow" ? "active" : "")"><a href="@Url.Action("MyFollowDocuments", "Document")">我关注的文章<span class="sr-only">(current)</span></a></li>
-                            <li class="@(@ViewBag.Action == "ShowAll" ? "active" : "")"><a href="@Url.Action("AllDocument", "Document")">所有公开文章<span class="sr-only">(current)</span></a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-list-alt"></span>文章 <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        @Html.ActionLink("写文章", "Create", "Document")
+                                    </li>
+                                    <li>
+                                        @Html.ActionLink("我的文章", "Index", "Document")
+                                    </li>
+                                    <li>
+                                        @Html.ActionLink("所有公开文章", "AllDocument", "Document")
+                                    </li>
+                                    <li>
+                                        @Html.ActionLink("我关注的文章", "MyFollowDocuments", "Document")
+                                    </li>
+                                </ul>
+                            </li>
+
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-user"></span> @if (Request.IsAuthenticated)
