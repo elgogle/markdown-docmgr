@@ -467,8 +467,8 @@
             userName: "@User.Identity.Name.GetUserName()",
             apiUrl: "http://192.168.13.119/web-comment",
             emailIsEnabled: true,
-            articleTitle: "@ViewBag.Document.title",
-            articleWriter: "@ViewBag.Document.creator"
+            articleTitle: "@(ViewBag.Document == null ? "" :ViewBag.Document.title)",
+            articleWriter: "@(ViewBag.Document == null ? "" : ViewBag.Document.creator)"
         });
     })();
     </script>

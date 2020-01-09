@@ -831,6 +831,7 @@
     <Content Include="Views\File\QuickView.cshtml" />
     <Content Include="Views\Document\DeleteBook.cshtml" />
     <Content Include="Views\File\Index.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
