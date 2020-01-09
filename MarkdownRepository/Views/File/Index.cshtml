@@ -514,13 +514,11 @@
 
     <script>
         $(document).ready(function () {
-            //dataTable init
-            var $table = $('#main-table'),
-                tableLng = $table.find('th').length,
-                _targets = (tableLng && tableLng == 7) ? [0, 4, 5, 6] : tableLng == 5 ? [0, 4] : [3],
-                mainTable = $('#main-table').DataTable({
-                    "paging": false, "info": false, "columnDefs": [{ "targets": _targets, "orderable": false }]
-                });
+            mainTable = $('#main-table').DataTable({
+                "paging": false,
+                "info": false,
+                "order": []
+            });
         });
 
 
