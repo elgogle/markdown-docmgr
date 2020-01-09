@@ -54,7 +54,7 @@
 
     Dropzone.options.fileUploader = {
         timeout: 120000,
-        maxFilesize: 100,
+        maxFilesize: 300,
         init: function () {
             this.on("sending", function (file, xhr, formData) {
                 xhr.ontimeout = (function() {
