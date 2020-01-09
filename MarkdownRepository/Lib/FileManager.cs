@@ -79,7 +79,7 @@ namespace MarkdownRepository.Lib
             }
             else if (Directory.Exists(file))
             {
-                Directory.Delete(file);
+                Directory.Delete(file, true);
             }
             else
             {
