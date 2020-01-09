@@ -203,6 +203,7 @@
     <Content Include="css\blog.css" />
     <Content Include="css\bootstrap.min.css" />
     <Content Include="css\default.min.css" />
+    <Content Include="css\font-awesome.min.css" />
     <Content Include="css\github-markdown.css" />
     <Content Include="css\ie10-viewport-bug-workaround.css" />
     <Content Include="css\highlight-styles\agate.css" />
@@ -716,6 +717,7 @@
     <Content Include="javascripts\ie8-responsive-file-warning.js" />
     <Content Include="javascripts\jqcloud.js" />
     <Content Include="javascripts\jqcloud.min.js" />
+    <Content Include="javascripts\jquery.dataTables.min.js" />
     <Content Include="javascripts\jquery.min.js" />
     <Content Include="javascripts\jstree\3.3.8\jstree.js" />
     <Content Include="javascripts\jstree\3.3.8\jstree.min.js" />
@@ -826,9 +828,8 @@
     <Content Include="Views\File\Copy.cshtml" />
     <Content Include="Views\File\Settings.cshtml" />
     <Content Include="Views\File\QuickView.cshtml" />
-    <Content Include="Views\File\Nav.cshtml" />
-    <Content Include="Views\File\_Layout.cshtml" />
     <Content Include="Views\Document\DeleteBook.cshtml" />
+    <Content Include="Views\File\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

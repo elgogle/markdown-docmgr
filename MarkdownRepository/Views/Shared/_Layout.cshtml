@@ -38,6 +38,43 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <style>
+        /** 小于 1200 像素时，导航菜单折叠 */
+        @@media (max-width: 1201px) {
+          .navbar-header {
+              float: none;
+          }
+          .navbar-left,.navbar-right {
+              float: none !important;
+          }
+          .navbar-toggle {
+              display: block;
+          }
+          .navbar-collapse {
+              border-top: 1px solid transparent;
+              box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+          }
+          .navbar-fixed-top {
+              top: 0;
+              border-width: 0 0 1px;
+          }
+          .navbar-collapse.collapse {
+              display: none!important;
+          }
+          .navbar-nav {
+              float: none!important;
+              margin-top: 7.5px;
+          }
+          .navbar-nav>li {
+              float: none;
+          }
+          .navbar-nav>li>a {
+              padding-top: 10px;
+              padding-bottom: 10px;
+          }
+          .collapse.in{
+              display:block !important;
+          }
+        }
         .sidebar-module li.active-doc {
             background-color: #DBEAF1;
         }
@@ -162,6 +199,7 @@
                     </div>
                     <div class="collapse navbar-collapse" id="navbar">
                         <ul class="nav navbar-nav navbar-right">
+                            <li class="@(@ViewBag.Action == "MyFiles" ? "active" : "")"><a href="@Url.Action("Index", "File")">我的文件<span class="sr-only">(current)</span></a></li>
 
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -181,7 +219,7 @@
                             </li>
 
                             <li class="@(@ViewBag.Action == "MyDocs" ? "active" : "")"><a href="@Url.Action("Index", "Document")">我的文章<span class="sr-only">(current)</span></a></li>
-                            <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">创建<span class="sr-only">(current)</span></a></li>
+                            <li class="@(@ViewBag.Action == "Create" ? "active" : "")"><a href="@Url.Action("Create", "Document")">写文章<span class="sr-only">(current)</span></a></li>
                             <li class="@(@ViewBag.Action == "MyFollow" ? "active" : "")"><a href="@Url.Action("MyFollowDocuments", "Document")">我关注的文章<span class="sr-only">(current)</span></a></li>
                             <li class="@(@ViewBag.Action == "ShowAll" ? "active" : "")"><a href="@Url.Action("AllDocument", "Document")">所有公开文章<span class="sr-only">(current)</span></a></li>
                             <li class="dropdown">
@@ -231,6 +269,7 @@
         </p>
     </footer>
 
+    @RenderSection("templates", required: false)
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

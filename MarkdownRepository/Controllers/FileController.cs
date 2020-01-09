@@ -4,18 +4,106 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.IO;
+using MarkdownRepository.Lib;
 
 namespace MarkdownRepository.Controllers
 {
+    [Authorize]
     public class FileController : Controller
     {
-        //
-        const string FM_PATH = "";
-        const string PHP_SELF = "";
-
-        public ActionResult Index()
+        public ActionResult Index(string p)
         {
+            ViewBag.Action = "MyFiles";
+            var currentPath = p ?? "";
+            var files = FileManager.GetFiles(currentPath);
+            ViewBag.CurrentPath = currentPath;
+
+            if (p.IsNullOrEmpty() == false)
+            {
+                ViewBag.ParentPath = Path.GetDirectoryName(currentPath);
+            }
+            else
+            {
+                ViewBag.ParentPath = null;
+            }
+
+            return View(files);
+        }
+
+        public ActionResult Delete(string currentPath, string deleteFile)
+        {
+            try
+            {
+                FileManager.DeleteFile(deleteFile);
+            }
+            catch(Exception ex)
+            {
+                ViewData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction("Index", new { p = currentPath });
+        }
+
+        public ActionResult NewFolder(string currentPath, string folderName)
+        {
+            try
+            {
+                FileManager.CreateFolder(Path.Combine(currentPath, folderName));
+            }
+            catch(Exception ex)
+            {
+                ViewData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction("Index", new { p = currentPath });
+        }
+
+        public ActionResult Rename(string currentPath, string from, string to)
+        {
+            try
+            {
+                FileManager.RenameFile(currentPath, from, to);
+            }
+            catch(Exception ex)
+            {
+                ViewData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction("Index", new { p = currentPath });
+        }
+
+        public ActionResult Download(string dl)
+        {
+            var filePath = FileManager.GetAbsolutePath(dl);
+
+            return File(filePath, "application/octet-stream", Path.GetFileName(filePath));
+        }
+
+        [AllowAnonymous]
+        public ActionResult DirectLink(string encryptDLink)
+        {
+            var filePath = FileManager.DirectLinkToFullPath(encryptDLink);
+            return File(filePath, "application/octet-stream", Path.GetFileName(filePath));
+        }
+
+        [HttpGet]
+        public ActionResult Upload(string p)
+        {
+            ViewBag.CurrentPath = p;
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult Upload(string p, ICollection<HttpPostedFileBase> file)
+        {
+            return MyResponse(() =>
+            {
+                foreach (var f in file)
+                {
+                    var absPath = FileManager.GetAbsolutePath(Path.Combine(p, f.FileName));
+                    f.SaveAs(absPath);
+                }
+            });
         }
 
         public ActionResult QuickView()
@@ -44,32 +132,7 @@ namespace MarkdownRepository.Controllers
             return MyResponse(null);
         }
 
-        public ActionResult Delete(string deleteFile)
-        {
-            return MyResponse(null);
-        }
-
-        public ActionResult New(string type, string newFile)
-        {
-            return MyResponse(null);
-        }
-
         public ActionResult Copy(string copy, string finish, string move)
-        {
-            return MyResponse(null);
-        }
-
-        public ActionResult Rename(string ren, string to)
-        {
-            return MyResponse(null);
-        }
-
-        public ActionResult Download(string dl)
-        {
-            return File("", "application/octet-stream");
-        }
-
-        public ActionResult Upload(HttpPostedFileBase file)
         {
             return MyResponse(null);
         }

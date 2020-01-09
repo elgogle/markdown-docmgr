@@ -1,68 +1,72 @@
 ﻿@{
     ViewBag.Title = "Upload";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var MAX_UPLOAD_SIZE = 1024 * 10;
+    Layout = "~/Views/Shared/_Layout.cshtml";    
 }
 
+@section style{
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet">
+<style>
+    form.dropzone {
+        min-height: 200px;
+        border: 2px dashed #007bff;
+        line-height: 6rem;
+    }
+    .nav-item.avatar a {
+        cursor: pointer;
+        text-transform: capitalize;
+    }
+    .nav-item.avatar a > i {
+        font-size: 15px;
+    }
+    .nav-item.avatar .dropdown-menu a {
+        font-size: 13px;
+    }
+</style>
+}
 <div class="path">
-
-    <div class="card mb-2 fm-upload-wrapper">
+    <div class="fm-upload-wrapper">
         <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#fileUploader" data-target="#fileUploader"><i class="fa fa-arrow-circle-o-up"></i> 上传文件</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#urlUploader" class="js-url-upload" data-target="#urlUploader"><i class="fa fa-link"></i> Upload from URL</a>
-                </li>
-            </ul>
+            <div class="">
+                <a class="label label-primary" href="#fileUploader" data-target="#fileUploader"><i class="fa fa-arrow-circle-o-up"></i> 上传文件</a>
+                <a class="label label-default" href="@Url.Action("Index", new { p = ViewBag.CurrentPath })" ><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
+            </div>
         </div>
-        <div class="card-body">
-            <p class="card-text">
-                <a href="@Url.Action("Backpath")" class="float-right"><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
-                目标目录: 
-            </p>
-
-            <form action="@Url.Action("Upload")">
-                " class="dropzone card-tabs-container" id="fileUploader" enctype="multipart/form-data">
-                <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
-                <input type="hidden" name="fullpath" id="fullpath" value="<?php echo fm_enc(FM_PATH) ?>">
+        <div class="card-body" style="margin-top: 1em;">
+            <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container"  enctype="multipart/form-data">
+                <input type="hidden" name="p" value="@ViewBag.CurrentPath">                
                 <div class="fallback">
                     <input name="file" type="file" multiple />
                 </div>
             </form>
-
-            <div class="upload-url-wrapper card-tabs-container hidden" id="urlUploader">
-                <form id="js-form-url-upload" class="form-inline" onsubmit="return upload_from_url(this);" method="POST" action="">
-                    <input type="hidden" name="type" value="upload" aria-label="hidden" aria-hidden="true">
-                    <input type="url" placeholder="URL" name="uploadurl" required class="form-control" style="width: 80%">
-                    <button type="submit" class="btn btn-primary ml-3">上传</button>
-                    <div class="lds-facebook"><div></div><div></div><div></div></div>
-                </form>
-                <div id="js-url-upload__list" class="col-9 mt-3"></div>
-            </div>
         </div>
     </div>
 </div>
+
+@section scripts{
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
 <script>
-        Dropzone.options.fileUploader = {
-            timeout: 120000,
-            maxFilesize: @MAX_UPLOAD_SIZE,
-            init: function () {
-                this.on("sending", function (file, xhr, formData) {
-                    let _path = (file.fullPath) ? file.fullPath : file.name;
-                    document.getElementById("fullpath").value = _path;
-                    xhr.ontimeout = (function() {
-                        alert('Error: Server Timeout');
-                    });
-                }).on("success", function (res) {
-                    console.log('Upload Status >> ', res.status);
-                }).on("error", function(file, response) {
-                    alert(response);
+    $(document).ready(function () {
+
+
+    });
+
+    Dropzone.options.fileUploader = {
+        timeout: 120000,
+        maxFilesize: 100,
+        init: function () {
+            this.on("sending", function (file, xhr, formData) {
+                xhr.ontimeout = (function() {
+                    alert('Error: Server Timeout');
                 });
-            }
+            }).on("success", function (res) {
+                console.log('Upload Status >> ', res.status);
+            }).on("error", function(file, response) {
+                alert(response);
+            });
         }
+    }
 </script>
+
+}

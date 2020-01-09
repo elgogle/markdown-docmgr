@@ -10,21 +10,121 @@ namespace MarkdownRepository.Lib
     {
         static readonly string ROOT_PATH = HttpContext.Current.Server.MapPath("~/upload_files");
 
-        private static string GetAbsolutePath(string relatePath)
+        public static string GetAbsolutePath(string relatePath)
         {
             var user = HttpContext.Current.User.Identity.Name.GetUserName();
             var path = Path.Combine(ROOT_PATH, user, relatePath);
             return path;
         }
 
-        private static string GetRelatePath(string absPath)
+        public static string GetRelatePath(string absPath)
         {
-            var user = HttpContext.Current.User.Identity.Name.GetUserName();
-            var path = Path.Combine(ROOT_PATH, user);
+            var userPath = GetAbsolutePath("");
+            return absPath.Replace(userPath, "");
+        }        
 
-            return absPath.Replace(path, "");
+        public static IEnumerable<WebFile> GetFiles(string path)
+        {
+            List<WebFile> result = new List<WebFile>();
+            var absPath = GetAbsolutePath(path);
+            if(!Directory.Exists(absPath))
+            {
+                Directory.CreateDirectory(absPath);
+            }
+
+            foreach(var f in Directory.GetFiles(absPath))
+            {
+                var fInfo = new FileInfo(f);
+
+                var wf = new WebFile
+                {
+                    IsFile = true,
+                    Parent = path,
+                    FileSize = fInfo.Length,
+                    FileName = Path.GetFileName(f),
+                    IconClass = GetFileIconClass(Path.GetExtension(f).Replace(".", "")),
+                    DLink = GetDirectLink(f)
+                };
+
+                result.Add(wf);
+            }
+
+            foreach(var d in Directory.GetDirectories(absPath))
+            {
+                var wf = new WebFile
+                {
+                    IsFile = false,
+                    Parent = path,
+                    FileName = Path.GetFileName(d),
+                    IconClass = "fa fa-folder-o"
+                };
+
+                result.Add(wf);
+            }
+
+            return result;
         }
 
+        public static void DeleteFile(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)
+                || path.Trim() == "."
+                || path.Trim() == ".."
+                ) throw new Exception("错误的文件或目录");
+
+            var file = GetAbsolutePath(path);
+            if (File.Exists(file))
+            {
+                File.Delete(file);
+            }
+            else if (Directory.Exists(file))
+            {
+                Directory.Delete(file);
+            }
+            else
+            {
+                throw new Exception("错误的文件或目录");
+            }
+        }
+
+        public static void CreateFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)
+                || path.Trim() == "."
+                || path.Trim() == ".."
+                ) throw new Exception("错误的目录名称");
+
+            var file = GetAbsolutePath(path);
+
+            if (Directory.Exists(file))
+            {
+                return;
+            }
+            else
+            {
+                Directory.CreateDirectory(file);
+            }
+        }
+
+        public static void RenameFile(string path, string from, string to)
+        {
+            var file = GetAbsolutePath(Path.Combine(path, from));
+            var tfile = GetAbsolutePath(Path.Combine(path, to));
+            var fInfo = new FileInfo(file);
+
+            if(Directory.Exists(file))
+            {
+                Directory.Move(file, tfile);
+            }
+            else if(File.Exists(file))
+            {
+                File.Move(file, tfile);
+            }
+            else
+            {
+                throw new Exception("文件不见了");
+            }
+        }
 
         public static string GetFileIconClass(string ext)
         {
@@ -237,107 +337,17 @@ namespace MarkdownRepository.Lib
             return new List<string> { "doc", "docx", "xls", "xlsx", "pdf", "ppt", "pptx", "ai", "psd", "dxf", "xps", "rar", "odt", "ods" };
         }
 
-        public static string DeleteFile(string path)
+        public static string DirectLinkToFullPath(string encryptDLink)
         {
-            if (string.IsNullOrWhiteSpace(path)
-                || path.Trim() == "."
-                || path.Trim() == ".."
-                ) return "Wrong file or folder name";
-
-            var file = GetAbsolutePath(path);
-            if (File.Exists(file))
-            {
-                try
-                {
-                    File.Delete(file);
-                    return string.Format("File <b>{0}</b> deleted", path);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteError(typeof(FileManager), ex);
-                    return string.Format("File <b>{0}</b> not deleted", path);
-                }
-            }
-            else if (Directory.Exists(file))
-            {
-                try
-                {
-                    Directory.Delete(file);
-                    return string.Format("Folder <b>{0}</b> deleted", path);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteError(typeof(FileManager), ex);
-                    return string.Format("Folder <b>{0}</b> not deleted", path);
-                }
-            }
-            else
-            {
-                return "Wrong file or folder name";
-            }
+            var dLink = encryptDLink.DecryByDES();
+            var result = Path.Combine(ROOT_PATH, dLink.TrimStart('/', '\\'));
+            return result;
         }
 
-        public static string CreateFolder(string path)
+        private static string GetDirectLink(string absPath)
         {
-            if (string.IsNullOrWhiteSpace(path)
-                || path.Trim() == "."
-                || path.Trim() == ".."
-                ) return "Wrong folder name";
-
-            var file = GetAbsolutePath(path);
-
-            if (Directory.Exists(file))
-            {
-                return string.Format("Folder <b>{0}</b> already exists", path);
-            }
-            else
-            {
-                try
-                {
-                    Directory.CreateDirectory(file);
-                    return string.Format("Folder <b>{0}</b> created", path);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteError(typeof(FileManager), ex);
-                    return string.Format("Folder <b>{0}</b> not deleted", path);
-                }
-            }
-        }
-
-        public static Message CopyFile(string source, string destination)
-        {
-            if (string.IsNullOrWhiteSpace(source)
-                || source.Trim() == "."
-                || source.Trim() == ".."
-                ) return new Message("Source path not defined", MessageType.Error);
-
-            var from = GetAbsolutePath(source);
-            var srcFileName = Path.GetFileName(from);
-
-            var dest = Path.Combine(GetAbsolutePath(destination), srcFileName);
-            if (from == dest)
-            {
-                return new Message("Paths must be not equal", MessageType.Error);
-            }
-            else
-            {
-                if (File.Exists(dest))
-                {
-                    return new Message("File or folder with this path already exists", MessageType.Alert);
-                }
-
-                try
-                {
-                    File.Copy(from, dest);
-                    return new Message(string.Format("Copyied from <b>{0}</b> to <b>{1}</b>", from, dest));
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteError(typeof(FileManager), ex);
-                    return new Message(string.Format("Error while moving from <b>{0}</b> to <b>{1}</b>", from, dest), MessageType.Error);
-                }
-            }
+            var result = absPath.Replace(ROOT_PATH, "");
+            return result.EncryByDES();
         }
 
         private struct MessageType
@@ -363,5 +373,15 @@ namespace MarkdownRepository.Lib
                 this.MsgType = msgType;
             }
         }
+    }
+
+    public class WebFile
+    {
+        public bool IsFile { get; set; }
+        public string Parent { get; set; }
+        public string FileName { get; set; }
+        public long? FileSize { get; set; }
+        public string IconClass { get; set; }
+        public string DLink { get; set; }
     }
 }
