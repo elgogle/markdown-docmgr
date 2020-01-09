@@ -465,7 +465,10 @@
             node: "#comments",
             articleId: @(ViewBag.Document != null ? ViewBag.Document.rowid : 0),
             userName: "@User.Identity.Name.GetUserName()",
-            apiUrl: "http://192.168.13.119/web-comment"
+            apiUrl: "http://192.168.13.119/web-comment",
+            emailIsEnabled: true,
+            articleTitle: "@ViewBag.Document.title",
+            articleWriter: "@ViewBag.Document.creator"
         });
     })();
     </script>

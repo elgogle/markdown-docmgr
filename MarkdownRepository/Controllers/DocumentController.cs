@@ -332,7 +332,7 @@ namespace MarkdownRepository.Controllers
                 document.content = content;
                 document.title = title;
 
-                docMgr.Update(id, content, title, category, access);
+                docMgr.Update(id, content, title, category, access, UserId);
                 if(access == DocumentAccess.PRIVATE)
                 {
                     docMgr.CancelFollow(UserId, id);
@@ -772,7 +772,7 @@ namespace MarkdownRepository.Controllers
             var currentIndex = dirNav.IndexOf(currentDirectoryId);
             ViewBag.PreDirectoryId = currentIndex > 0 ? dirNav[currentIndex - 1] : -1;
             ViewBag.NextDirectoryId = currentIndex < (dirNav.Count - 1) ? dirNav[currentIndex + 1] : -1;
-            ViewBag.Document = docMgr.GetDocumentByDirectory(currentDirectoryId);
+            ViewBag.Document = docMgr.GetDocumentByDirectory(currentDirectoryId);            
 
             var directories = book.BookDirectory.Select(t => new
             {

@@ -337,7 +337,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                 else
                 {
                     // 更新文章
-                    Update(articleId, content, docTitle, docCategory, book.is_public);
+                    Update(articleId, content, docTitle, docCategory, book.is_public, userId);
                 }
 
                 db.Execute("update books set update_at = datetime('now', 'localtime')  where id=@id", new {  id = book.id });
@@ -700,7 +700,7 @@ order by count(*) desc";
         /// <param name="content"></param>
         /// <param name="title"></param>
         /// <param name="category"></param>
-        public void Update(long id, string content, string title, string category, DocumentAccess access)
+        public void Update(long id, string content, string title, string category, DocumentAccess access, string userId)
         {
             using (var db = this.OpenDb())
             {
@@ -708,8 +708,8 @@ order by count(*) desc";
 
                 SaveCategory(id, category, db);
 
-                db.Execute("update documents_owner set update_at=datetime('now', 'localtime'), is_public=@access where id=@id",
-                    new { id = id, access = access });
+                db.Execute("update documents_owner set update_at=datetime('now', 'localtime'), is_public=@access, creator=@userId where id=@id",
+                    new { id = id, access = access, userId = userId });
 
                 db.Execute("update documents set title=@title, content=@content, category=@category where rowid=@rowid",
                     new { rowid = id, title = title, content = content, category = category });

@@ -285,7 +285,10 @@ else
             node: "#comments",
             articleId: @Model.rowid,
             userName: "@User.Identity.Name.GetUserName()",
-            apiUrl: "http://192.168.13.119/web-comment"
+            apiUrl: "http://192.168.13.119/web-comment",
+            emailIsEnabled: true,
+            articleTitle: "@Model.title",
+            articleWriter: "@Model.creator"
         });
     })();
     </script>
