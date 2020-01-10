@@ -517,7 +517,10 @@
             mainTable = $('#main-table').DataTable({
                 "paging": false,
                 "info": false,
-                "order": []
+                "order": [],
+                "oLanguage": {
+                    "sEmptyTable": "你还没有任何文件，请使用 [上传文件] 功能上传文件或者使用 [新增目录] 创建文件夹!"
+                },
             });
         });
 
