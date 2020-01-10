@@ -1,68 +1,86 @@
-﻿using System;
+﻿#region Imports (5)
+
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
-using System.IO;
+
+#endregion Imports (5)
 
 namespace MarkdownRepository.Lib
 {
     public class FileManager
     {
-        static readonly string ROOT_PATH = HttpContext.Current.Server.MapPath("~/upload_files");
+        #region Structs of FileManager (1)
 
-        public static string GetAbsolutePath(string relatePath)
+        private struct MessageType
         {
-            var user = HttpContext.Current.User.Identity.Name.GetUserName();
-            var path = Path.Combine(ROOT_PATH, user, relatePath);
-            return path;
+            #region Members of MessageType (2)
+
+            public static readonly string Error = "error";
+            public static readonly string Alert = "alert";
+
+            #endregion Members of MessageType (2)
         }
 
-        public static string GetRelatePath(string absPath)
+        #endregion Structs of FileManager (1)
+
+        #region Classes of FileManager (1)
+
+        public class Message
         {
-            var userPath = GetAbsolutePath("");
-            return absPath.Replace(userPath, "");
-        }        
+            #region Properties of Message (2)
 
-        public static IEnumerable<WebFile> GetFiles(string path)
+            public string Content { get; set; }
+
+            public string MsgType { get; set; }
+
+            #endregion Properties of Message (2)
+
+            #region Constructors of Message (2)
+
+            public Message(string msg)
+            {
+                this.Content = msg;
+                this.MsgType = "success";
+            }
+
+            public Message(string msg, string msgType)
+            {
+                this.Content = msg;
+                this.MsgType = msgType;
+            }
+
+            #endregion Constructors of Message (2)
+        }
+
+        #endregion Classes of FileManager (1)
+
+        #region Members of FileManager (1)
+        static readonly string ROOT_PATH = HttpContext.Current.Server.MapPath("~/upload_files");
+
+        #endregion Members of FileManager (1)
+
+        #region Methods of FileManager (15)
+
+        public static void CreateFolder(string path)
         {
-            List<WebFile> result = new List<WebFile>();
-            var absPath = GetAbsolutePath(path);
-            if(!Directory.Exists(absPath))
+            if (string.IsNullOrWhiteSpace(path)
+                || path.Trim() == "."
+                || path.Trim() == ".."
+                ) throw new Exception("错误的目录名称");
+
+            var file = GetAbsolutePath(path);
+
+            if (Directory.Exists(file))
             {
-                Directory.CreateDirectory(absPath);
+                return;
             }
-
-            foreach(var f in Directory.GetFiles(absPath))
+            else
             {
-                var fInfo = new FileInfo(f);
-
-                var wf = new WebFile
-                {
-                    IsFile = true,
-                    Parent = path,
-                    FileSize = fInfo.Length,
-                    FileName = Path.GetFileName(f),
-                    IconClass = GetFileIconClass(Path.GetExtension(f).Replace(".", "")),
-                    DLink = GetDirectLink(f)
-                };
-
-                result.Add(wf);
+                Directory.CreateDirectory(file);
             }
-
-            foreach(var d in Directory.GetDirectories(absPath))
-            {
-                var wf = new WebFile
-                {
-                    IsFile = false,
-                    Parent = path,
-                    FileName = Path.GetFileName(d),
-                    IconClass = "fa fa-folder-o"
-                };
-
-                result.Add(wf);
-            }
-
-            return result;
         }
 
         public static void DeleteFile(string path)
@@ -87,43 +105,29 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public static void CreateFolder(string path)
+        public static string DirectLinkToFullPath(string encryptDLink)
         {
-            if (string.IsNullOrWhiteSpace(path)
-                || path.Trim() == "."
-                || path.Trim() == ".."
-                ) throw new Exception("错误的目录名称");
-
-            var file = GetAbsolutePath(path);
-
-            if (Directory.Exists(file))
-            {
-                return;
-            }
-            else
-            {
-                Directory.CreateDirectory(file);
-            }
+            var dLink = encryptDLink.DecryByDES();
+            var result = Path.Combine(ROOT_PATH, dLink.TrimStart('/', '\\'));
+            return result;
         }
 
-        public static void RenameFile(string path, string from, string to)
+        public static string GetAbsolutePath(string relatePath)
         {
-            var file = GetAbsolutePath(Path.Combine(path, from));
-            var tfile = GetAbsolutePath(Path.Combine(path, to));
-            var fInfo = new FileInfo(file);
+            var user = HttpContext.Current.User.Identity.Name.GetUserName();
+            var path = Path.Combine(ROOT_PATH, user, relatePath);
+            return path;
+        }
 
-            if(Directory.Exists(file))
-            {
-                Directory.Move(file, tfile);
-            }
-            else if(File.Exists(file))
-            {
-                File.Move(file, tfile);
-            }
-            else
-            {
-                throw new Exception("文件不见了");
-            }
+        public static List<string> GetAudioExtentionName()
+        {
+            return new List<string> { "wav", "mp3", "ogg", "m4a" };
+        }
+
+        private static string GetDirectLink(string absPath)
+        {
+            var result = absPath.Replace(ROOT_PATH, "");
+            return result.EncryByDES();
         }
 
         public static string GetFileIconClass(string ext)
@@ -294,19 +298,62 @@ namespace MarkdownRepository.Lib
             }
         }
 
+        public static IEnumerable<WebFile> GetFiles(string path)
+        {
+            List<WebFile> result = new List<WebFile>();
+            var absPath = GetAbsolutePath(path);
+            if (!Directory.Exists(absPath))
+            {
+                Directory.CreateDirectory(absPath);
+            }
+
+            foreach (var f in Directory.GetFiles(absPath))
+            {
+                var fInfo = new FileInfo(f);
+
+                var wf = new WebFile
+                {
+                    IsFile = true,
+                    Parent = path,
+                    FileSize = fInfo.Length,
+                    FileName = Path.GetFileName(f),
+                    IconClass = GetFileIconClass(Path.GetExtension(f).Replace(".", "")),
+                    DLink = GetDirectLink(f)
+                };
+
+                result.Add(wf);
+            }
+
+            foreach (var d in Directory.GetDirectories(absPath))
+            {
+                var wf = new WebFile
+                {
+                    IsFile = false,
+                    Parent = path,
+                    FileName = Path.GetFileName(d),
+                    IconClass = "fa fa-folder-o"
+                };
+
+                result.Add(wf);
+            }
+
+            return result;
+        }
+
         public static List<string> GetImageExtentionName()
         {
             return new List<string> { "ico", "gif", "jpg", "jpeg", "jpc", "jp2", "jpx", "xbm", "wbmp", "png", "bmp", "tif", "tiff", "psd", "svg" };
         }
 
-        public static List<string> GetVideoExtentionName()
+        public static List<string> GetOnlineViewerExtentionName()
         {
-            return new List<string> { "webm", "mp4", "m4v", "ogm", "ogv", "mov", "mkv" };
+            return new List<string> { "doc", "docx", "xls", "xlsx", "pdf", "ppt", "pptx", "ai", "psd", "dxf", "xps", "rar", "odt", "ods" };
         }
 
-        public static List<string> GetAudioExtentionName()
+        public static string GetRelatePath(string absPath)
         {
-            return new List<string> { "wav", "mp3", "ogg", "m4a" };
+            var userPath = GetAbsolutePath("");
+            return absPath.Replace(userPath, "");
         }
 
         public static List<string> GetTextExtentionName()
@@ -332,56 +379,50 @@ namespace MarkdownRepository.Lib
             };
         }
 
-        public static List<string> GetOnlineViewerExtentionName()
+        public static List<string> GetVideoExtentionName()
         {
-            return new List<string> { "doc", "docx", "xls", "xlsx", "pdf", "ppt", "pptx", "ai", "psd", "dxf", "xps", "rar", "odt", "ods" };
+            return new List<string> { "webm", "mp4", "m4v", "ogm", "ogv", "mov", "mkv" };
         }
 
-        public static string DirectLinkToFullPath(string encryptDLink)
+        public static void RenameFile(string path, string from, string to)
         {
-            var dLink = encryptDLink.DecryByDES();
-            var result = Path.Combine(ROOT_PATH, dLink.TrimStart('/', '\\'));
-            return result;
-        }
+            var file = GetAbsolutePath(Path.Combine(path, from));
+            var tfile = GetAbsolutePath(Path.Combine(path, to));
+            var fInfo = new FileInfo(file);
 
-        private static string GetDirectLink(string absPath)
-        {
-            var result = absPath.Replace(ROOT_PATH, "");
-            return result.EncryByDES();
-        }
-
-        private struct MessageType
-        {
-            public static readonly string Error = "error";
-            public static readonly string Alert = "alert";
-        }
-
-        public class Message
-        {
-            public string Content { get; set; }
-            public string MsgType { get; set; }
-
-            public Message(string msg)
+            if (Directory.Exists(file))
             {
-                this.Content = msg;
-                this.MsgType = "success";
+                Directory.Move(file, tfile);
             }
-
-            public Message(string msg, string msgType)
+            else if (File.Exists(file))
             {
-                this.Content = msg;
-                this.MsgType = msgType;
+                File.Move(file, tfile);
+            }
+            else
+            {
+                throw new Exception("文件不见了");
             }
         }
+
+        #endregion Methods of FileManager (15)
     }
 
     public class WebFile
     {
-        public bool IsFile { get; set; }
-        public string Parent { get; set; }
-        public string FileName { get; set; }
-        public long? FileSize { get; set; }
-        public string IconClass { get; set; }
+        #region Properties of WebFile (6)
+
         public string DLink { get; set; }
+
+        public string FileName { get; set; }
+
+        public long? FileSize { get; set; }
+
+        public string IconClass { get; set; }
+
+        public bool IsFile { get; set; }
+
+        public string Parent { get; set; }
+
+        #endregion Properties of WebFile (6)
     }
 }

@@ -1,48 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Web;
+﻿#region Imports (18)
+
 using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.PanGu;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Lucene.Net.Analysis.PanGu;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web;
+
+#endregion Imports (18)
 
 namespace MarkdownRepository.Lib
 {
-    public class Doc
-    {
-        public string Content { get; set; }
-        public string Title { get; set; }
-        public string Category { get; set; }
-        public string Id { get; set; }
-        public Operate Operate { get; set; }
-    }
-
     public enum Operate
     {
         AddOrUpdate,
         Delete
-    }    
+    }
 
-    public class IndexManager:IDisposable
-    {        
+    public class Doc
+    {
+        #region Properties of Doc (5)
+
+        public string Category { get; set; }
+
+        public string Content { get; set; }
+
+        public string Id { get; set; }
+
+        public Operate Operate { get; set; }
+
+        public string Title { get; set; }
+
+        #endregion Properties of Doc (5)
+    }
+
+    public class IndexManager : IDisposable
+    {
+        #region Structs of IndexManager (1)
+
+        struct DocStruct
+        {
+            #region Members of DocStruct (4)
+
+            public const string CONTENT = "content";
+            public const string TITLE = "title";
+            public const string CATEGORY = "category";
+            public const string ID = "id";
+
+            #endregion Members of DocStruct (4)
+        }
+
+        #endregion Structs of IndexManager (1)
+
+        #region Members of IndexManager (7)
         private static IndexManager _indexMgr = null;
-        private static object _lock = new object();        
+        private static object _lock = new object();
         private Queue<Doc> _docqueue = new Queue<Doc>();
         private FSDirectory _fsDir = null;
         private IndexReader _indexReader = null;
         private IndexWriter _indexWriter = null;
         public static string IndexPath = null;
+
+        #endregion Members of IndexManager (7)
+
+        #region Properties of IndexManager (1)
 
         public static IndexManager IndexMgr
         {
@@ -52,7 +85,7 @@ namespace MarkdownRepository.Lib
                 {
                     lock (_lock)
                     {
-                        if(_indexMgr == null)
+                        if (_indexMgr == null)
                             _indexMgr = new IndexManager();
                     }
                 }
@@ -61,108 +94,22 @@ namespace MarkdownRepository.Lib
             }
         }
 
+        #endregion Properties of IndexManager (1)
+
+        #region Constructors of IndexManager (1)
+
         private IndexManager()
         {
             if (!System.IO.Directory.Exists(IndexPath))
                 System.IO.Directory.CreateDirectory(IndexPath);
             this._fsDir = FSDirectory.Open(new DirectoryInfo(IndexPath), new NoLockFactory());
-            
+
             this.Start();
-        }        
-
-        struct DocStruct
-        {
-            public const string CONTENT = "content";
-            public const string TITLE = "title";
-            public const string CATEGORY = "category";
-            public const string ID = "id";
         }
 
-        /// <summary>
-        /// 添加文档索引或更新
-        /// </summary>
-        /// <param name="doc"></param>
-        public void AddOrUpdateDocIndex(Doc doc)
-        {
-            this._docqueue.Enqueue(doc);
-            //LogHelper.WriteInfo(this.GetType(), string.Format("current queue length {0}", this._docqueue.Count));
-        }
+        #endregion Constructors of IndexManager (1)
 
-        /// <summary>
-        /// 开启索引编制
-        /// </summary>
-        private void Start()
-        {
-            Task task = new TaskFactory().StartNew(() => { 
-                while (true)
-                {
-                    while(this._docqueue.Count>0)
-                    {
-                        var doc = this._docqueue.Dequeue();
-                        switch (doc.Operate)
-                        {
-                            case Operate.Delete:
-                                Delete(doc.Id);
-                                break;
-                            case Operate.AddOrUpdate:
-                                AddOrUpdate(doc);
-                                break;
-                        }                        
-                    }
-
-                    System.Threading.Thread.Sleep(2000);
-                }
-            });
-        }
-
-        /// <summary>
-        /// 删除文档索引
-        /// </summary>
-        /// <param name="docId"></param>
-        private void Delete(string docId)
-        {
-            try
-            {
-                this._indexReader = IndexReader.Open(this._fsDir, false);
-                this._indexReader.DeleteDocuments(new Term(DocStruct.ID, docId));
-                this._indexReader.Commit();
-                this._indexReader.Close();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteError(this.GetType(), ex);
-            }
-        }
-
-        /// <summary>
-        /// 检查文档索引是否存在
-        /// </summary>
-        /// <param name="docId"></param>
-        /// <returns></returns>
-        public bool Exists(string docId)
-        {
-            try
-            {
-                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
-
-                if (isExistIndex)
-                {
-                    this._indexReader = IndexReader.Open(this._fsDir, false);
-                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
-                    var q = new TermQuery(new Term(DocStruct.ID, docId));
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(10, true);
-                    searcher.Search(q, collector);
-                    return collector.TopDocs().totalHits > 0;
-                }
-                else
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteError(this.GetType(), ex);
-                return false;
-            }
-        }
+        #region Methods of IndexManager (8)
 
         /// <summary>
         /// 增加或修改一个文档
@@ -194,6 +141,16 @@ namespace MarkdownRepository.Lib
         }
 
         /// <summary>
+        /// 添加文档索引或更新
+        /// </summary>
+        /// <param name="doc"></param>
+        public void AddOrUpdateDocIndex(Doc doc)
+        {
+            this._docqueue.Enqueue(doc);
+            //LogHelper.WriteInfo(this.GetType(), string.Format("current queue length {0}", this._docqueue.Count));
+        }
+
+        /// <summary>
         /// 创建文档
         /// </summary>
         /// <param name="doc"></param>
@@ -206,6 +163,63 @@ namespace MarkdownRepository.Lib
             ndoc.Add(new Field(DocStruct.CATEGORY, doc.Category, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
             ndoc.Add(new Field(DocStruct.ID, doc.Id, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
             return ndoc;
+        }
+
+        /// <summary>
+        /// 删除文档索引
+        /// </summary>
+        /// <param name="docId"></param>
+        private void Delete(string docId)
+        {
+            try
+            {
+                this._indexReader = IndexReader.Open(this._fsDir, false);
+                this._indexReader.DeleteDocuments(new Term(DocStruct.ID, docId));
+                this._indexReader.Commit();
+                this._indexReader.Close();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
+        }
+
+        public void Dispose()
+        {
+            this._fsDir.Close();
+            this._indexReader = null;
+            this._indexWriter = null;
+            this._fsDir = null;
+        }
+
+        /// <summary>
+        /// 检查文档索引是否存在
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <returns></returns>
+        public bool Exists(string docId)
+        {
+            try
+            {
+                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
+
+                if (isExistIndex)
+                {
+                    this._indexReader = IndexReader.Open(this._fsDir, false);
+                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
+                    var q = new TermQuery(new Term(DocStruct.ID, docId));
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(10, true);
+                    searcher.Search(q, collector);
+                    return collector.TopDocs().totalHits > 0;
+                }
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+                return false;
+            }
         }
 
         /// <summary>
@@ -278,12 +292,34 @@ namespace MarkdownRepository.Lib
             return result;
         }
 
-        public void Dispose()
+        /// <summary>
+        /// 开启索引编制
+        /// </summary>
+        private void Start()
         {
-            this._fsDir.Close();
-            this._indexReader = null;
-            this._indexWriter = null;
-            this._fsDir = null;
+            Task task = new TaskFactory().StartNew(() =>
+            {
+                while (true)
+                {
+                    while (this._docqueue.Count > 0)
+                    {
+                        var doc = this._docqueue.Dequeue();
+                        switch (doc.Operate)
+                        {
+                            case Operate.Delete:
+                                Delete(doc.Id);
+                                break;
+                            case Operate.AddOrUpdate:
+                                AddOrUpdate(doc);
+                                break;
+                        }
+                    }
+
+                    System.Threading.Thread.Sleep(2000);
+                }
+            });
         }
+
+        #endregion Methods of IndexManager (8)
     }
 }
