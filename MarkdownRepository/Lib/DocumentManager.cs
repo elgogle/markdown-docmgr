@@ -195,8 +195,7 @@ order by ifnull(c.count,1) desc
             {
                 CreateTableIfNotExist();
 
-                var max = db.Query<int?>("select max(id) id from documents_owner").FirstOrDefault();
-                var document = new Document { category = category, content = content, creator = userId, rowid = (max ?? 0) + 1, title = title };
+                var document = new Document { category = category, content = content, creator = userId, rowid = GetId("document"), title = title };
 
                 SaveCategory(document.rowid, category, db);
 
@@ -228,23 +227,20 @@ order by ifnull(c.count,1) desc
             {
                 CreateTableIfNotExist();
 
-                lock (_lock)
-                {
-                    var bookid = (db.Query<long?>("select max(id) as id from books").Single() ?? 0) + 1;
+                var bookid = GetId("book");
 
-                    db.Execute(@"
+                db.Execute(@"
 insert into books(id, creator, name, description, category, image_url, is_public) 
 values(@id, @creator, @name, @description, @category, @image_url, @is_public);
 
 insert into book_owner(book_id, user_id, is_owner) 
 values(@id, @creator, 1);
 ",
-                        new { id = bookid, creator = userId, name, description, category, image_url, is_public = access });
+                    new { id = bookid, creator = userId, name, description, category, image_url, is_public = access });
 
-                    _indexMgr.AddOrUpdateDocIndex(new Doc { Id = bookid.ToString(), Category = category, Content = description, Title = name, Operate = Operate.AddOrUpdate });
+                _indexMgr.AddOrUpdateDocIndex(new Doc { Id = bookid.ToString(), Category = category, Content = description, Title = name, Operate = Operate.AddOrUpdate });
 
-                    return bookid;
-                }
+                return bookid;
             }
         }
 
@@ -267,17 +263,14 @@ values(@id, @creator, 1);
 
                 CheckPermissionForUpdateBook(userid, db, bookid);
 
-                lock (_lock)
-                {
-                    var id = (db.Query<long?>("select max(id) as id from book_directories").Single() ?? 0) + 1;
+                var id = GetId("book_directories");
 
-                    db.Execute(@"
+                db.Execute(@"
 insert into book_directories(id, book_id, title, description, parent_id, document_id, seq) 
 values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
-                        new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid, seq = seq });
+                    new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid, seq = seq });
 
-                    return id;
-                }
+                return id;
             }
         }
 
@@ -348,6 +341,7 @@ create table if not exists user(id INTEGER PRIMARY KEY, user_id nvarchar(100) no
 create table if not exists books(id INTEGER PRIMARY KEY, creator nvarchar(100) not null, name nvarchar(256) not null, description nvarchar(512), category nvarchar(256), image_url nvarchar(512), creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
 create table if not exists book_directories(id INTEGER PRIMARY KEY, book_id int not null, title nvarchar(256) not null, description nvarchar(512), parent_id int, document_id int, seq int);
 create table if not exists book_owner(id INTEGER PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
+create table if not exists id_generator(id INTEGER PRIMARY KEY, ikey nvarchar(100) not null, ivalue int not null);
                 ";
                 db.Execute(sql);
             }
@@ -461,6 +455,30 @@ COMMIT;
             {
                 db.Execute(@"insert or replace into documents_follow(user_id, doc_id) values(@userId, @id);",
                     new { userId = userId, id = docId });
+            }
+        }
+
+        /// <summary>
+        /// 获取 Id
+        /// </summary>
+        /// <param name="idType"></param>
+        /// <returns></returns>
+        public long GetId(string idType)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                lock (_lock)
+                {
+                    var sql = "select ifnull(ivalue, 9999) + 1 as ivalue from id_generator where ikey=@idType;";
+                    var id = db.Query<long>(sql, new { idType = idType }).FirstOrDefault();
+                    if (id == 0) id = 10000;
+
+                    db.Execute(@"insert or replace into id_generator(ikey, ivalue) values(@idType, @id)",
+                            new { idType = idType, id = id });
+
+                    return id;
+                }
             }
         }
 
