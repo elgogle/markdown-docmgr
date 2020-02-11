@@ -291,11 +291,11 @@
                         </p>
                     </div>
 
-                    <div class="extra2">
+                    <div>
                         @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
                         User.Identity.Name.GetUserName() && t.is_owner))
                         {
-                            <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })">
+                            <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
                                 <i class="glyphicon glyphicon-edit"></i> 编辑
                             </a>
                         }
