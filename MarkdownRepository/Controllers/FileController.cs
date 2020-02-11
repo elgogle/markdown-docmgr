@@ -80,11 +80,12 @@ namespace MarkdownRepository.Controllers
         public ActionResult Index(string p)
         {
             ViewBag.Action = "MyFiles";
-            var currentPath = p ?? "";
+            var currentPath = (p ?? "").TrimStart('\\', '/');
+
             var files = FileManager.GetFiles(currentPath);
             ViewBag.CurrentPath = currentPath;
 
-            if (p.IsNullOrEmpty() == false)
+            if (currentPath.IsNullOrEmpty() == false)
             {
                 ViewBag.ParentPath = Path.GetDirectoryName(currentPath);
             }
@@ -94,7 +95,7 @@ namespace MarkdownRepository.Controllers
             }
 
             return View(files);
-        }
+        }        
 
         public ActionResult MassDelete(string group, string delete)
         {
@@ -184,6 +185,17 @@ namespace MarkdownRepository.Controllers
         public ActionResult Settings(bool showHidden, string hideCols, string calcFolder)
         {
             return MyResponse(null);
+        }
+
+        public ActionResult Search(string p, string text)
+        {
+            ViewBag.Action = "MyFiles";
+            var currentPath = (p ?? "").TrimStart('/', '\\');
+            var files = FileManager.SearchFile(currentPath, text);
+            ViewBag.SearchFile = text;
+            ViewBag.SearchPath = currentPath.IsNullOrEmpty() ? "\\" : currentPath;
+
+            return View(files);
         }
 
         public ActionResult Unpack(string unzip)

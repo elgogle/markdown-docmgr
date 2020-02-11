@@ -340,6 +340,45 @@ namespace MarkdownRepository.Lib
             return result;
         }
 
+        public static IEnumerable<WebFile> SearchFile(string path, string text)
+        {
+            List<WebFile> result = new List<WebFile>();
+            var absPath = GetAbsolutePath(path);
+
+            foreach(var f in Directory.GetFiles(absPath, text, SearchOption.AllDirectories))
+            {
+                var fInfo = new FileInfo(f);
+                var parentPath = GetRelatePath(Path.GetDirectoryName(f));
+
+                var wf = new WebFile
+                {
+                    IsFile = true,
+                    Parent = parentPath,
+                    FileSize = fInfo.Length,
+                    FileName = Path.GetFileName(f),
+                    IconClass = GetFileIconClass(Path.GetExtension(f).Replace(".", "")),
+                    DLink = GetDirectLink(f)
+                };
+
+                result.Add(wf);
+            }
+
+            foreach (var d in Directory.GetDirectories(absPath, text, SearchOption.AllDirectories))
+            {
+                var wf = new WebFile
+                {
+                    IsFile = false,
+                    Parent = GetRelatePath(Path.GetDirectoryName(d)),
+                    FileName = Path.GetFileName(d),
+                    IconClass = "fa fa-folder-o"
+                };
+
+                result.Add(wf);
+            }
+
+            return result;
+        }
+
         public static List<string> GetImageExtentionName()
         {
             return new List<string> { "ico", "gif", "jpg", "jpeg", "jpc", "jp2", "jpx", "xbm", "wbmp", "png", "bmp", "tif", "tiff", "psd", "svg" };

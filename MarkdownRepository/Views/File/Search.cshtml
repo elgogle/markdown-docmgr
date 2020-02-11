@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "文件搜索";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @using MarkdownRepository.Lib
@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="@Url.Content("~/css/font-awesome.min.css")">
 
     <style>
-
-
         a:hover, a:visited, a:focus {
             text-decoration: none !important;
         }
@@ -70,11 +68,11 @@
             padding: 0;
         }
 
-        pre.with-hljs code {
-            margin: 0;
-            border: 0;
-            overflow: visible;
-        }
+            pre.with-hljs code {
+                margin: 0;
+                border: 0;
+                overflow: visible;
+            }
 
         code.maxheight, pre.maxheight {
             max-height: 512px;
@@ -116,20 +114,20 @@
             background-color: #fff;
         }
 
-        .message.ok {
-            border-color: green;
-            color: green;
-        }
+            .message.ok {
+                border-color: green;
+                color: green;
+            }
 
-        .message.error {
-            border-color: red;
-            color: red;
-        }
+            .message.error {
+                border-color: red;
+                color: red;
+            }
 
-        .message.alert {
-            border-color: orange;
-            color: orange;
-        }
+            .message.alert {
+                border-color: orange;
+                color: orange;
+            }
 
         .preview-img {
             max-width: 100%;
@@ -153,29 +151,29 @@
             margin-bottom: 10px;
         }
 
-        .preview-video video {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            left: 0;
-            top: 0;
-            background: #000;
-        }
+            .preview-video video {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                background: #000;
+            }
 
         .compact-table {
             border: 0;
             width: auto;
         }
 
-        .compact-table td, .compact-table th {
-            width: 100px;
-            border: 0;
-            text-align: center;
-        }
+            .compact-table td, .compact-table th {
+                width: 100px;
+                border: 0;
+                text-align: center;
+            }
 
-        .compact-table tr:hover td {
-            background-color: #fff;
-        }
+            .compact-table tr:hover td {
+                background-color: #fff;
+            }
 
         .filename {
             max-width: 420px;
@@ -188,20 +186,20 @@
             margin-left: 30px;
         }
 
-        .break-word.float-left a {
-            color: #7d7d7d;
-        }
+            .break-word.float-left a {
+                color: #7d7d7d;
+            }
 
-        .break-word + .float-right {
-            padding-right: 30px;
-            position: relative;
-        }
+            .break-word + .float-right {
+                padding-right: 30px;
+                position: relative;
+            }
 
-        .break-word + .float-right > a {
-            color: #7d7d7d;
-            font-size: 1.2em;
-            margin-right: 4px;
-        }
+                .break-word + .float-right > a {
+                    color: #7d7d7d;
+                    font-size: 1.2em;
+                    margin-right: 4px;
+                }
 
         #normal-editor {
             border-radius: 3px;
@@ -362,29 +360,29 @@
             border-bottom: 2px solid #f8f9fa;
         }
 
-        #main-table span.badge:nth-child(1) {
-            border-color: #df4227;
-        }
+            #main-table span.badge:nth-child(1) {
+                border-color: #df4227;
+            }
 
-        #main-table span.badge:nth-child(2) {
-            border-color: #f8b600;
-        }
+            #main-table span.badge:nth-child(2) {
+                border-color: #f8b600;
+            }
 
-        #main-table span.badge:nth-child(3) {
-            border-color: #00bd60;
-        }
+            #main-table span.badge:nth-child(3) {
+                border-color: #00bd60;
+            }
 
-        #main-table span.badge:nth-child(4) {
-            border-color: #4581ff;
-        }
+            #main-table span.badge:nth-child(4) {
+                border-color: #4581ff;
+            }
 
-        #main-table span.badge:nth-child(5) {
-            border-color: #ac68fc;
-        }
+            #main-table span.badge:nth-child(5) {
+                border-color: #ac68fc;
+            }
 
-        #main-table span.badge:nth-child(6) {
-            border-color: #45c3d2;
-        }
+            #main-table span.badge:nth-child(6) {
+                border-color: #45c3d2;
+            }
 
 
         #createNewItem {
@@ -397,42 +395,28 @@
 <div>
     @if(ViewData["Error"] != null)
     {
-        <div class="message error">
+        <div class="message ok">
             <p>@ViewData["Error"]</p>
         </div>
     }
 
     @if (ViewData["Success"] != null)
     {
-        <div class="message ok">
+        <div class="message error">
             <p>@ViewData["Success"]</p>
         </div>
     }
 </div>
 
-<div class="row" style="margin-bottom: 5px;">
-    <h4>当前目录: @(string.IsNullOrWhiteSpace(ViewBag.CurrentPath)?"\\": ViewBag.CurrentPath)</h4>
-</div>
 
-<div class="row" style="margin-bottom: 5px;">
 
-    <a title="上传文件" class="btn btn-default" href="@Url.Action("Upload", new { p = ViewBag.CurrentPath })"><i class="fa fa-cloud-upload" aria-hidden="true"></i> 上传文件</a>
-    <a title="新增目录" class="btn btn-default" href="#createNewItem" data-toggle="modal" data-target="#createNewItem"><i class="fa fa-plus-square"></i> 新增目录</a>
-
-    <div class="pull-right input-group col-md-4" role="group" aria-label="...">        
-        <input id="search_text" name="text" type="text" placeholder="搜索目录名或文件名" class="form-control">
-        <div id="btn_search" class="input-group-addon" style="cursor: pointer">
-            <i class="glyphicon glyphicon-search"></i>
-        </div>
-    </div>
-</div>
 
 <div class="row">
+    <div>
+        <h4>目录：<span style="color: red;">@ViewBag.SearchPath</span> 下搜索：<span style="color: red;">@ViewBag.SearchFile</span> 的结果</h4>
+    </div>
 
-    <form action="" method="post" class="pt-3">
-        <input type="hidden" name="p" value="@ViewBag.ParentPath">
-
-        <div class="table-responsive">
+    <div class="table-responsive">
             <table class="table table-bordered table-hover table-sm bg-white" id="main-table">
                 <thead class="thead-white">
                     <tr>
@@ -442,15 +426,6 @@
                     </tr>
                 </thead>
                 <tbody style="font-size: 0.9em;">
-                    <!-- link to parent folder -->
-                    @if (ViewBag.ParentPath != null)
-                    {
-                        <tr>
-                            <td class="border-0"><a href="?p=@ViewBag.ParentPath"><i class="fa fa-chevron-circle-left go-back"></i> ..</a></td>
-                            <td class="border-0"></td>
-                            <td class="border-0"></td>
-                        </tr>
-                    }
 
                     @foreach (var f in Model)
                     {
@@ -459,7 +434,7 @@
                                 <div class="filename">
                                     @if (f.IsFile == false)
                                     {
-                                        <a href="?p=@Path.Combine(f.Parent, f.FileName)">
+                                        <a href="@Url.Action("Index", new { p = @Path.Combine(f.Parent, f.FileName) })">
                                             <i class="@f.IconClass"></i> @f.FileName
                                         </a>
                                     }
@@ -474,9 +449,6 @@
                             </td>
                             <td class="inline-actions">
 
-                                <a title="删除" href="@Url.Action("Delete", new { currentPath = ViewBag.CurrentPath, deleteFile = Path.Combine(f.Parent, f.FileName) })" onclick="return confirm('确认删除@(f.IsFile?"文件":"目录")?');"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
-                                <a title="重命名" href="#" onclick="rename('@ViewBag.CurrentPath', '@f.FileName');return false;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-
                                 @if (f.IsFile)
                                 {
                                     <a title="下载" href="@Url.Action("Download", new { dl = Path.Combine(f.Parent, f.FileName) })" target="_blank"><i class="fa fa-download" aria-hidden="true"></i></a>
@@ -489,32 +461,8 @@
                 </tbody>
             </table>
         </div>
-    </form>
 
 </div>
-
-@section templates{
-    <div class="modal fade" id="createNewItem" tabindex="-1" role="dialog" aria-label="newItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="newItemModalLabel"><i class="fa fa-plus-square fa-fw"></i>新增目录</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p class="mt-3"><label for="newfilename">目录名称 </label></p>
-                    <input type="text" name="newfilename" id="newfilename" value="" class="form-control">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> 取消</button>
-                    <button type="button" class="btn btn-success" onclick="newfolder('@ViewBag.CurrentPath');return false;"><i class="fa fa-check-circle"></i> 马上创建</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
 
 @section scripts{
 
@@ -527,43 +475,10 @@
                 "info": false,
                 "order": [],
                 "oLanguage": {
-                    "sEmptyTable": "你还没有任何文件，请使用 [上传文件] 功能上传文件或者使用 [新增目录] 创建文件夹!"
+                    "sEmptyTable": "没有搜索到任何文件"
                 },
             });
-
-            $("#btn_search").on('click', function () {
-                var searchText = $("#search_text").val();
-                if (searchText) {
-                    window.location.href = "@Url.Action("Search", new { p = ViewBag.CurrentPath??"", key = DateTime.Now.Millisecond })" + "&text=" + encodeURIComponent(searchText);
-                }
-            });
-
-            $("#search_text").keydown(function (event) {
-                if (event.which == 13) {
-                    var searchText = $(this).val();
-                    if (searchText) {
-                        window.location.href = "@Url.Action("Search", new { p = ViewBag.CurrentPath??"", key=DateTime.Now.Millisecond })" + "&text=" + encodeURIComponent(searchText);
-                    } else {
-                        event.preventDefault();
-                    }
-                }
-            });
         });
-
-
-        function rename(e, t) {
-            var n = prompt("新文件名", t);
-            null !== n
-            && "" !== n && n != t
-            && (window.location.href = "@Url.Action("Rename")?currentPath=" + encodeURIComponent(e) + "&from=" + encodeURIComponent(t) + "&to=" + encodeURIComponent(n))
-        }
-
-        function newfolder(e) {
-            var t = document.getElementById("newfilename").value;
-            null !== t
-            && "" !== t
-            && (window.location.href = "@Url.Action("NewFolder")?currentPath=" + encodeURIComponent(e) + "&folderName=" + encodeURIComponent(t))
-        }
 
     </script>
 }
