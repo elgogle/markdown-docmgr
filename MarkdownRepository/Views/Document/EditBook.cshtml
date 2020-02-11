@@ -249,8 +249,9 @@ var documentId = 0;
                         </p>
                     </div>
                     <div>
-                        <button id="btn_edit_book_title" class="btn-default btn-xs"><i
+                        <button id="btn_edit_book_title" class="btn btn-default btn-xs"><i
                                 class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介</button>
+                        @Html.ActionLink("退出编辑", "ShowBook", new{ bookid = Model.Book.id }, new { @class= "btn btn-default btn-xs" })
                     </div>
                 </div>
             </div>
