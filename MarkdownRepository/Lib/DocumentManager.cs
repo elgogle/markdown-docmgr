@@ -472,10 +472,17 @@ COMMIT;
                 {
                     var sql = "select ifnull(ivalue, 9999) + 1 as ivalue from id_generator where ikey=@idType;";
                     var id = db.Query<long>(sql, new { idType = idType }).FirstOrDefault();
-                    if (id == 0) id = 10000;
-
-                    db.Execute(@"insert or replace into id_generator(ikey, ivalue) values(@idType, @id)",
+                    if (id == 0)
+                    {
+                        id = 10000;
+                        db.Execute(@"insert into id_generator(ikey, ivalue) values(@idType, @id)",
                             new { idType = idType, id = id });
+                    }
+                    else
+                    {
+                        db.Execute(@"update id_generator set ivalue = @id where ikey = @idType",
+                            new { idType = idType, id = id });
+                    }
 
                     return id;
                 }
