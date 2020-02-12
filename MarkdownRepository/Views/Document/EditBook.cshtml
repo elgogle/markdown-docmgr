@@ -251,7 +251,9 @@ var documentId = 0;
                     <div>
                         <button id="btn_edit_book_title" class="btn btn-default btn-xs"><i
                                 class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介</button>
-                        @Html.ActionLink("退出编辑", "ShowBook", new{ bookid = Model.Book.id }, new { @class= "btn btn-default btn-xs" })
+                        <button id="btn_exit_edit" class="btn btn-default btn-xs">
+                            退出编辑
+                        </button>
                     </div>
                 </div>
             </div>
@@ -426,6 +428,12 @@ var documentId = 0;
             $currentDirId.val(selected.node.id);
             $lableCurrentDirPath.text(getNodePath(selected.node.id));
             loadDocument(selected.node.id);
+        });
+
+        $("#btn_exit_edit").on('click', function () {
+            var dirId = $currentDirId.val();
+            var bookId = $bookId.val();
+            window.location.href = "@Url.Action("ShowBook")" + "?bookid=" + bookId + "&dirId=" + dirId;
         });
 
         $("#btn_modify_directory").on('click', function () {
