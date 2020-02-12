@@ -27,11 +27,18 @@
 
         .search-list {
             margin: 0.8em 0 0.7em 1em;
-            list-style: none;
-            background-color: #f9f9f9;
+            list-style: none;            
             padding: 0.5em;
             border-radius: 5px;
             border: #ddd solid 1px;
+        }
+
+        .search-list.even{
+            background-color: #eee;
+        }
+
+        .search-list.odd{
+            background-color: #f9f9f9;
         }
 
         .update-time {
@@ -77,9 +84,13 @@
         <ul style="padding-left:0">
             @if (Model != null && Model.Count > 0)
             {
+                bool isEven = true;
+
                 foreach (var item in Model)
                 {
-                    <li class="search-list">
+                    isEven = !isEven;
+
+                    <li class="search-list @(isEven?"even":"odd")">
                         <div>
                             <a href="@Url.Action("ShowBook", new { bookid = item.id })">
                                 <h4>@Html.Raw(item.name)</h4>
