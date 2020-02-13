@@ -116,6 +116,29 @@ namespace MarkdownRepository.Controllers
         }
 
         /// <summary>
+        /// 书籍目录顺序更改，包括层级变化
+        /// </summary>
+        /// <param name="bookId"></param>
+        /// <param name="dirId"></param>
+        /// <param name="seq"></param>
+        /// <param name="oldSeq"></param>
+        /// <param name="parentId"></param>
+        /// <param name="oldParentId"></param>
+        /// <returns></returns>
+        public ActionResult BookDirectoryMove(long bookId, long dirId, int seq, int oldSeq, long parentId, long oldParentId)
+        {
+            try
+            {
+                docMgr.BookDirectoryMove(this.UserId, bookId, dirId, seq, oldSeq, parentId, oldParentId);
+                return Success(seq);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// 取消关注该文章
         /// </summary>
         /// <param name="id"></param>
@@ -462,11 +485,17 @@ namespace MarkdownRepository.Controllers
         {
             var navigator = new List<long>();
 
-            var first = book.BookDirectory.OrderBy(t => t.id).FirstOrDefault();
+            var bookDir = book.BookDirectory
+                .OrderBy(t => t.parent_id)
+                .ThenBy(t => t.seq)
+                .ThenBy(t => t.id)
+                .ToList();
+
+            var first = bookDir.FirstOrDefault();
             if (first != null)
             {
                 navigator.Add(first.id);
-                WalkDirectory(book.BookDirectory, navigator, first.id, first.parent_id);
+                WalkDirectory(bookDir, navigator, first);
             }
 
             return navigator;
@@ -925,21 +954,27 @@ namespace MarkdownRepository.Controllers
         /// <param name="result"></param>
         /// <param name="current"></param>
         /// <param name="parent"></param>
-        private void WalkDirectory(IList<BookDirectory> directory, IList<long> result, long current, long parent)
+        private void WalkDirectory(IList<BookDirectory> directory, IList<long> result, BookDirectory current)
         {
-            if (directory.Any(t => t.parent_id == current))
+            if (directory.Any(t => t.parent_id == current.id))
             {
                 // 有子目录
-                var firstSub = directory.Where(t => t.parent_id == current).OrderBy(t => t.id).First();
+                var firstSub = directory.Where(t => t.parent_id == current.id)
+                    .OrderBy(t=> t.seq)
+                    .ThenBy(t => t.id)
+                    .First();
                 result.Add(firstSub.id);
-                WalkDirectory(directory, result, firstSub.id, current);
+                WalkDirectory(directory, result, firstSub);
             }
 
-            var nextSibling = directory.Where(t => t.id > current && t.parent_id == parent).OrderBy(t => t.id).FirstOrDefault();
+            var nextSibling = directory.Where(t => t.seq >= current.seq && t.parent_id == current.parent_id && !result.Any(i=> i == t.id))                
+                .OrderBy(t => t.seq)
+                .ThenBy(t => t.id)
+                .FirstOrDefault();
             if (nextSibling != null)
             {
                 result.Add(nextSibling.id);
-                WalkDirectory(directory, result, nextSibling.id, parent);
+                WalkDirectory(directory, result, nextSibling);
             }
         }
 

@@ -403,7 +403,7 @@
         }).on('select_node.jstree', function (node, selected) {
             var href = window.location.href;
             if (href.search(/dirId=/) >= 0) {
-                window.location.href = href.replace(/dirId=\d+/, "dirId=" + selected.node.id);
+                window.location.href = href.replace(/dirId=\d*/, "dirId=" + selected.node.id);
             } else {
                 if (href.indexOf("?") < 0) {
                     window.location.href = href + "?dirId=" + selected.node.id;

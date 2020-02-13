@@ -274,6 +274,66 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
             }
         }
 
+        /// <summary>
+        /// 调整目录顺序
+        /// </summary>
+        /// <param name="userid"></param>
+        /// <param name="bookId"></param>
+        /// <param name="dirId"></param>
+        /// <param name="seq"></param>
+        /// <param name="parentId"></param>
+        public void BookDirectoryMove(string userid, long bookId, long dirId, int seq, int oldSeq, long parentId, long oldParentId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                CheckPermissionForUpdateBook(userid, db, bookId);
+
+                var sql = @"
+update book_directories set parent_id=@parent_id, seq=@seq where book_id=@book_id and id=@id;
+";
+                db.Execute(sql, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
+
+                if (parentId == oldParentId)
+                {
+                    // 父目录没有改变的情况
+                    if (seq < oldSeq)
+                    {
+                        // 往上移
+                        var sql2 = @"
+update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq between @seq and @oldSeq and id <> @id
+";
+                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
+                    }
+                    else
+                    {
+                        // 往下移
+                        var sql2 = @"
+update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq between @oldSeq and @seq and id <> @id
+";
+                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
+                    }
+                }
+                else
+                {
+                    // 改变父目录
+
+                    // 更改插入的目录中受影响的目录的顺序
+                    var sql2 = @"
+update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq >= @seq and id <> @id
+";
+                    db.Execute(sql2, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
+
+                    // 更改原来所在的父目录中的所有目录顺序
+                    var sql3 = @"
+update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq > @seq
+";
+                    db.Execute(sql3, new { parent_id = oldParentId, seq = oldSeq, book_id = bookId });
+                }
+            }
+        }
+
         private void CreateDBIfNotExist()
         {
             if (!System.IO.File.Exists(this._dbPath))
@@ -554,7 +614,7 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
                 }
 
                 var book = db.Query<Book>("select * from books where id=@id", new { id = bookid }).Single();
-                var directories = db.Query<BookDirectory>("select * from book_directories where book_id = @book_id", new { book_id = bookid }).ToList();
+                var directories = db.Query<BookDirectory>("select * from book_directories where book_id = @book_id order by parent_id, seq", new { book_id = bookid }).ToList();
                 var owner = db.Query<BookOwner>("select * from book_owner where book_id = @id", new { id = bookid }).ToList();
                 var result = new BookVm { Book = book, BookDirectory = directories, BookOwner = owner };
 

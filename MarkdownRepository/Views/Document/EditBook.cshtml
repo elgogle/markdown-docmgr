@@ -390,7 +390,7 @@ var documentId = 0;
         
 
         window.jsTree = $("#toc").jstree({
-            'plugins': ["wholerow", "types"],
+            'plugins': ["wholerow", "types", "dnd"],
             "types": {
                 "default": {
                     "icon": false // 删除默认图标
@@ -403,13 +403,13 @@ var documentId = 0;
                 'data': function (obj, callback) {
                     var _this = this;
                     $.ajax({
-                            url: '@Url.Action("GetBookDirectory")',
-                            data: {
-                                bookid: $bookId.val()                                
-                            },
-                            cache: false,
-                            dataType: "json",
-                        })
+                        url: '@Url.Action("GetBookDirectory")',
+                        data: {
+                            bookid: $bookId.val()
+                        },
+                        cache: false,
+                        dataType: "json",
+                    })
                         .success(function (res) {
                             callback.call(_this, res.data);
                             if (opened == false) {
@@ -428,6 +428,22 @@ var documentId = 0;
             $currentDirId.val(selected.node.id);
             $lableCurrentDirPath.text(getNodePath(selected.node.id));
             loadDocument(selected.node.id);
+        }).on('move_node.jstree', function (e, data) {
+            $.ajax({
+                url: '@Url.Action("BookDirectoryMove")',
+                data: {
+                    bookId: $bookId.val(),
+                    dirId: data.node.id,
+                    seq: data.position,
+                    oldSeq: data.old_position,
+                    parentId: data.parent === '#' ? 0 : data.parent,
+                    oldParentId: data.old_parent === '#' ? 0 : data.old_parent
+                },
+                cache: false,
+                dataType: "json",
+            })
+            .success(function (res) { })
+            .error(function () { });
         });
 
         $("#btn_exit_edit").on('click', function () {
