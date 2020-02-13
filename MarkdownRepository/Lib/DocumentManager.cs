@@ -265,10 +265,19 @@ values(@id, @creator, 1);
 
                 var id = GetId("book_directories");
 
-                db.Execute(@"
+                lock (_lock)
+                {
+                    // 获取目录顺序号
+                    var dbSeq = db.Query<int>("select count(*) as cnt from book_directories where book_id=@book_id and parent_id=@parent_id",
+                        new { book_id = bookid, parent_id = parentid }).FirstOrDefault();
+
+                    seq = dbSeq > seq ? dbSeq : seq;
+
+                    db.Execute(@"
 insert into book_directories(id, book_id, title, description, parent_id, document_id, seq) 
 values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
-                    new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid, seq = seq });
+                        new { id = @id, book_id = bookid, title = title, description = description, parent_id = parentid, document_id = documentid, seq = seq });
+                }
 
                 return id;
             }
