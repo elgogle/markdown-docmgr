@@ -52,18 +52,9 @@
             font-size: 0.7em;
         }
 
-        input.switch {
-            font-size: 1em;
-        }
-
         .select-list{
             width: 220px;
         }
-
-        .bootstrap-switch, .bootstrap-switch.bootstrap-switch-animate .bootstrap-switch-container {
-            /*height: 25px;*/
-        }
-        
 
     </style>
 }
@@ -74,7 +65,7 @@
         @using (Html.BeginForm("SearchBook", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
         {
             <div class="form-group">
-                @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "书籍名或简介" })
+                @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { id = "searchBook", @class = "form-control", @placeholder = "书籍名或简介" })
             </div>
             <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索书籍</button>
         }
