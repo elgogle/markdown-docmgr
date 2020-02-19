@@ -26,6 +26,18 @@ namespace MarkdownRepository.Lib
 
         #endregion Members of DocumentManager (6)
 
+        #region Properties of DocumentManager (1)
+
+        public IndexManager IndexManager
+        {
+            get
+            {
+                return this._indexMgr;
+            }
+        }
+
+        #endregion Properties of DocumentManager (1)
+
         #region Constructors of DocumentManager (2)
 
         public DocumentManager()
@@ -44,7 +56,7 @@ namespace MarkdownRepository.Lib
 
         #endregion Constructors of DocumentManager (2)
 
-        #region Methods of DocumentManager (46)
+        #region Methods of DocumentManager (48)
 
         private void AddAtachFile(long id, string path)
         {
@@ -122,6 +134,66 @@ order by ifnull(c.count,1) desc
                 if (day.IsNum() && old.CompareTo(day) > 0)
                 {
                     System.IO.File.Delete(f);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 调整目录顺序
+        /// </summary>
+        /// <param name="userid"></param>
+        /// <param name="bookId"></param>
+        /// <param name="dirId"></param>
+        /// <param name="seq"></param>
+        /// <param name="parentId"></param>
+        public void BookDirectoryMove(string userid, long bookId, long dirId, int seq, int oldSeq, long parentId, long oldParentId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                CheckPermissionForUpdateBook(userid, db, bookId);
+
+                var sql = @"
+update book_directories set parent_id=@parent_id, seq=@seq where book_id=@book_id and id=@id;
+";
+                db.Execute(sql, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
+
+                if (parentId == oldParentId)
+                {
+                    // 父目录没有改变的情况
+                    if (seq < oldSeq)
+                    {
+                        // 往上移
+                        var sql2 = @"
+update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq between @seq and @oldSeq and id <> @id
+";
+                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
+                    }
+                    else
+                    {
+                        // 往下移
+                        var sql2 = @"
+update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq between @oldSeq and @seq and id <> @id
+";
+                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
+                    }
+                }
+                else
+                {
+                    // 改变父目录
+
+                    // 更改插入的目录中受影响的目录的顺序
+                    var sql2 = @"
+update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq >= @seq and id <> @id
+";
+                    db.Execute(sql2, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
+
+                    // 更改原来所在的父目录中的所有目录顺序
+                    var sql3 = @"
+update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq > @seq
+";
+                    db.Execute(sql3, new { parent_id = oldParentId, seq = oldSeq, book_id = bookId });
                 }
             }
         }
@@ -280,66 +352,6 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                 }
 
                 return id;
-            }
-        }
-
-        /// <summary>
-        /// 调整目录顺序
-        /// </summary>
-        /// <param name="userid"></param>
-        /// <param name="bookId"></param>
-        /// <param name="dirId"></param>
-        /// <param name="seq"></param>
-        /// <param name="parentId"></param>
-        public void BookDirectoryMove(string userid, long bookId, long dirId, int seq, int oldSeq, long parentId, long oldParentId)
-        {
-            using (var db = this.OpenDb())
-            {
-                CreateTableIfNotExist();
-
-                CheckPermissionForUpdateBook(userid, db, bookId);
-
-                var sql = @"
-update book_directories set parent_id=@parent_id, seq=@seq where book_id=@book_id and id=@id;
-";
-                db.Execute(sql, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
-
-                if (parentId == oldParentId)
-                {
-                    // 父目录没有改变的情况
-                    if (seq < oldSeq)
-                    {
-                        // 往上移
-                        var sql2 = @"
-update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq between @seq and @oldSeq and id <> @id
-";
-                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
-                    }
-                    else
-                    {
-                        // 往下移
-                        var sql2 = @"
-update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq between @oldSeq and @seq and id <> @id
-";
-                        db.Execute(sql2, new { parent_id = parentId, seq = seq, oldSeq = oldSeq, book_id = bookId, id = dirId });
-                    }
-                }
-                else
-                {
-                    // 改变父目录
-
-                    // 更改插入的目录中受影响的目录的顺序
-                    var sql2 = @"
-update book_directories set seq=seq+1 where book_id=@book_id and parent_id=@parent_id and seq >= @seq and id <> @id
-";
-                    db.Execute(sql2, new { parent_id = parentId, seq = seq, book_id = bookId, id = dirId });
-
-                    // 更改原来所在的父目录中的所有目录顺序
-                    var sql3 = @"
-update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@parent_id and seq > @seq
-";
-                    db.Execute(sql3, new { parent_id = oldParentId, seq = oldSeq, book_id = bookId });
-                }
             }
         }
 
@@ -524,37 +536,6 @@ COMMIT;
             {
                 db.Execute(@"insert or replace into documents_follow(user_id, doc_id) values(@userId, @id);",
                     new { userId = userId, id = docId });
-            }
-        }
-
-        /// <summary>
-        /// 获取 Id
-        /// </summary>
-        /// <param name="idType"></param>
-        /// <returns></returns>
-        public long GetId(string idType)
-        {
-            using (var db = this.OpenDb())
-            {
-                CreateTableIfNotExist();
-                lock (_lock)
-                {
-                    var sql = "select ifnull(ivalue, 9999) + 1 as ivalue from id_generator where ikey=@idType;";
-                    var id = db.Query<long>(sql, new { idType = idType }).FirstOrDefault();
-                    if (id == 0)
-                    {
-                        id = 10000;
-                        db.Execute(@"insert into id_generator(ikey, ivalue) values(@idType, @id)",
-                            new { idType = idType, id = id });
-                    }
-                    else
-                    {
-                        db.Execute(@"update id_generator set ivalue = @id where ikey = @idType",
-                            new { idType = idType, id = id });
-                    }
-
-                    return id;
-                }
             }
         }
 
@@ -775,6 +756,37 @@ where a.rowid = b.id
     and d.user_id = @userId;
                 ", new { userId = userId });
                 return docs.ToList();
+            }
+        }
+
+        /// <summary>
+        /// 获取 Id
+        /// </summary>
+        /// <param name="idType"></param>
+        /// <returns></returns>
+        public long GetId(string idType)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                lock (_lock)
+                {
+                    var sql = "select ifnull(ivalue, 9999) + 1 as ivalue from id_generator where ikey=@idType;";
+                    var id = db.Query<long>(sql, new { idType = idType }).FirstOrDefault();
+                    if (id == 0)
+                    {
+                        id = 10000;
+                        db.Execute(@"insert into id_generator(ikey, ivalue) values(@idType, @id)",
+                            new { idType = idType, id = id });
+                    }
+                    else
+                    {
+                        db.Execute(@"update id_generator set ivalue = @id where ikey = @idType",
+                            new { idType = idType, id = id });
+                    }
+
+                    return id;
+                }
             }
         }
 
@@ -1195,6 +1207,6 @@ WHERE 1 = 1
             }
         }
 
-        #endregion Methods of DocumentManager (46)
+        #endregion Methods of DocumentManager (48)
     }
 }

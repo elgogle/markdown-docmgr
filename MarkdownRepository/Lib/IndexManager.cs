@@ -249,7 +249,7 @@ namespace MarkdownRepository.Lib
                         PhraseQuery query2 = new PhraseQuery();
                         PhraseQuery query3 = new PhraseQuery();
 
-                        query1.Add(new Term(DocStruct.CONTENT.StripHTML(), word));
+                        query1.Add(new Term(DocStruct.CONTENT, word));
                         queryOr1.Add(query1, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
 
                         query2.Add(new Term(DocStruct.TITLE, word));
@@ -282,6 +282,58 @@ namespace MarkdownRepository.Lib
                         result.Add(d);
                     }
                     //LogHelper.WriteInfo(this.GetType(), string.Format("Searched results count:{0}", docs.Length));
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 搜索文档内容且精确匹配
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public List<Doc> SearchDocumentContentAndNotSplitWord(string text)
+        {
+            List<Doc> result = new List<Doc>();
+            try
+            {
+                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
+
+                if (isExistIndex)
+                {
+                    this._indexReader = IndexReader.Open(this._fsDir, false);
+                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
+
+                    //搜索条件
+                    BooleanQuery queryOr1 = new BooleanQuery();
+                    PhraseQuery query1 = new PhraseQuery();
+
+                    foreach (string word in SplitContent.SplitWords(text))
+                    {
+                        query1.Add(new Term(DocStruct.CONTENT, word));
+                        queryOr1.Add(query1, BooleanClause.Occur.MUST);
+                    }
+
+                    MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
+
+                    //TopScoreDocCollector盛放查询结果的容器
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(300, true);
+                    multiSearch.Search(queryOr1, collector);
+
+                    ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs.OrderByDescending(t => t.score).ToArray();
+                    for (int i = 0; i < docs.Length; i++)
+                    {
+                        int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
+                        Document doc = searcher.Doc(docId);//根据文档id来获得文档对象Document
+                        var d = new Doc();
+                        d.Id = doc.Get(DocStruct.ID);
+                        result.Add(d);
+                    }
                 }
             }
             catch (Exception ex)

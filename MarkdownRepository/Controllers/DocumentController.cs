@@ -28,6 +28,7 @@ namespace MarkdownRepository.Controllers
         #region Members of DocumentController (3)
         const string SQLITE_PATH = "~/App_Data";
         const string INDEX_PATH = "~/App_Data/Index/";
+        const string PIC_PATH = "doc/images";
         DocumentManager docMgr = null;
 
         #endregion Members of DocumentController (3)
@@ -601,6 +602,7 @@ namespace MarkdownRepository.Controllers
         /// 重建所有文档的索引
         /// </summary>
         /// <returns></returns>
+        [Authorize(Roles = "admin")]
         public ActionResult ReCreateIndex()
         {
             docMgr.ReCreateSearchIndex();
@@ -893,21 +895,19 @@ namespace MarkdownRepository.Controllers
             if (hfc.Count > 0)
             {
                 var file = hfc[0];
-                string reletiveSavePath = "/doc/images";
-                string savePath = HostingEnvironment.ApplicationPhysicalPath + reletiveSavePath;
+                string savePath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
 
                 if (!Directory.Exists(savePath))
                     Directory.CreateDirectory(savePath);
 
-                string pic = System.IO.Path.GetExtension(file.FileName);
+                string pic = Path.GetExtension(file.FileName);
                 var fileName = Guid.NewGuid().ToString() + pic;
-                var path = System.IO.Path.Combine(savePath, fileName);
-                var relativePath = HostingEnvironment.ApplicationVirtualPath + path.Replace(Request.ServerVariables["APPL_PHYSICAL_PATH"], String.Empty);
-
-                // file is uploaded
+                var path = Path.Combine(savePath, fileName);
                 file.SaveAs(path);
 
-                //AddAtachFile(Convert.ToInt64(Request["doc_id"]), path);
+                var relativePath = string.Format("{0}/{1}/{2}", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/')
+                    , PIC_PATH.TrimEnd('/')
+                    , fileName);
 
                 var result = new { success = 1, message = "", url = relativePath };
                 return Json(result);
@@ -925,19 +925,20 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                base64Content = base64Content.Substring(22); // Replace("data:image/png;base64,", "");
+                base64Content = base64Content.Substring(22); 
                 byte[] fileContent = Convert.FromBase64String(base64Content);
-                string reletiveSavePath = "/doc/images/";
-                string savePath = HostingEnvironment.ApplicationPhysicalPath + reletiveSavePath;
+                string savePath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
 
                 if (!Directory.Exists(savePath))
                     Directory.CreateDirectory(savePath);
 
                 var fileName = Guid.NewGuid().ToString() + ".png";
-                var path = System.IO.Path.Combine(savePath, fileName);
-                var relativePath = HostingEnvironment.ApplicationVirtualPath + path.Replace(Request.ServerVariables["APPL_PHYSICAL_PATH"], String.Empty);
-
+                var path = Path.Combine(savePath, fileName);
                 System.IO.File.WriteAllBytes(path, fileContent);
+
+                var relativePath = string.Format("{0}/{1}/{2}", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/')
+                    , PIC_PATH.TrimEnd('/')
+                    , fileName);
 
                 return Json(new { success = 1, message = "", url = relativePath });
             }
@@ -945,6 +946,30 @@ namespace MarkdownRepository.Controllers
             {
                 return Json(new { success = 0, message = ex.Message, url = "" });
             }
+        }
+
+
+        [Authorize(Roles ="admin")]
+        public ActionResult CleanPicture()
+        {
+            string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
+            if (Directory.Exists(picPath) == false || IndexManager.IndexMgr == null) return Content("-1");
+
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                foreach (var picFile in Directory.GetFiles(picPath))
+                {
+                    var fname = Path.GetFileNameWithoutExtension(picFile);
+                    var docs = IndexManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
+                    if(docs == null || docs.Count == 0)
+                    {
+                        System.Diagnostics.Debug.Print(picFile);
+                        //System.IO.File.Delete(picFile);
+                    }
+                }
+            });
+
+            return Content("0");
         }
 
         /// <summary>

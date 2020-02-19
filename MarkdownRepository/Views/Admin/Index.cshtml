@@ -1,0 +1,44 @@
+﻿@{
+    ViewBag.Title = "Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section style{
+    <style>
+        .func-caption{
+            margin-top: 1.5em;
+            border-bottom: 1px solid gray;
+        }
+    </style>
+}
+
+<h2>Admin 管理</h2>
+
+<h3 class="func-caption">重新创建所有文章 Index</h3>
+<button id="btn_recreate_index" class="btn btn-primary btn-sm">点击执行</button>
+
+
+<h3  class="func-caption">清理所有没有使用的图片</h3>
+<button id="btn_clean_picture" class="btn btn-primary btn-sm">点击执行</button>
+
+@section scripts{
+<script>
+    $(document).ready(function () {
+        $("#btn_recreate_index").click(function () {
+            $.ajax({
+                url: '@Url.Action("ReCreateIndex", "Document")',
+                cache: false
+            });
+            alert("已经在后台重建索引，稍后再检查是否已经完成");
+        });
+
+        $("#btn_clean_picture").click(function () {
+            $.ajax({
+                url: '@Url.Action("CleanPicture", "Document")',
+                cache: false
+            });
+            alert("已经在后台清理图片，稍后再检查是否已经完成");
+        });
+    });
+</script>    
+}

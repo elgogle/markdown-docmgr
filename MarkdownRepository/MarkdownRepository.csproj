@@ -177,12 +177,14 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Lib\AdAccount.cs" />
+    <Compile Include="Lib\CustomRoleProvider.cs" />
     <Compile Include="Lib\DocumentManager.cs" />
     <Compile Include="Lib\FileManager.cs" />
     <Compile Include="Lib\IndexManager.cs" />
@@ -833,6 +835,7 @@
     <Content Include="Views\File\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\File\Search.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -252,6 +252,13 @@
                                         <li>
                                             @Html.ActionLink("退出", "LogOff", "Account", routeValues: null, htmlAttributes: new { id = "logoutForm", Key = DateTime.Now })
                                         </li>
+
+                                        if (User.IsInRole("admin"))
+                                        {
+                                            <li>
+                                                @Html.ActionLink("管理", "Index", "Admin")
+                                            </li>
+                                        }
                                     }
                                     else
                                     {
