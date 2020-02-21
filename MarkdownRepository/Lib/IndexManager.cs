@@ -109,7 +109,7 @@ namespace MarkdownRepository.Lib
 
         #endregion Constructors of IndexManager (1)
 
-        #region Methods of IndexManager (8)
+        #region Methods of IndexManager (9)
 
         /// <summary>
         /// 增加或修改一个文档
@@ -372,6 +372,6 @@ namespace MarkdownRepository.Lib
             });
         }
 
-        #endregion Methods of IndexManager (8)
+        #endregion Methods of IndexManager (9)
     }
 }

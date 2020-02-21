@@ -13,6 +13,7 @@ using System.Web.Mvc;
 namespace MarkdownRepository.Controllers
 {
     using Dapper;
+    using ICSharpCode.SharpZipLib.Zip;
     using Lib;
     using Models;
     using Newtonsoft.Json;
@@ -21,20 +22,18 @@ namespace MarkdownRepository.Controllers
     using System.IO;
     using System.Text.RegularExpressions;
     using System.Web.Hosting;
-    using ICSharpCode.SharpZipLib.Zip;
 
     [Authorize]
     public class DocumentController : Controller
     {
-        #region Members of DocumentController (3)
+        #region Members of DocumentController (5)
         const string SQLITE_PATH = "~/App_Data";
         const string INDEX_PATH = "~/App_Data/Index/";
         const string PIC_PATH = "doc/images";
         const int PAGE_SIZE = 25;
         DocumentManager docMgr = null;
 
-
-        #endregion Members of DocumentController (3)
+        #endregion Members of DocumentController (5)
 
         #region Properties of DocumentController (1)
 
@@ -64,7 +63,7 @@ namespace MarkdownRepository.Controllers
 
         #endregion Constructors of DocumentController (1)
 
-        #region Methods of DocumentController (39)
+        #region Methods of DocumentController (43)
 
         /// <summary>
         /// 所有书籍页面
@@ -155,6 +154,29 @@ namespace MarkdownRepository.Controllers
                 return Json(new { success = true });
             }
             return Json(new { success = false });
+        }
+
+        [Authorize(Roles = "admin")]
+        public ActionResult CleanPicture()
+        {
+            string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
+            if (Directory.Exists(picPath) == false || IndexManager.IndexMgr == null) return Content("-1");
+
+            System.Threading.Tasks.Task.Factory.StartNew(() =>
+            {
+                foreach (var picFile in Directory.GetFiles(picPath))
+                {
+                    var fname = Path.GetFileNameWithoutExtension(picFile);
+                    var docs = IndexManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
+                    if (docs == null || docs.Count == 0)
+                    {
+                        System.Diagnostics.Debug.Print(picFile);
+                        //System.IO.File.Delete(picFile);
+                    }
+                }
+            });
+
+            return Content("0");
         }
 
         /// <summary>
@@ -425,6 +447,56 @@ namespace MarkdownRepository.Controllers
             return View(book);
         }
 
+        /// <summary>
+        /// 导出我的所有文章
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult ExportMyDocumentsWithMarkdown()
+        {
+            var mydocs = docMgr.MyDocument(UserId);
+            using (var ms = new MemoryStream())
+            {
+                using (ZipOutputStream s = new ZipOutputStream(ms))
+                {
+                    s.SetLevel(9); // 0 - store only to 9 - means best compression
+                    byte[] buffer = new byte[4096];
+                    List<string> images = new List<string>();
+
+                    foreach (var doc in mydocs)
+                    {
+                        var entry = new ZipEntry(string.Format("{0}_{1}.md", doc.rowid, doc.title));
+                        entry.DateTime = DateTime.Now;
+                        s.PutNextEntry(entry);
+                        var content = System.Text.Encoding.UTF8.GetBytes(doc.content);
+                        s.Write(content, 0, content.Length);
+                        images.AddRange(FindImages(doc.content));
+                    }
+
+                    var virtualPath = string.Format("{0}\\doc\\images\\", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/'));
+                    s.PutNextEntry(new ZipEntry(virtualPath));
+
+                    foreach (var img in images.Distinct())
+                    {
+                        string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, img);
+                        if (System.IO.File.Exists(picPath))
+                        {
+                            var entry = new ZipEntry(string.Format("{0}{1}", virtualPath, Path.GetFileName(img)));
+                            entry.DateTime = DateTime.Now;
+
+                            s.PutNextEntry(entry);
+                            var imgContent = System.IO.File.ReadAllBytes(picPath);
+                            s.Write(imgContent, 0, imgContent.Length);
+                        }
+                    }
+
+                    s.Finish();
+                    s.Close();
+                }
+
+                return File(ms.ToArray(), "	application/zip", "My documents.zip");
+            }
+        }
+
         public ActionResult Fail(string errorMessage)
         {
             return Json(new
@@ -432,6 +504,24 @@ namespace MarkdownRepository.Controllers
                 isSuccess = false,
                 message = errorMessage
             }, JsonRequestBehavior.AllowGet);
+        }
+
+        private List<string> FindImages(string docContent)
+        {
+            var result = new List<string>();
+            if (docContent.IsNullOrEmpty()) return result;
+
+            var regexp = @"doc[/\\]images[/\\][^/\\]+\.[jpg|gif|png]{3}";
+            var match = System.Text.RegularExpressions.Regex.Matches(docContent, regexp);
+            if (match != null && match.Count > 0)
+            {
+                foreach (System.Text.RegularExpressions.Match m in match)
+                {
+                    result.Add(m.Value);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -928,7 +1018,7 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
-                base64Content = base64Content.Substring(22); 
+                base64Content = base64Content.Substring(22);
                 byte[] fileContent = Convert.FromBase64String(base64Content);
                 string savePath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
 
@@ -951,30 +1041,6 @@ namespace MarkdownRepository.Controllers
             }
         }
 
-
-        [Authorize(Roles ="admin")]
-        public ActionResult CleanPicture()
-        {
-            string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
-            if (Directory.Exists(picPath) == false || IndexManager.IndexMgr == null) return Content("-1");
-
-            System.Threading.Tasks.Task.Factory.StartNew(() =>
-            {
-                foreach (var picFile in Directory.GetFiles(picPath))
-                {
-                    var fname = Path.GetFileNameWithoutExtension(picFile);
-                    var docs = IndexManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
-                    if(docs == null || docs.Count == 0)
-                    {
-                        System.Diagnostics.Debug.Print(picFile);
-                        //System.IO.File.Delete(picFile);
-                    }
-                }
-            });
-
-            return Content("0");
-        }
-
         /// <summary>
         /// 遍历整个目录
         /// </summary>
@@ -988,14 +1054,14 @@ namespace MarkdownRepository.Controllers
             {
                 // 有子目录
                 var firstSub = directory.Where(t => t.parent_id == current.id)
-                    .OrderBy(t=> t.seq)
+                    .OrderBy(t => t.seq)
                     .ThenBy(t => t.id)
                     .First();
                 result.Add(firstSub.id);
                 WalkDirectory(directory, result, firstSub);
             }
 
-            var nextSibling = directory.Where(t => t.seq >= current.seq && t.parent_id == current.parent_id && !result.Any(i=> i == t.id))                
+            var nextSibling = directory.Where(t => t.seq >= current.seq && t.parent_id == current.parent_id && !result.Any(i => i == t.id))
                 .OrderBy(t => t.seq)
                 .ThenBy(t => t.id)
                 .FirstOrDefault();
@@ -1006,74 +1072,6 @@ namespace MarkdownRepository.Controllers
             }
         }
 
-        /// <summary>
-        /// 导出我的所有文章
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult ExportMyDocumentsWithMarkdown()
-        {
-            var mydocs = docMgr.MyDocument(UserId);
-            using (var ms = new MemoryStream())
-            {
-                using (ZipOutputStream s = new ZipOutputStream(ms))
-                {
-                    s.SetLevel(9); // 0 - store only to 9 - means best compression
-                    byte[] buffer = new byte[4096];
-                    List<string> images = new List<string>();
-
-                    foreach(var doc in mydocs)
-                    {
-                        var entry = new ZipEntry(string.Format("{0}_{1}.md", doc.rowid, doc.title));
-                        entry.DateTime = DateTime.Now;
-                        s.PutNextEntry(entry);
-                        var content = System.Text.Encoding.UTF8.GetBytes(doc.content);
-                        s.Write(content, 0, content.Length);
-                        images.AddRange(FindImages(doc.content));
-                    }
-
-                    var virtualPath = string.Format("{0}\\doc\\images\\", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/'));
-                    s.PutNextEntry(new ZipEntry(virtualPath));
-                    
-                    foreach(var img in images.Distinct())
-                    {
-                        string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, img);
-                        if(System.IO.File.Exists(picPath))
-                        {
-                            var entry = new ZipEntry(string.Format("{0}{1}", virtualPath, Path.GetFileName(img)));
-                            entry.DateTime = DateTime.Now;
-                            
-                            s.PutNextEntry(entry);
-                            var imgContent = System.IO.File.ReadAllBytes(picPath);
-                            s.Write(imgContent, 0, imgContent.Length);
-                        }
-                    }
-
-                    s.Finish();
-                    s.Close();
-                }
-
-                return File(ms.ToArray(), "	application/zip", "My documents.zip");
-            }
-        }
-
-        private List<string> FindImages(string docContent)
-        {
-            var result = new List<string>();
-            if (docContent.IsNullOrEmpty()) return result;
-
-            var regexp = @"doc[/\\]images[/\\][^/\\]+\.[jpg|gif|png]{3}";
-            var match = System.Text.RegularExpressions.Regex.Matches(docContent, regexp);
-            if(match != null && match.Count > 0)
-            {
-                foreach(System.Text.RegularExpressions.Match m in match)
-                {
-                    result.Add(m.Value);
-                }
-            }
-
-            return result;
-        }
-
-        #endregion Methods of DocumentController (39)
+        #endregion Methods of DocumentController (43)
     }
 }
