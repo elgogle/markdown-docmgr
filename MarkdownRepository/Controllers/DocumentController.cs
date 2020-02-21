@@ -1034,7 +1034,7 @@ namespace MarkdownRepository.Controllers
                     var virtualPath = string.Format("{0}\\doc\\images\\", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/'));
                     s.PutNextEntry(new ZipEntry(virtualPath));
                     
-                    foreach(var img in images)
+                    foreach(var img in images.Distinct())
                     {
                         string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, img);
                         if(System.IO.File.Exists(picPath))
