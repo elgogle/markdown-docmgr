@@ -44,6 +44,9 @@
     </div>
 
     <div class="col-md-2 side-category">
+        <div class="export-section">
+            <a href="@Url.Action("ExportMyDocumentsWithMarkdown", "Document")"><span class="glyphicon glyphicon-floppy-save"></span> 导出全部</a>            
+        </div>
         <div class="title">文章分类</div>
         <div class="doc-category">        
         @if (ViewBag.Category != null) 
@@ -76,6 +79,11 @@ else
 
 @section style{
     <style>
+        .export-section{
+            padding: 5px;
+            font-size: 0.85em;
+            background-color: #f9f9f9;
+        }
     </style>
     <link href="~/css/jqcloud.min.css" rel="stylesheet">
 }
