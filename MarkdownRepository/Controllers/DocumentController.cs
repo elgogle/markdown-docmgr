@@ -655,8 +655,11 @@ namespace MarkdownRepository.Controllers
 
                 Uri uri = urlBuilder.Uri;
 
-                return new SyndicationItem(t.title, markdownTransfer.Transform(t.content), uri);
+                return new SyndicationItem((t.title??"").XmlCharacterEscape(), 
+                    (markdownTransfer.Transform(t.content ?? "")).XmlCharacterEscape(), 
+                    uri);
             }).ToList();
+
             SyndicationFeed feed = new SyndicationFeed("Markdown Documents", "CSC Markdown Documents RSS Feed", Request.Url, items);
             return new RssResult(feed);
         }

@@ -49,6 +49,8 @@ namespace MarkdownRepository.Lib
         public override string[] GetRolesForUser(string username)
         {
             var cookie = HttpContext.Current.Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (cookie == null) return new string[] { "" };
+
             var ticket = FormsAuthentication.Decrypt(cookie.Value);
             string role = ticket.UserData;
             return role.Split(',');

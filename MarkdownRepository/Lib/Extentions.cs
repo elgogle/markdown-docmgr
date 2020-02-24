@@ -185,5 +185,33 @@ namespace MarkdownRepository.Lib
                 return Encoding.GetEncoding("GB2312").GetString(memoryStream.ToArray());
             }
         }
+
+        /// <summary>
+        /// 去掉 xml 中不受支持的字符
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static string XmlCharacterEscape(this string text)
+        {
+            if (text == null) return null;
+
+            StringBuilder sbOutput = new StringBuilder();
+            char ch;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                ch = text[i];
+                if ((ch >= 0x0020 && ch <= 0xD7FF) ||
+                        (ch >= 0xE000 && ch <= 0xFFFD) ||
+                        ch == 0x0009 ||
+                        ch == 0x000A ||
+                        ch == 0x000D)
+                {
+                    sbOutput.Append(ch);
+                }
+            }
+
+            return sbOutput.ToString();
+        }
     }
 }

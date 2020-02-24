@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using HtmlAgilityPack;
 using System.Web.Mvc;
 using System.ServiceModel.Syndication;
+using System.Text;
 
 namespace MarkdownRepository.Lib
 {
@@ -32,6 +33,6 @@ namespace MarkdownRepository.Lib
             {
                 formatter.WriteTo(writer);
             }
-        }
+        }        
     }
 }
