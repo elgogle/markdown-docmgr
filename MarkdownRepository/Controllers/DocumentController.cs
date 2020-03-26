@@ -115,6 +115,17 @@ namespace MarkdownRepository.Controllers
                     text = t.Item1,
                     weight = t.Item2
                 }));
+            var transferUsers = docMgr.GetAllUserId()
+                .Where(t => t.user_id.GetUserName() != this.UserId.GetUserName())
+                .Select(t =>
+                    new
+                    {
+                        value = t.user_id.Contains("\\") ? t.user_id.Split('\\')[1] : t.user_id,
+                        text = t.user_name
+                    }).Distinct();
+
+            ViewBag.TransferUsers = new SelectList(transferUsers, "value", "text");
+
             return View(result.ToPagedList(pageNumber, pageSize));
         }
 
@@ -377,7 +388,7 @@ namespace MarkdownRepository.Controllers
             var existDoc = docMgr.Get(id);
 
             // TODO:无权访问
-            if (existDoc != null && !existDoc.creator.Equals(this.UserId))
+            if (existDoc != null && !existDoc.creator.Equals(this.UserId) && !User.IsInRole("admin"))
                 return Json(new { success = false, message = "You don't have permission to delete" });
 
             docMgr.Delete(id);
@@ -635,6 +646,7 @@ namespace MarkdownRepository.Controllers
                     text = t.Item1,
                     weight = t.Item2
                 }));
+
             return View(result.ToPagedList(pageNumber, pageSize));
         }
 
@@ -930,6 +942,25 @@ namespace MarkdownRepository.Controllers
             try
             {
                 docMgr.TransferBookOwner(bookid, this.UserId, transferid);
+                return Success();
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 更改文章属主
+        /// </summary>
+        /// <param name="docid"></param>
+        /// <param name="transferid"></param>
+        /// <returns></returns>
+        public ActionResult TransferDocumentOwner(long docid, string transferid)
+        {
+            try
+            {
+                docMgr.TransferDocumentOwner(docid, transferid);
                 return Success();
             }
             catch (Exception ex)

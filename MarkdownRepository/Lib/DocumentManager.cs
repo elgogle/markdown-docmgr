@@ -1125,6 +1125,20 @@ WHERE 1 = 1
         }
 
         /// <summary>
+        /// 更改文章属主
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <param name="transferid"></param>
+        public void TransferDocumentOwner(long docId, string transferid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                db.Execute("update documents_owner set creator=@transferid where id=@docId", new { docId = docId, transferid = transferid });
+            }
+        }
+
+        /// <summary>
         /// 创建或更新文档
         /// </summary>
         /// <param name="id"></param>
