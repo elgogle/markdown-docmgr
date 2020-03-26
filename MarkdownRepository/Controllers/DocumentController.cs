@@ -387,7 +387,6 @@ namespace MarkdownRepository.Controllers
         {
             var existDoc = docMgr.Get(id);
 
-            // TODO:无权访问
             if (existDoc != null && !existDoc.creator.Equals(this.UserId) && !User.IsInRole("admin"))
                 return Json(new { success = false, message = "You don't have permission to delete" });
 
@@ -960,6 +959,9 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
+                if (!User.IsInRole("admin"))
+                    throw new Exception("You don't have permission to delete");
+
                 docMgr.TransferDocumentOwner(docid, transferid);
                 return Success();
             }
