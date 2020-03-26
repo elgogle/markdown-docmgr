@@ -848,6 +848,18 @@ namespace MarkdownRepository.Controllers
                 ViewBag.IsFollowed = docMgr.IsFollowed(UserId, id);
             }
 
+            var transferUsers = docMgr.GetAllUserId()
+                .Where(t => t.user_id.GetUserName() != this.UserId.GetUserName() 
+                        && t.user_id.GetUserName() != doc.creator.GetUserName())
+                .Select(t =>
+                    new
+                    {
+                        value = t.user_id.Contains("\\") ? t.user_id.Split('\\')[1] : t.user_id,
+                        text = t.user_name
+                    }).Distinct();
+
+            ViewBag.TransferUsers = new SelectList(transferUsers, "value", "text");
+
             return View(doc);
         }
 

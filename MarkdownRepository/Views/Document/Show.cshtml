@@ -90,6 +90,11 @@ else
 {
     <div class="pull-right" style="font-size:0.7em;">
         <a href="@Url.Action("Slide", new { id=Model.rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
+        @if (User.IsInRole("admin"))
+        {
+            <a href="javascript:transferDoc(@Model.rowid, '@Model.title')"><span class="glyphicon glyphicon-duplicate"></span> 转让</a>
+            <a href="javascript:deleteDoc('@Model.rowid')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
+        }
     </div>
 }
 
@@ -202,14 +207,67 @@ else
             margin: -30px 0 0;
         }
     </style>
+
+    <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
+}
+
+@if (User.IsInRole("admin"))
+{
+    <div id="diag_transfer_doc" style="display:none; padding:1em;">
+        <h4 id="transfer_doc_name"></h4>
+        <input type="hidden" id="transfer_doc_id" />
+        <div class="form-group">
+            <label>转让给：</label>
+            @Html.DropDownList("transfer_user_id", (SelectList)ViewBag.TransferUsers, string.Empty, new { @class = "form-control select-list" })
+        </div>
+        <div class="form-group">
+            <button id="transfer_submit" class="btn-primary" type="submit">确认</button>
+        </div>
+    </div>
 }
 
 @section scripts{
+
+    <script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
 
     @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
     <script>
     showMarkDown("md", "#toc_container");
+
+    function deleteDoc(id){
+        if (confirm("确认删除?")) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Delete","Document")",
+                data: { id: id },
+
+                success: function (data) {
+                    if(data.success){
+                        location.reload();
+                    }else{
+                        alert(data.message);
+                    }
+                }
+            });
+        }
+    }
+
+    function transferDoc(docId, docName) {
+        $("#transfer_doc_name").text("文章: " + docName);
+        $("#transfer_doc_id").val(docId);            
+
+        window.diagEditBookInfoIndex = layer.open({
+            type: 1,
+            title: "转让文章",
+            closeBtn: 1,
+            moveType: 1,
+            shade: 0,
+            area: '450px',
+            skin: 'layui-layer-rim', //加上边框
+            content: $('#diag_transfer_doc')
+        });
+    }
 
     $(document).ready(function () {
         function selectText(element) {
@@ -272,6 +330,29 @@ else
                 $("#toc_container").hide();
             }
         }, 500);
+
+        $("#transfer_submit").on('click', function () {
+            var docid = $("#transfer_doc_id").val();
+            var userId =  $("#transfer_user_id").val();
+            if (docid && userId) {
+                $.ajax({
+                    url: '@Url.Action("TransferDocumentOwner")',
+                    data: { docid: docid, transferid: userId },
+                    cache: false,
+                    dataType: "json",
+                })
+                .success(function (res) {
+                    if (res.isSuccess) {
+                        alert("转让成功");
+                        window.location.reload();
+                    } else {
+                        layer.alert(res.message);
+                    }
+                });
+            } else {
+                layer.alert("请选择转让人，转让人不能是自己");
+            }
+        });
     });
     </script>
 
