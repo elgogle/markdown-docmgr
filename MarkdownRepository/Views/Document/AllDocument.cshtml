@@ -16,7 +16,7 @@
             | <span class="doc-order @(ViewBag.OrderBy == "read_count" ? "active" : "inactive")">@Html.ActionLink("热门", "AllDocument", new { orderBy = "read_count" })</span>
         </div>
 
-        <table class="table table-striped">
+        <table class="table table-striped all-doc">
             <tbody>
                 @foreach (var doc in Model)
                 {
@@ -30,9 +30,10 @@
                                     </a>
 
                                     <div class="list-foot pull-left">
+                                        <span class="list-doc-category">文章分类: </span>
                                         @if (!string.IsNullOrEmpty(doc.category))
                                         {
-                                            <span class="list-doc-category">文章分类: </span> @doc.category
+                                            @doc.category
                                         }
                                         <span class="list-doc-updatetime">更新时间: </span> @doc.update_at
                                         <span class="list-doc-creator">作者：</span> @(AdAccount.GetUserNameById(doc.creator))
