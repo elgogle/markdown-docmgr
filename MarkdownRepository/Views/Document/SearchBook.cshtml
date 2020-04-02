@@ -54,7 +54,7 @@
 
 <div style="min-height:600px;">
     <ul style="padding-left:0">
-        @if (Model != null)
+        @if (Model != null && Model.Count > 0)
         {
             foreach (var item in Model)
             {

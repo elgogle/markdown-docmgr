@@ -34,29 +34,30 @@
 @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 { 
     <div class="form-group">
-        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索，可使用空格分隔进行‘或’搜索" })
     </div>
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
 }
 
 <div style="min-height:600px;">
     <ul style="padding-left:0">
-        @if (Model != null)
+        @if (Model != null && Model.Count > 0)
         {
             foreach (var item in Model)
-            { 
+            {
             <li class="search-list">
-                @if(item.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase)){
-                    
+                @if (item.creator.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
+                {
+
                 <div class="pull-right" style="font-size:0.7em;" >
                     <a href="@Url.Action("Create", new { id = item.rowid })"><span class="glyphicon glyphicon-edit"></span> 修改</a> 
                     <a href="javascript:deleteDoc('@item.rowid')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
                 </div>
-                    
+
                 }
                 
                 <div>
-                    <a href="@(item.ref_book_id>0?Url.Action("ShowBook", new { bookid = item.ref_book_id, docId = item.rowid }):Url.Action("Show", new { id = item.rowid }))">
+                    <a href="@(item.ref_book_id > 0 ? Url.Action("ShowBook", new { bookid = item.ref_book_id, docId = item.rowid }) : Url.Action("Show", new { id = item.rowid }))">
                         <h4>@Html.Raw(item.title)</h4>  
                         <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
                             @Html.Raw(item.content)
@@ -74,9 +75,15 @@
             </li>
             }
         }
+        else
+        {
+            <li style="list-style: none; text-align: center; margin-top: 2em;">
+                没有搜索到任何结果，请尝试其它搜索词
+            </li>
+        }
     </ul>
 
-    @if (Model != null)
+    @if (Model != null && Model.Count > 0)
     { 
         <!-- 分页 -->
         <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>

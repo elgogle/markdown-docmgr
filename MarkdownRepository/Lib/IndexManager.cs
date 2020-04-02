@@ -240,36 +240,31 @@ namespace MarkdownRepository.Lib
                     IndexSearcher searcher = new IndexSearcher(this._indexReader);
 
                     //搜索条件
-                    BooleanQuery queryOr1 = new BooleanQuery();
+                    BooleanQuery shouldQuery = new BooleanQuery();
 
                     //把用户输入的关键字进行分词
+                    PhraseQuery query1 = new PhraseQuery();
+                    PhraseQuery query2 = new PhraseQuery();
+                    PhraseQuery query3 = new PhraseQuery();
                     foreach (string word in SplitContent.SplitWords(text))
                     {
-                        PhraseQuery query1 = new PhraseQuery();
-                        PhraseQuery query2 = new PhraseQuery();
-                        PhraseQuery query3 = new PhraseQuery();
-
-                        query1.Add(new Term(DocStruct.CONTENT, word));
-                        queryOr1.Add(query1, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
-
-                        query2.Add(new Term(DocStruct.TITLE, word));
-                        queryOr1.Add(query2, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
-
+                        query1.Add(new Term(DocStruct.TITLE, word));
+                        query2.Add(new Term(DocStruct.CONTENT, word));                        
                         query3.Add(new Term(DocStruct.CATEGORY, word));
-                        queryOr1.Add(query3, BooleanClause.Occur.SHOULD);//这里设置 条件为Or关系
                     }
-
-                    //query1.SetSlop(100); //指定关键词相隔最大距离
+                    query1.SetBoost(0.4f);
+                    query2.SetBoost(0.3f);
+                    query3.SetBoost(0.2f);
+                    shouldQuery.Add(query1, BooleanClause.Occur.SHOULD);
+                    shouldQuery.Add(query2, BooleanClause.Occur.SHOULD);
+                    shouldQuery.Add(query3, BooleanClause.Occur.SHOULD);
 
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
 
                     //TopScoreDocCollector盛放查询结果的容器
                     TopScoreDocCollector collector = TopScoreDocCollector.create(300, true);
 
-                    //searcher.Search(query, null, collector);//根据query查询条件进行查询，查询结果放入collector容器
-                    //searcher.Search(queryOr, null, collector);
-
-                    multiSearch.Search(queryOr1, collector);
+                    multiSearch.Search(shouldQuery, collector);
 
                     //TopDocs 指定0到GetTotalHits() 即所有查询结果中的文档 如果TopDocs(20,10)则意味着获取第20-30之间文档内容 达到分页的效果
                     ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs.OrderByDescending(t => t.score).ToArray();
