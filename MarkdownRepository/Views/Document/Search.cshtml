@@ -34,7 +34,7 @@
 @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 { 
     <div class="form-group">
-        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索，可使用空格分隔进行‘或’搜索" })
+        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
     </div>
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
 }
