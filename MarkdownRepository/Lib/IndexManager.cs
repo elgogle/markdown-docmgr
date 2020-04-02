@@ -243,21 +243,21 @@ namespace MarkdownRepository.Lib
                     BooleanQuery shouldQuery = new BooleanQuery();
 
                     //把用户输入的关键字进行分词
-                    PhraseQuery query1 = new PhraseQuery();
-                    PhraseQuery query2 = new PhraseQuery();
-                    PhraseQuery query3 = new PhraseQuery();
                     foreach (string word in SplitContent.SplitWords(text))
                     {
+                        PhraseQuery query1 = new PhraseQuery();
+                        PhraseQuery query2 = new PhraseQuery();
+                        PhraseQuery query3 = new PhraseQuery();
                         query1.Add(new Term(DocStruct.TITLE, word));
                         query2.Add(new Term(DocStruct.CONTENT, word));                        
                         query3.Add(new Term(DocStruct.CATEGORY, word));
+                        query1.SetBoost(0.4f);
+                        query2.SetBoost(0.3f);
+                        query3.SetBoost(0.2f);
+                        shouldQuery.Add(query1, BooleanClause.Occur.SHOULD);
+                        shouldQuery.Add(query2, BooleanClause.Occur.SHOULD);
+                        shouldQuery.Add(query3, BooleanClause.Occur.SHOULD);
                     }
-                    query1.SetBoost(0.4f);
-                    query2.SetBoost(0.3f);
-                    query3.SetBoost(0.2f);
-                    shouldQuery.Add(query1, BooleanClause.Occur.SHOULD);
-                    shouldQuery.Add(query2, BooleanClause.Occur.SHOULD);
-                    shouldQuery.Add(query3, BooleanClause.Occur.SHOULD);
 
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
 
