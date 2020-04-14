@@ -327,6 +327,7 @@ namespace MarkdownRepository.Controllers
         /// <param name="content"></param>
         /// <param name="title"></param>
         /// <returns></returns>
+        [HttpPost, ValidateInput(false)]
         public ActionResult CreateOrUpdateBookArticle(long directoryid, string content, string title)
         {
             try
