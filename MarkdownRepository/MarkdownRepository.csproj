@@ -746,6 +746,8 @@
     <Content Include="javascripts\layer-v3.1.1\test.html" />
     <Content Include="javascripts\layer-v3.1.1\更新日志.txt" />
     <Content Include="javascripts\remark-latest.min.js" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\moc\tororo.2048\texture_00.png" />
+    <Content Include="Live2d\live2d.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -815,6 +817,25 @@
     <Content Include="javascripts\layer-v3.1.1\文档\layer文档.url" />
     <Content Include="javascripts\layer-v3.1.1\文档\layui社区.url" />
     <Content Include="javascripts\layer-v3.1.1\文档\获得layim.url" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\moc\tororo.moc" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\00_idle.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\01.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\02.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\03.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\04.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\05.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\06.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\07.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\mtn\08.mtn" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\tororo.model.json" />
+    <Content Include="Live2d\live2d-widget-model-tororo\assets\tororo.pose.json" />
+    <Content Include="Live2d\Web.config" />
+    <None Include="Live2d\Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Live2d\Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="Views\Document\AllDocument.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />

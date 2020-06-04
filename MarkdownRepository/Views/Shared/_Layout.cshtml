@@ -342,5 +342,16 @@
         }
     </script>
     @RenderSection("scripts", required: false)
+
+    <!-- 宠物 -->
+    <div class="model-container" style="position:fixed;top:50px; left:50px;">
+        <canvas width="200"
+                height="300"
+                id="model"></canvas>
+    </div>
+    <script src="@Url.Content("~/Live2d/live2d.js")"></script>
+    <script>
+        loadlive2d("model", "@Url.Content("~/Live2d/live2d-widget-model-tororo/assets/tororo.model.json")");
+    </script>
 </body>
 </html>
