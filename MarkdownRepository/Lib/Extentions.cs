@@ -213,5 +213,25 @@ namespace MarkdownRepository.Lib
 
             return sbOutput.ToString();
         }
+
+        /// <summary>
+        /// 获取字符串的Hash字符
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string ToHashText(this string str)
+        {
+            if (String.IsNullOrEmpty(str))
+                return String.Empty;
+
+            using (var sha1 = new System.Security.Cryptography.SHA1Managed())
+            {
+                byte[] textData = System.Text.Encoding.UTF8.GetBytes(str);
+
+                byte[] hash = sha1.ComputeHash(textData);
+
+                return BitConverter.ToString(hash).Replace("-", String.Empty);
+            }
+        }
     }
 }

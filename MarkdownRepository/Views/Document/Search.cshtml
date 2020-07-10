@@ -88,7 +88,7 @@
         <!-- 分页 -->
         <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
 
-        @Html.PagedListPager(Model, page => Url.Action("Search", new { page }))
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.CurrentFilter as string }))
     }
 </div>
 

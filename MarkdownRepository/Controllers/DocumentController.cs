@@ -44,7 +44,7 @@ namespace MarkdownRepository.Controllers
         {
             get
             {
-                return string.IsNullOrWhiteSpace(User.Identity.Name) ?
+                return string.IsNullOrWhiteSpace(User?.Identity.Name) ?
                     "Anonymous" : User.Identity.Name.GetUserName();
             }
         }

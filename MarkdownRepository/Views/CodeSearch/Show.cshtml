@@ -1,0 +1,52 @@
+﻿@using MarkdownRepository.Lib
+@{
+    ViewBag.Title = "Show";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model MarkdownRepository.Lib.CodeModel
+
+@section style{
+    <!-- git hub markdown style -->
+    <link href="~/css/github-markdown.css" rel="stylesheet">
+
+    <!-- highlight default style -->
+    <link href="~/css/default.min.css" rel="stylesheet">
+
+    <!-- other style for highlight -->
+    <link href="~/css/highlight-styles/androidstudio.css" rel="stylesheet">
+}
+
+<div>
+    <div>
+        <div class="pull-right">
+            <input type="button" value="返回" onclick="history.back()" class="btn btn-xs btn-default">
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    <div>
+        @if(Model != null)
+        {
+            <pre>
+<code>
+@Model.CodeBody
+</code>
+</pre>
+        }
+        else
+        {
+            <p>代码找不到了</p>
+        }
+
+    </div>
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/javascripts/highlight.min.js")"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('pre code').each(function (i, block) {
+                hljs.highlightBlock(block);
+            });
+        });
+    </script>
+}

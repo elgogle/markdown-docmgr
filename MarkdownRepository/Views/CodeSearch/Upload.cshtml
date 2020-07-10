@@ -1,40 +1,48 @@
 ﻿@{
     ViewBag.Title = "Upload";
-    Layout = "~/Views/Shared/_Layout.cshtml";    
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section style{
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet">
-<style>
-    form.dropzone {
-        min-height: 200px;
-        border: 2px dashed #007bff;
-        line-height: 6rem;
-    }
-    .nav-item.avatar a {
-        cursor: pointer;
-        text-transform: capitalize;
-    }
-    .nav-item.avatar a > i {
-        font-size: 15px;
-    }
-    .nav-item.avatar .dropdown-menu a {
-        font-size: 13px;
-    }
-</style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet">
+    <style>
+        form.dropzone {
+            min-height: 200px;
+            border: 2px dashed #007bff;
+            line-height: 6rem;
+        }
+
+        .nav-item.avatar a {
+            cursor: pointer;
+            text-transform: capitalize;
+        }
+
+            .nav-item.avatar a > i {
+                font-size: 15px;
+            }
+
+        .nav-item.avatar .dropdown-menu a {
+            font-size: 13px;
+        }
+    </style>
 }
 <div class="path">
+    <div>
+        <p>
+            仅可上传 c# 文件或包含 c# 的 zip 文件
+        </p>
+    </div>
     <div class="fm-upload-wrapper">
         <div class="card-header">
             <div class="">
                 <a class="label label-primary" href="#fileUploader" data-target="#fileUploader"><i class="fa fa-arrow-circle-o-up"></i> 上传文件</a>
-                <a class="label label-default" href="@Url.Action("Index", new { p = ViewBag.CurrentPath })" ><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
+                <a class="label label-default" href="@Url.Action("Search")"><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
             </div>
         </div>
         <div class="card-body" style="margin-top: 1em;">
-            <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container"  enctype="multipart/form-data">
-                <input type="hidden" name="p" value="@ViewBag.CurrentPath">                
+            <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container" enctype="multipart/form-data">
+                
                 <div class="fallback">
                     <input name="file" type="file" multiple />
                 </div>
@@ -45,8 +53,8 @@
 
 @section scripts{
 
-<script src="@Url.Content("~/javascripts/dropzone.min.js")"></script>
-<script>
+    <script src="@Url.Content("~/javascripts/dropzone.min.js")"></script>
+    <script>
     $(document).ready(function () {
 
 
@@ -67,6 +75,6 @@
             });
         }
     }
-</script>
+    </script>
 
 }

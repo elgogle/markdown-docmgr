@@ -211,7 +211,10 @@
                     </div>
                     <div class="collapse navbar-collapse" id="navbar">
                         <ul class="nav navbar-nav navbar-right">
+                            <li class="@(@ViewBag.Action == "CodeSearch" ? "active" : "")"><a href="@Url.Action("Search", "CodeSearch")"><span class="glyphicon glyphicon-text-size"></span> 代码搜索<span class="sr-only">(current)</span></a></li>
+
                             <li class="@(@ViewBag.Action == "MyFiles" ? "active" : "")"><a href="@Url.Action("Index", "File")"><span class="glyphicon glyphicon-folder-open"></span> 文件<span class="sr-only">(current)</span></a></li>
+
                             
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">

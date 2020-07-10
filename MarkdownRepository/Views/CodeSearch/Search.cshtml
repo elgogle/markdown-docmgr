@@ -1,0 +1,158 @@
+﻿@using MarkdownRepository.Lib
+@using PagedList.Mvc
+
+@{
+    ViewBag.Title = "Search";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    Func<string, string> GetTop10Lines = (text) =>
+    {
+        var split = text.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+        if (split.Length > 10)
+            return string.Join(Environment.NewLine, split.Take(10));
+
+        return text;
+    };
+}
+
+@model PagedList.IPagedList<MarkdownRepository.Lib.CodeModel>
+
+
+@section style{
+    <!-- git hub markdown style -->
+    <link href="~/css/github-markdown.css" rel="stylesheet">
+
+    <!-- highlight default style -->
+    <link href="~/css/default.min.css" rel="stylesheet">
+
+    <!-- other style for highlight -->
+    <link href="~/css/highlight-styles/androidstudio.css" rel="stylesheet">
+
+    <style>
+        .search-box {
+            margin-top: 2em;
+        }
+
+        .search-box .form-group {
+            width: 75%;
+        }
+
+        .search-box .form-group input {
+            width: 100%;
+        }
+
+        .search-list {
+            margin: 0.8em 0 0.7em 1em;
+            list-style: none;
+            background-color: #f9f9f9;
+            padding: 0.5em;
+            /*border-radius: 5px;
+            border: #ddd solid 1px;*/
+        }
+        .warn-label{
+            text-align: center;
+            font-size: 0.6em;
+            padding: 0.5em;
+            width: 75%;
+            color: gray;
+            border-radius: 5px;
+        }
+    </style>
+}
+
+
+
+<div style="text-align:center">
+    <a href="@Url.Action("Upload")"><span class="glyphicon glyphicon-text-size"></span> 提交代码</a>
+</div>
+
+
+@using (Html.BeginForm("Search", "CodeSearch", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
+{
+    <div class="form-group">
+        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+    </div>
+    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+    <p class="warn-label">目前仅支持 C# 代码检索，查找类与方法的注释</p>
+}
+
+<div style="min-height:600px;">
+    <ul style="padding-left:0">
+        @if (Model != null && Model.Count > 0)
+        {
+            foreach (var item in Model)
+            {
+                <li class="search-list">
+
+                    <div>
+                        <div>
+                            <div class="pull-right" style="font-size:0.7em;">
+                                <a href="@(Url.Action("Show", new { id = item.Id }))"> <span class="glyphicon glyphicon-text-size"></span> 完整代码 </a>
+                                @if (item.UserId.Equals(User.Identity.Name.GetUserName(), StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    <a href="javascript:deleteDoc('@item.Id')"><span class="glyphicon glyphicon-trash"></span> 删除</a>
+                                }
+                            </div>
+                            <div style="clear:both"></div>
+                        </div>
+
+                        <pre>
+                            <code>
+@GetTop10Lines(item.CodeBody)
+                            </code>
+                        </pre>
+
+                    </div>
+
+                </li>
+            }
+        }
+        else
+        {
+            if ((ViewBag.CurrentFilter as string).IsNullOrEmpty() == false)
+            {
+                <li style="list-style: none; text-align: center; margin-top: 2em;">
+                    没有搜索到任何结果，请尝试其它搜索词
+                </li>
+            }
+        }
+    </ul>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <!-- 分页 -->
+        <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
+
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.CurrentFilter as string }))
+    }
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/javascripts/highlight.min.js")"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('pre code').each(function (i, block) {
+                hljs.highlightBlock(block);
+            });
+        });
+
+        function deleteDoc(id){
+            if (confirm("确认删除?")) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("Delete","CodeSearch")",
+                    data: { id: id },
+
+                    success: function (data) {
+                        if(data.success){
+                            location.reload();
+                        }else{
+                            alert(data.message);
+                        }
+                    }
+                });
+            }
+        }
+
+    </script>
+}
