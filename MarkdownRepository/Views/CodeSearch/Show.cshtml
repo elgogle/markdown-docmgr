@@ -44,6 +44,8 @@
     </div>
 </div>
 
+<div id="comments"></div>
+
 @section scripts{
     <script src="@Url.Content("~/javascripts/highlight.min.js")"></script>
     <script type="text/javascript">
@@ -52,5 +54,22 @@
                 hljs.highlightBlock(block);
             });
         });
+    </script>
+
+
+    <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
+    <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+    <script>
+        (function () {
+            Comments({
+                node: "#comments",
+                articleId: "@Model.Id",
+                userName: "@User.Identity.Name.GetUserName()",
+                apiUrl: "http://192.168.13.119/web-comment",
+                emailIsEnabled: true,
+                articleTitle: "[" + "@Model.SearchText" + "] 代码有新的评论",
+                articleWriter: "@Model.UserId"
+            });
+        })();
     </script>
 }
