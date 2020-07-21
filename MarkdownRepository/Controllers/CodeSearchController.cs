@@ -180,7 +180,13 @@ namespace MarkdownRepository.Controllers
                         || (n is MethodDeclarationSyntax)
                         && n.HasLeadingTrivia)
                     {
-                        var codeBody = n.GetText();
+                        var codeBody = n.GetText().ToString();
+                        string methodName = string.Empty;
+
+                        if(n is MethodDeclarationSyntax)
+                        {
+                            methodName = (n as MethodDeclarationSyntax).Identifier.Text;
+                        }
 
                         foreach (var d in n.GetLeadingTrivia())
                         {
@@ -207,9 +213,9 @@ namespace MarkdownRepository.Controllers
 
                                 var m = new CodeModel
                                 {
-                                    Id = codeBody.ToString().ToHashText(),
-                                    CodeBody = codeBody.ToString(),
-                                    SearchText = comment,
+                                    Id = codeBody.ToHashText(),
+                                    CodeBody = codeBody,
+                                    SearchText = comment + " " + methodName,
                                     UserId = UserId
                                 };
 
@@ -217,6 +223,21 @@ namespace MarkdownRepository.Controllers
                             }
                         }
                     }
+
+                    //if(n is MethodDeclarationSyntax)
+                    //{
+                    //    var methodName = (n as MethodDeclarationSyntax).Identifier.Text;
+                    //    var codeBody = n.GetText().ToString();
+                    //    var m = new CodeModel
+                    //    {
+                    //        Id = (methodName + codeBody).ToHashText(),
+                    //        CodeBody = codeBody,
+                    //        SearchText = methodName,
+                    //        UserId = UserId
+                    //    };
+
+                    //    result.Add(m);
+                    //}
                 }
             });
             return result;
