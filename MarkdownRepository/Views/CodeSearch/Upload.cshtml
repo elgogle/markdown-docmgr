@@ -4,7 +4,7 @@
 }
 
 @section style{
-
+    <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet">
     <style>
         form.dropzone {
@@ -18,63 +18,117 @@
             text-transform: capitalize;
         }
 
-            .nav-item.avatar a > i {
-                font-size: 15px;
-            }
+        .nav-item.avatar a > i {
+            font-size: 15px;
+        }
 
         .nav-item.avatar .dropdown-menu a {
             font-size: 13px;
         }
+
+        .tab-pane{
+            margin-bottom: 1em;
+            margin-top: 1em;
+        }
     </style>
 }
-<div class="path">
-    <div>
-        <p>
-            仅可上传 c# 文件或包含 c# 的 zip 文件
-        </p>
-    </div>
-    <div class="fm-upload-wrapper">
-        <div class="card-header">
-            <div class="">
-                <a class="label label-primary" href="#fileUploader" data-target="#fileUploader"><i class="fa fa-arrow-circle-o-up"></i> 上传文件</a>
-                <a class="label label-default" href="@Url.Action("Search")"><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
-            </div>
-        </div>
-        <div class="card-body" style="margin-top: 1em;">
-            <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container" enctype="multipart/form-data">
-                
-                <div class="fallback">
-                    <input name="file" type="file" multiple />
-                </div>
-            </form>
-        </div>
-    </div>
+
+<div style="margin:0.5em;">
+    <a class="label label-primary pull-right" href="@Url.Action("Search")"><i class="fa fa-chevron-circle-left go-back"></i> 返回</a>
+    <div style="clear:both"></div>
 </div>
 
-@section scripts{
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">文件上传 C# 代码</a></li>
+    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">直接提交代码</a></li>
+</ul>
 
+ <!-- Tab panes -->
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+
+        <div class="path">
+            <div>
+                <p>
+                    仅可上传 c# 文件或包含 c# 的 zip 文件
+                </p>
+            </div>
+            <div class="fm-upload-wrapper">
+                <div class="card-header">
+
+                </div>
+                <div class="card-body" style="margin-top: 1em;">
+                    <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container" enctype="multipart/form-data">
+
+                        <div class="fallback">
+                            <input name="file" type="file" multiple />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div role="tabpanel" class="tab-pane" id="profile">
+
+        @Html.Partial("PutCode")
+
+    </div>
+  
+</div>
+
+
+
+
+
+
+@section scripts{
+    <script src="@Url.Content("~/javascripts/layer-v3.1.1/layer/layer.js")"></script>
     <script src="@Url.Content("~/javascripts/dropzone.min.js")"></script>
     <script>
-    $(document).ready(function () {
-
-
-    });
-
-    Dropzone.options.fileUploader = {
-        timeout: 120000,
-        maxFilesize: 300,
-        init: function () {
-            this.on("sending", function (file, xhr, formData) {
-                xhr.ontimeout = (function() {
-                    alert('Error: Server Timeout');
-                });
-            }).on("success", function (res) {
-                console.log('Upload Status >> ', res.status);
-            }).on("error", function(file, response) {
-                alert(response);
+        function messageAlert(message) {
+            layer.alert(message, {
+                skin: 'layui-layer-lan',
+                closeBtn: 0,
+                anim: 0
             });
         }
-    }
+
+        $(document).ready(function () {
+
+            $("#btnSubmit").on('click', function () {
+                $.post('@Url.Action("PutCode")', {
+                    codeLanguage: $("[name='codeLanguage']:checked").val(),
+                    codeSearchText: $("[name='codeSearchText']").val(),
+                    codeSearchCodeBody: $("[name='codeSearchCodeBody']").val(),
+                },
+                function (result) {
+                    if (result.success) {
+                        messageAlert("提交成功");
+                    } else {
+                        messageAlert(result.message);
+                    }
+                });
+                return false;
+            });
+        });
+
+        Dropzone.options.fileUploader = {
+            timeout: 120000,
+            maxFilesize: 300,
+            init: function () {
+                this.on("sending", function (file, xhr, formData) {
+                    xhr.ontimeout = (function () {
+                        alert('Error: Server Timeout');
+                    });
+                }).on("success", function (res) {
+                    console.log('Upload Status >> ', res.status);
+                }).on("error", function (file, response) {
+                    alert(response);
+                });
+            }
+        }
     </script>
 
 }

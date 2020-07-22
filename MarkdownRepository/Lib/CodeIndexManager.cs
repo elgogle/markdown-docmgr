@@ -75,7 +75,7 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public List<CodeModel> Search(string text)
+        public List<CodeModel> Search(string text, string language)
         {
             List<CodeModel> result = new List<CodeModel>();
             try
@@ -85,8 +85,13 @@ namespace MarkdownRepository.Lib
                 {
                     this._indexReader = IndexReader.Open(this._fsDir, false);
                     IndexSearcher searcher = new IndexSearcher(this._indexReader);
+
+                    BooleanQuery allQuery = new BooleanQuery();
+                    allQuery.Add(new TermQuery(new Term(IndexField.Language, language)), BooleanClause.Occur.MUST);
+
                     //搜索条件
                     BooleanQuery shouldQuery = new BooleanQuery();
+
                     //把用户输入的关键字进行分词
                     foreach (string word in SplitContent.SplitWords(text))
                     {
@@ -95,9 +100,12 @@ namespace MarkdownRepository.Lib
                         shouldQuery.Add(query1, BooleanClause.Occur.SHOULD);
                     }
 
+                    allQuery.Add(shouldQuery, BooleanClause.Occur.MUST);
+
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
                     TopScoreDocCollector collector = TopScoreDocCollector.create(300, true);
-                    multiSearch.Search(shouldQuery, collector);
+                    multiSearch.Search(allQuery, collector);
+
                     ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs.OrderByDescending(t => t.score).ToArray();
                     for (int i = 0; i < docs.Length; i++)
                     {
@@ -108,7 +116,8 @@ namespace MarkdownRepository.Lib
                             Id = doc.Get(IndexField.Id),
                             SearchText = doc.Get(IndexField.SearchText),
                             CodeBody = doc.Get(IndexField.CodeBody),
-                            UserId = doc.Get(IndexField.UserId)
+                            UserId = doc.Get(IndexField.UserId),
+                            Language = doc.Get(IndexField.Language)
                         };
                         result.Add(m);
                     }
@@ -169,6 +178,7 @@ namespace MarkdownRepository.Lib
                 Document doc = new Document();
                 doc.Add(new Field(IndexField.Id, m.Id, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
                 doc.Add(new Field(IndexField.SearchText, m.SearchText, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
+                doc.Add(new Field(IndexField.Language, m.Language, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
                 doc.Add(new Field(IndexField.CodeBody, m.CodeBody, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
                 doc.Add(new Field(IndexField.UserId, m.UserId, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
 
@@ -199,14 +209,13 @@ namespace MarkdownRepository.Lib
             }
         }
 
-
-
         struct IndexField
         {
             public const string Id = "ID";
             public const string SearchText = "SearchText";
             public const string CodeBody = "CodeBody";
             public const string UserId = "UserId";
+            public const string Language = "Language";
         }
     }
 
@@ -217,5 +226,6 @@ namespace MarkdownRepository.Lib
         public string CodeBody { get; set; }
         public Operate Operate { get; set; }
         public string UserId { get; set; }
+        public string Language { get; set; }
     }
 }

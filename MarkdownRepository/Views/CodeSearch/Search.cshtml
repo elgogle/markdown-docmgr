@@ -1,6 +1,6 @@
 ﻿@using MarkdownRepository.Lib
 @using PagedList.Mvc
-
+@using MarkdownRepository.Controllers
 @{
     ViewBag.Title = "Search";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -57,6 +57,14 @@
             color: gray;
             border-radius: 5px;
         }
+        .code-language{
+            display: inline !important;
+            width: auto !important;
+            padding-right: 1em;
+        }
+        .code-language input{
+            width: auto !important;
+        }
     </style>
 }
 
@@ -69,11 +77,35 @@
 
 @using (Html.BeginForm("Search", "CodeSearch", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 {
-    <div class="form-group">
+    <div class="form-group" style="text-align: center">
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Csharp" @(ViewBag.CodeLanguage == @CodeLanguage.Csharp? "checked":"") > @CodeLanguage.Csharp
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Js" @(ViewBag.CodeLanguage == @CodeLanguage.Js ? "checked":"")> @CodeLanguage.Js
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Html" @(ViewBag.CodeLanguage == @CodeLanguage.Html ? "checked":"")> @CodeLanguage.Html
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Css" @(ViewBag.CodeLanguage == @CodeLanguage.Css ? "checked":"")> @CodeLanguage.Css
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Sql" @(ViewBag.CodeLanguage == @CodeLanguage.Sql ? "checked":"")> @CodeLanguage.Sql
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Abap" @(ViewBag.CodeLanguage == @CodeLanguage.Abap ? "checked":"")> @CodeLanguage.Abap
+        </label>
+        <label class="code-language">
+            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Vb" @(ViewBag.CodeLanguage == @CodeLanguage.Vb ? "checked":"")> @CodeLanguage.Vb
+        </label>
+    </div>
+
+    <div class="form-group">        
         @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
     </div>
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
-    <p class="warn-label">目前仅支持 C# 代码检索，查找类与方法的注释</p>
+    
 }
 
 <div style="min-height:600px;">
@@ -123,7 +155,7 @@
         <!-- 分页 -->
         <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
 
-        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.CurrentFilter as string }))
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.CurrentFilter as string, codeLanguage = ViewBag.CodeLanguage  }))
     }
 </div>
 

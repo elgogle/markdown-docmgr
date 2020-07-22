@@ -1,0 +1,53 @@
+﻿@using MarkdownRepository.Controllers
+
+
+<div>
+    <div class="form-group">
+        <label class="form-group">代码所属语言</label>
+
+        <div>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Csharp" checked> @CodeLanguage.Csharp
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Js" checked> @CodeLanguage.Js
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Html"> @CodeLanguage.Html
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Css"> @CodeLanguage.Css
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Sql"> @CodeLanguage.Sql
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Abap"> @CodeLanguage.Abap
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Vb"> @CodeLanguage.Vb
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>搜索词，用于搜索代码</label>
+        <div>
+            <textarea style="width: 100%" rows="5" name="codeSearchText"></textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>将代码粘贴到以下框中</label>
+        <div>
+            <textarea style="width: 100%" rows="15" name="codeSearchCodeBody"></textarea>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <button id="btnSubmit" type="submit" class="btn btn-primary btn-sm">提交</button>
+    </div>
+</div>
+
+
+

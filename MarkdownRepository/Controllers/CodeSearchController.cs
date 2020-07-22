@@ -75,16 +75,17 @@ namespace MarkdownRepository.Controllers
         }
 
         [AllowAnonymous]
-        public ActionResult Search(string searchText, int? page)
+        public ActionResult Search(string searchText, string codeLanguage, int? page)
         {
             ViewBag.Action = "CodeSearch";
+            ViewBag.CodeLanguage = codeLanguage.IsNullOrEmpty()?CodeLanguage.Csharp: codeLanguage;
 
             int pageSize = 15;
             int pageNumber = page ?? 1;
             ViewBag.CurrentFilter = searchText;
 
             var codeIndexManager = GetIndexManager();
-            var result = codeIndexManager.Search(searchText);
+            var result = codeIndexManager.Search(searchText, codeLanguage);
 
             return View(result.ToPagedList(pageNumber, pageSize));
         }
@@ -95,6 +96,44 @@ namespace MarkdownRepository.Controllers
             var indexMgr = this.GetIndexManager();
             var doc = indexMgr.Get(id);
             return View(doc);
+        }
+
+        [ValidateInput(false)]
+        [HttpPost]
+        public ActionResult PutCode(string codeLanguage, string codeSearchText, string codeSearchCodeBody)
+        {
+            var result = new JsonResponse
+            {
+                success = true
+            };
+
+            if(codeSearchText.IsNullOrEmpty())
+            {
+                result.success = false;
+                result.message = "搜索词不能为空";
+            }
+            else if (codeSearchCodeBody.IsNullOrEmpty())
+            {
+                result.success = false;
+                result.message = "代码不能为空";
+            }
+            else
+            {
+                var m = new CodeModel
+                {
+                    CodeBody = codeSearchCodeBody,
+                    Id = codeSearchCodeBody.ToHashText(),
+                    Language = codeLanguage,
+                    Operate = Operate.AddOrUpdate,
+                    SearchText = codeSearchText,
+                    UserId = UserId
+                };
+
+                var indexMgr = this.GetIndexManager();
+                indexMgr.Enqueue(m);
+            }
+
+            return Json(result);
         }
         
 
@@ -216,28 +255,14 @@ namespace MarkdownRepository.Controllers
                                     Id = codeBody.ToHashText(),
                                     CodeBody = codeBody,
                                     SearchText = comment + " " + methodName,
-                                    UserId = UserId
+                                    UserId = UserId,
+                                    Language = CodeLanguage.Csharp
                                 };
 
                                 result.Add(m);
                             }
                         }
                     }
-
-                    //if(n is MethodDeclarationSyntax)
-                    //{
-                    //    var methodName = (n as MethodDeclarationSyntax).Identifier.Text;
-                    //    var codeBody = n.GetText().ToString();
-                    //    var m = new CodeModel
-                    //    {
-                    //        Id = (methodName + codeBody).ToHashText(),
-                    //        CodeBody = codeBody,
-                    //        SearchText = methodName,
-                    //        UserId = UserId
-                    //    };
-
-                    //    result.Add(m);
-                    //}
                 }
             });
             return result;
@@ -253,5 +278,16 @@ namespace MarkdownRepository.Controllers
             public bool success { get; set; }
 
         }
+    }
+
+    public struct CodeLanguage
+    {
+        public const string Csharp = "C#";
+        public const string Js = "Js";
+        public const string Html = "Html";
+        public const string Css = "Css";
+        public const string Sql = "Sql";
+        public const string Abap = "Abap";
+        public const string Vb = "Vb";
     }
 }
