@@ -283,7 +283,7 @@
                         </ul>
                         @using (Html.BeginForm("Search", "Document", FormMethod.Get, new { @class = "navbar-form navbar-right search-form", @role = "search" }))
                         {
-                            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+                            @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索文档" })
                         }
 
                     </div>

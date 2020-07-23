@@ -93,7 +93,7 @@
     </div>
 
     <div class="form-group">        
-        @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
+        @Html.TextBox("searchText", ViewBag.SearchText as string, new { @class = "form-control", @placeholder = "搜索" })
     </div>
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
     
@@ -132,7 +132,7 @@
         }
         else
         {
-            if ((ViewBag.CurrentFilter as string).IsNullOrEmpty() == false)
+            if ((ViewBag.SearchText as string).IsNullOrEmpty() == false)
             {
                 <li style="list-style: none; text-align: center; margin-top: 2em;">
                     没有搜索到任何结果，请尝试其它搜索词
@@ -146,7 +146,7 @@
         <!-- 分页 -->
         <text>Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount</text>
 
-        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.CurrentFilter as string, codeLanguage = ViewBag.CodeLanguage  }))
+        @Html.PagedListPager(Model, page => Url.Action("Search", new { page, searchText= ViewBag.SearchText as string, codeLanguage = ViewBag.CodeLanguage  }))
     }
 </div>
 

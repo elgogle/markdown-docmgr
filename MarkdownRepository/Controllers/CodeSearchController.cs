@@ -82,7 +82,7 @@ namespace MarkdownRepository.Controllers
 
             int pageSize = 15;
             int pageNumber = page ?? 1;
-            ViewBag.CurrentFilter = searchText;
+            ViewBag.SearchText = searchText;
 
             var codeIndexManager = GetIndexManager();
             var result = codeIndexManager.Search(searchText, codeLanguage);
