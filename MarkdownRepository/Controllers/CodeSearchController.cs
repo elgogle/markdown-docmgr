@@ -107,7 +107,12 @@ namespace MarkdownRepository.Controllers
                 success = true
             };
 
-            if(codeSearchText.IsNullOrEmpty())
+            if(codeLanguage.IsNullOrEmpty())
+            {
+                result.success = false;
+                result.message = "请选择编程语言";
+            }
+            else if(codeSearchText.IsNullOrEmpty())
             {
                 result.success = false;
                 result.message = "搜索词不能为空";
