@@ -99,7 +99,7 @@
 
             $("#btnSubmit").on('click', function () {
                 $.post('@Url.Action("PutCode")', {
-                    codeLanguage: $("[name='codeLanguage']:checked").val(),
+                    codeLanguage: $("[name='codeLanguage']").val(),
                     codeSearchText: $("[name='codeSearchText']").val(),
                     codeSearchCodeBody: $("[name='codeSearchCodeBody']").val(),
                 },

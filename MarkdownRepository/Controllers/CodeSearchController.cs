@@ -289,5 +289,7 @@ namespace MarkdownRepository.Controllers
         public const string Sql = "Sql";
         public const string Abap = "Abap";
         public const string Vb = "Vb";
+        public const string Java = "Java";
+        public const string ObjectC = "Object-C";
     }
 }

@@ -78,27 +78,18 @@
 @using (Html.BeginForm("Search", "CodeSearch", FormMethod.Get, new { @class = "form-inline col-sm-offset-2 search-box", @role = "form" }))
 {
     <div class="form-group" style="text-align: center">
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Csharp" @(ViewBag.CodeLanguage == @CodeLanguage.Csharp? "checked":"") > @CodeLanguage.Csharp
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Js" @(ViewBag.CodeLanguage == @CodeLanguage.Js ? "checked":"")> @CodeLanguage.Js
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Html" @(ViewBag.CodeLanguage == @CodeLanguage.Html ? "checked":"")> @CodeLanguage.Html
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Css" @(ViewBag.CodeLanguage == @CodeLanguage.Css ? "checked":"")> @CodeLanguage.Css
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Sql" @(ViewBag.CodeLanguage == @CodeLanguage.Sql ? "checked":"")> @CodeLanguage.Sql
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Abap" @(ViewBag.CodeLanguage == @CodeLanguage.Abap ? "checked":"")> @CodeLanguage.Abap
-        </label>
-        <label class="code-language">
-            <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Vb" @(ViewBag.CodeLanguage == @CodeLanguage.Vb ? "checked":"")> @CodeLanguage.Vb
-        </label>
+        <select name="codeLanguage">
+            <option value="">选择编程语言</option>
+            <option value="@CodeLanguage.Csharp" @(ViewBag.CodeLanguage == CodeLanguage.Csharp?"selected":"")>@CodeLanguage.Csharp</option>
+            <option value="@CodeLanguage.Js" @(ViewBag.CodeLanguage == CodeLanguage.Js ? "selected":"")>@CodeLanguage.Js</option>
+            <option value="@CodeLanguage.Html" @(ViewBag.CodeLanguage == CodeLanguage.Html ? "selected":"")>@CodeLanguage.Html</option>
+            <option value="@CodeLanguage.Css" @(ViewBag.CodeLanguage == CodeLanguage.Css ? "selected":"")>@CodeLanguage.Css</option>
+            <option value="@CodeLanguage.Sql" @(ViewBag.CodeLanguage == CodeLanguage.Sql ? "selected":"")>@CodeLanguage.Sql</option>
+            <option value="@CodeLanguage.Abap" @(ViewBag.CodeLanguage == CodeLanguage.Abap ? "selected":"")>@CodeLanguage.Abap</option>
+            <option value="@CodeLanguage.Vb" @(ViewBag.CodeLanguage == CodeLanguage.Vb ? "selected":"")>@CodeLanguage.Vb</option>
+            <option value="@CodeLanguage.Java" @(ViewBag.CodeLanguage == CodeLanguage.Java ? "selected":"")>@CodeLanguage.Java</option>
+            <option value="@CodeLanguage.ObjectC" @(ViewBag.CodeLanguage == CodeLanguage.ObjectC ? "selected":"")>@CodeLanguage.ObjectC</option>
+        </select>
     </div>
 
     <div class="form-group">        

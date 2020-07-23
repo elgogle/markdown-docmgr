@@ -3,30 +3,21 @@
 
 <div>
     <div class="form-group">
-        <label class="form-group">代码所属语言</label>
+        <label class="form-group">代码所属编程语言</label>
 
         <div>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Csharp" checked> @CodeLanguage.Csharp
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio1" value="@CodeLanguage.Js" checked> @CodeLanguage.Js
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Html"> @CodeLanguage.Html
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio2" value="@CodeLanguage.Css"> @CodeLanguage.Css
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Sql"> @CodeLanguage.Sql
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Abap"> @CodeLanguage.Abap
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="codeLanguage" id="inlineRadio3" value="@CodeLanguage.Vb"> @CodeLanguage.Vb
-            </label>
+            <select name="codeLanguage">
+                <option value="">选择编程语言</option>
+                <option value="@CodeLanguage.Csharp">@CodeLanguage.Csharp</option>
+                <option value="@CodeLanguage.Js">@CodeLanguage.Js</option>
+                <option value="@CodeLanguage.Html">@CodeLanguage.Html</option>
+                <option value="@CodeLanguage.Css">@CodeLanguage.Css</option>
+                <option value="@CodeLanguage.Sql">@CodeLanguage.Sql</option>
+                <option value="@CodeLanguage.Abap">@CodeLanguage.Abap</option>
+                <option value="@CodeLanguage.Vb">@CodeLanguage.Vb</option>
+                <option value="@CodeLanguage.Java">@CodeLanguage.Java</option>
+                <option value="@CodeLanguage.ObjectC">@CodeLanguage.ObjectC</option>
+            </select>
         </div>
     </div>
 
