@@ -131,6 +131,13 @@ namespace MarkdownRepository.Lib
             return result;
         }
 
+        public List<string> GetAutoCompleteList(string text, string language)
+        {
+            var searchResult = Search(text, language).Take(15);
+            var result = searchResult.Select(t => t.SearchText.Left(100)).ToList();
+            return result;
+        }
+
         private CodeIndexManager(string indexPath)
         {
             if (!System.IO.Directory.Exists(indexPath))

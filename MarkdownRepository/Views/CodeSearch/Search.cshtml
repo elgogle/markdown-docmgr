@@ -28,6 +28,7 @@
     <!-- other style for highlight -->
     <link href="~/css/highlight-styles/androidstudio.css" rel="stylesheet">
 
+    <link href="~/css/jquery-ui.css" rel="stylesheet">
     <style>
         .search-box {
             margin-top: 2em;
@@ -65,6 +66,8 @@
         .code-language input{
             width: auto !important;
         }
+
+        .ui-helper-hidden-accessible { position: absolute; left: -9999px; }
     </style>
 }
 
@@ -152,11 +155,44 @@
 
 @section scripts{
     <script src="@Url.Content("~/javascripts/highlight.min.js")"></script>
+    <script src="@Url.Content("~/javascripts/jquery-ui.js")"></script>
     <script type="text/javascript">
         $(document).ready(function () {
+
             $('pre code').each(function (i, block) {
                 hljs.highlightBlock(block);
             });
+
+            var $searchText = $("[name='searchText']");
+
+            var getData = function (request, response) {
+                $.post("@Url.Action("GetSearchAutoCompleteList")", {
+                    searchText: request.term,
+                    codeLanguage: $("[name='codeLanguage']").val()
+                },
+                function (data) {
+                    if (data.success) {
+                        response(data.data);
+                    } else {
+                        response([]);
+                    }
+                });
+            };
+
+            var selectItem = function (event, ui) {
+                $searchText.val(ui.item.value);
+                return false;
+            }
+
+            $searchText.autocomplete({
+                source: getData,
+                select: selectItem,
+                minLength: 2,
+                change: function () {
+                    $searchText.val("").css("display", 2);
+                }
+            });
+
         });
 
         function deleteDoc(id){

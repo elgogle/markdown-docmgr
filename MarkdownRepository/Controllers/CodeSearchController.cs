@@ -98,6 +98,20 @@ namespace MarkdownRepository.Controllers
             return View(doc);
         }
 
+        [AllowAnonymous]
+        public ActionResult GetSearchAutoCompleteList(string searchText, string codeLanguage)
+        {
+            var codeIndexManager = GetIndexManager();
+
+            var result = new JsonResponse
+            {
+                success = true,
+                data = codeIndexManager.GetAutoCompleteList(searchText, codeLanguage)
+            };
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
         [ValidateInput(false)]
         [HttpPost]
         public ActionResult PutCode(string codeLanguage, string codeSearchText, string codeSearchCodeBody)

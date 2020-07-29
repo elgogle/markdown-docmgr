@@ -221,6 +221,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Content Include="css\jquery-ui.css" />
     <Content Include="Content\PagedList.css" />
     <Content Include="css\blog.css" />
     <Content Include="css\bootstrap.min.css" />
@@ -740,6 +741,7 @@
     <Content Include="javascripts\ie8-responsive-file-warning.js" />
     <Content Include="javascripts\jqcloud.js" />
     <Content Include="javascripts\jqcloud.min.js" />
+    <Content Include="javascripts\jquery-ui.js" />
     <Content Include="javascripts\jquery.dataTables.min.js" />
     <Content Include="javascripts\jquery.min.js" />
     <Content Include="javascripts\jstree\3.3.8\jstree.js" />
