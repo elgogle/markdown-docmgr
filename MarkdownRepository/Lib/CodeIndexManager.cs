@@ -75,7 +75,7 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public List<CodeModel> Search(string text, string language)
+        public List<CodeModel> Search(string text, string language, int size=300)
         {
             List<CodeModel> result = new List<CodeModel>();
             try
@@ -103,7 +103,7 @@ namespace MarkdownRepository.Lib
                     allQuery.Add(shouldQuery, BooleanClause.Occur.MUST);
 
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(300, true);
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(size, true);
                     multiSearch.Search(allQuery, collector);
 
                     ScoreDoc[] docs = collector.TopDocs(0, collector.GetTotalHits()).scoreDocs.OrderByDescending(t => t.score).ToArray();
@@ -133,7 +133,7 @@ namespace MarkdownRepository.Lib
 
         public List<string> GetAutoCompleteList(string text, string language)
         {
-            var searchResult = Search(text, language).Take(15);
+            var searchResult = Search(text, language, 15);
             var result = searchResult.Select(t => t.SearchText.Left(100)).ToList();
             return result;
         }
