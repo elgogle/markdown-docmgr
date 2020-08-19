@@ -120,6 +120,9 @@ namespace MarkdownRepository.Lib
                             Language = doc.Get(IndexField.Language)
                         };
                         result.Add(m);
+
+                        // 当完全匹配时，只返回此条
+                        if (text != null && m.SearchText != null && m.SearchText.Trim().ToLower() == text.Trim().ToLower()) break;
                     }
                 }
             }
