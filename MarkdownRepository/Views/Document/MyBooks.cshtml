@@ -17,13 +17,13 @@
             margin-top: 2em;
         }
 
-            .search-box .form-group {
-                width: 75%;
-            }
+        .search-box .form-group {
+            width: 75%;
+        }
 
-                .search-box .form-group input {
-                    width: 100%;
-                }
+        .search-box .form-group input {
+            width: 100%;
+        }
 
         .search-list {
             margin: 0.8em 0 0.7em 1em;
@@ -56,6 +56,23 @@
             width: 220px;
         }
 
+        .books-container{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        li.search-list{
+            box-shadow: 4px -2px 3px #e5e5e5;
+            display: grid;
+            grid-template-rows: auto 20px 50px;
+        }
+
+        .toolbar{
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+
     </style>
 }
 
@@ -72,7 +89,7 @@
     </div>
 
     <div style="min-height:600px;">
-        <ul style="padding-left:0">
+        <ul class="books-container" style="padding-left:0">
             @if (Model != null && Model.Count > 0)
             {
                 bool isEven = true;

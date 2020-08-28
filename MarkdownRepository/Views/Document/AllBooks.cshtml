@@ -48,6 +48,16 @@
             color: #337ab7;
             font-size: 0.7em;
         }
+        .books-container{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        li.search-list{
+            box-shadow: 4px -2px 3px #e5e5e5;
+            display: grid;
+            grid-template-rows: auto 20px 20px 20px;
+        }
     </style>
 }
 
@@ -64,7 +74,7 @@
     </div>
 
     <div style="min-height:600px;">
-        <ul style="padding-left:0">
+        <ul class="books-container" style="padding-left:0">
             @if (Model != null && Model.Count > 0)
             {
                 bool isEven = true;
@@ -87,7 +97,11 @@
                         </div>
 
                         <div class="update-time">
-                            当前作者: @AdAccount.GetUserNameById(item.creator), 更新时间: @item.update_at
+                            当前作者: @AdAccount.GetUserNameById(item.creator)
+                        </div>
+
+                        <div class="update-time">
+                            更新时间: @item.update_at
                         </div>
                     </li>
                 }
