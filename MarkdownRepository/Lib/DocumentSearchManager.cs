@@ -46,7 +46,7 @@ namespace MarkdownRepository.Lib
         #endregion Properties of Doc (5)
     }
 
-    public class IndexManager : IDisposable
+    public class DocumentSearchManager : IDisposable
     {
         #region Structs of IndexManager (1)
 
@@ -65,7 +65,7 @@ namespace MarkdownRepository.Lib
         #endregion Structs of IndexManager (1)
 
         #region Members of IndexManager (7)
-        private static IndexManager _indexMgr = null;
+        private static DocumentSearchManager _indexMgr = null;
         private static object _lock = new object();
         private Queue<Doc> _docqueue = new Queue<Doc>();
         private FSDirectory _fsDir = null;
@@ -77,7 +77,7 @@ namespace MarkdownRepository.Lib
 
         #region Properties of IndexManager (1)
 
-        public static IndexManager IndexMgr
+        public static DocumentSearchManager IndexMgr
         {
             get
             {
@@ -86,7 +86,7 @@ namespace MarkdownRepository.Lib
                     lock (_lock)
                     {
                         if (_indexMgr == null)
-                            _indexMgr = new IndexManager();
+                            _indexMgr = new DocumentSearchManager();
                     }
                 }
 
@@ -98,7 +98,7 @@ namespace MarkdownRepository.Lib
 
         #region Constructors of IndexManager (1)
 
-        private IndexManager()
+        private DocumentSearchManager()
         {
             if (!System.IO.Directory.Exists(IndexPath))
                 System.IO.Directory.CreateDirectory(IndexPath);
@@ -241,6 +241,9 @@ namespace MarkdownRepository.Lib
 
                     //搜索条件
                     BooleanQuery shouldQuery = new BooleanQuery();
+                    BooleanQuery titleQuery = new BooleanQuery();
+                    BooleanQuery contentQuery = new BooleanQuery();
+                    BooleanQuery categoryQuery = new BooleanQuery();
 
                     //把用户输入的关键字进行分词
                     foreach (string word in SplitContent.SplitWords(text))
@@ -251,13 +254,25 @@ namespace MarkdownRepository.Lib
                         query1.Add(new Term(DocStruct.TITLE, word));
                         query2.Add(new Term(DocStruct.CONTENT, word));                        
                         query3.Add(new Term(DocStruct.CATEGORY, word));
-                        query1.SetBoost(0.4f);
-                        query2.SetBoost(0.3f);
-                        query3.SetBoost(0.2f);
-                        shouldQuery.Add(query1, BooleanClause.Occur.SHOULD);
-                        shouldQuery.Add(query2, BooleanClause.Occur.SHOULD);
-                        shouldQuery.Add(query3, BooleanClause.Occur.SHOULD);
+                        
+                        // 引号括起来的词语，必须出现
+                        if(Regex.IsMatch(text, "^\".*\"$"))
+                        {
+                            titleQuery.Add(query1, BooleanClause.Occur.MUST);
+                            contentQuery.Add(query2, BooleanClause.Occur.MUST);
+                            categoryQuery.Add(query3, BooleanClause.Occur.MUST);
+                        }
+                        else
+                        {
+                            titleQuery.Add(query1, BooleanClause.Occur.SHOULD);
+                            contentQuery.Add(query2, BooleanClause.Occur.SHOULD);
+                            categoryQuery.Add(query3, BooleanClause.Occur.SHOULD);
+                        }
                     }
+
+                    shouldQuery.Add(titleQuery, BooleanClause.Occur.SHOULD);
+                    shouldQuery.Add(contentQuery, BooleanClause.Occur.SHOULD);
+                    shouldQuery.Add(categoryQuery, BooleanClause.Occur.SHOULD);
 
                     MultiSearcher multiSearch = new MultiSearcher(new[] { searcher });
 

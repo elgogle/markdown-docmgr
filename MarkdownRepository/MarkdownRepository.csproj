@@ -207,7 +207,7 @@
     <Compile Include="Lib\CustomRoleProvider.cs" />
     <Compile Include="Lib\DocumentManager.cs" />
     <Compile Include="Lib\FileManager.cs" />
-    <Compile Include="Lib\IndexManager.cs" />
+    <Compile Include="Lib\DocumentSearchManager.cs" />
     <Compile Include="Lib\Extentions.cs" />
     <Compile Include="Lib\LogHelper.cs" />
     <Compile Include="Lib\MarkdownSharp.cs" />

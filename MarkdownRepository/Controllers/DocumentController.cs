@@ -171,14 +171,14 @@ namespace MarkdownRepository.Controllers
         public ActionResult CleanPicture()
         {
             string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
-            if (Directory.Exists(picPath) == false || IndexManager.IndexMgr == null) return Content("-1");
+            if (Directory.Exists(picPath) == false || DocumentSearchManager.IndexMgr == null) return Content("-1");
 
             System.Threading.Tasks.Task.Factory.StartNew(() =>
             {
                 foreach (var picFile in Directory.GetFiles(picPath))
                 {
                     var fname = Path.GetFileNameWithoutExtension(picFile);
-                    var docs = IndexManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
+                    var docs = DocumentSearchManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
                     if (docs == null || docs.Count == 0)
                     {
                         System.Diagnostics.Debug.Print(picFile);

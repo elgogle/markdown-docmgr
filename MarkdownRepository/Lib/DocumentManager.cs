@@ -18,7 +18,7 @@ namespace MarkdownRepository.Lib
     {
         #region Members of DocumentManager (6)
         private string _dbPath = null;
-        private IndexManager _indexMgr = null;
+        private DocumentSearchManager _indexMgr = null;
         private static object _lock = new object();
         const string SQLITE_PATH = "~/App_Data";
         const string SQLITE_BACKUP_PATH = "~/App_Data/DataBackup";
@@ -28,7 +28,7 @@ namespace MarkdownRepository.Lib
 
         #region Properties of DocumentManager (1)
 
-        public IndexManager IndexManager
+        public DocumentSearchManager IndexManager
         {
             get
             {
@@ -43,15 +43,15 @@ namespace MarkdownRepository.Lib
         public DocumentManager()
         {
             this._dbPath = System.IO.Path.Combine(System.Web.HttpContext.Current.Server.MapPath(SQLITE_PATH), "Documents.db3");
-            IndexManager.IndexPath = System.Web.HttpContext.Current.Server.MapPath(INDEX_PATH);
-            this._indexMgr = IndexManager.IndexMgr;
+            DocumentSearchManager.IndexPath = System.Web.HttpContext.Current.Server.MapPath(INDEX_PATH);
+            this._indexMgr = DocumentSearchManager.IndexMgr;
         }
 
         public DocumentManager(string dbPath, string indexPath)
         {
             this._dbPath = dbPath;
-            IndexManager.IndexPath = indexPath;
-            this._indexMgr = IndexManager.IndexMgr;
+            DocumentSearchManager.IndexPath = indexPath;
+            this._indexMgr = DocumentSearchManager.IndexMgr;
         }
 
         #endregion Constructors of DocumentManager (2)
