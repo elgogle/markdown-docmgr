@@ -723,21 +723,23 @@ namespace MarkdownRepository.Controllers
         /// <param name="searchText"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult Search(string searchText, int? page)
+        public ActionResult Search(string searchText, string onlySearchMine, int? page)
         {
             int pageSize = PAGE_SIZE;
             int pageNumber = page ?? 1;
             ViewBag.CurrentFilter = searchText;
+            ViewBag.IsOnlySearchMine = onlySearchMine != null && onlySearchMine.Equals("on", StringComparison.InvariantCultureIgnoreCase);
 
             if (!String.IsNullOrWhiteSpace(searchText))
             {
-                var result = docMgr.Search(searchText, UserId);
+                bool isOnlySearchMine = ViewBag.IsOnlySearchMine;
+                var result = docMgr.Search(searchText, UserId, isOnlySearchMine);
                 if (result != null && result.Count > 0)
                 {
                     foreach (var r in result)
                     {
                         r.title = SplitContent.HightLight(searchText, r.title);
-                        r.content = SplitContent.HightLight(searchText, r.content.StripHTML());
+                        r.content = SplitContent.HightLight(searchText, r.content != null ? r.content.StripHTML() : "");
                         r.category = SplitContent.HightLight(searchText, r.category);
                     }
 

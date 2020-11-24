@@ -979,7 +979,7 @@ inner join documents_owner b on a.rowid = b.id
         /// </summary>
         /// <param name="queryText"></param>
         /// <returns></returns>
-        public List<Document> Search(string queryText, string userId = "")
+        public List<Document> Search(string queryText, string userId = "", bool isOnlySearchMine=false)
         {
             // TODO: 搜索书籍
             var result = new List<Document>();
@@ -1005,7 +1005,7 @@ inner join documents_owner b on b.id = a.rowid
 left outer join book_directories d on d.document_id = b.id
 WHERE  b.id in @list 
     and (b.creator = @userId 
-        or (b.creator <> @userId and b.is_public=1) 
+        or (b.creator <> @userId and b.is_public=1 and @isOnlySearchMine=0) 
         or (
             select 1 from book_directories c 
             inner join book_owner d on d.book_id = c.book_id
@@ -1014,7 +1014,7 @@ WHERE  b.id in @list
             )
     )
 ",
-                                     new { list = indexResult.Select(t => t.Id).ToList(), userId = userId });
+                                     new { list = indexResult.Select(t => t.Id).ToList(), userId = userId, isOnlySearchMine = isOnlySearchMine });
                     //TODO: 需要改善，这里又重排序，达到与 index 搜索一致
                     foreach (var i in indexResult)
                     {

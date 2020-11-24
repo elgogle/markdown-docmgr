@@ -37,6 +37,12 @@
         @Html.TextBox("searchText", ViewBag.CurrentFilter as string, new { @class = "form-control", @placeholder = "搜索" })
     </div>
     <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>搜索</button>
+    <div>
+        <label style="font-size:0.8em;font-weight:normal;color:gray">
+            <input type="checkbox" name="onlySearchMine" style="width:15px;height:0.7em;" @(ViewBag.IsOnlySearchMine?"checked":"") />
+            仅搜索自己的文档
+        </label>
+    </div>
 }
 
 <div style="min-height:600px;">
