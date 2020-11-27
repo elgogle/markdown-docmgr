@@ -213,6 +213,7 @@
     <Compile Include="Lib\MarkdownSharp.cs" />
     <Compile Include="Lib\RssHelper.cs" />
     <Compile Include="Lib\SplitContent.cs" />
+    <Compile Include="Lib\TaoOfProgramming.cs" />
     <Compile Include="Models\Account.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -788,6 +789,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\bootstrap.min.css.map" />
+    <Content Include="Content\tao-of-programming.json" />
     <None Include="Dict\Dict.dct">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

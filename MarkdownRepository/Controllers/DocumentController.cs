@@ -126,6 +126,7 @@ namespace MarkdownRepository.Controllers
 
             ViewBag.TransferUsers = new SelectList(transferUsers, "value", "text");
 
+            ViewBag.TaoOfProgramming = TaoOfProgramming.GetNext();
             return View(result.ToPagedList(pageNumber, pageSize));
         }
 

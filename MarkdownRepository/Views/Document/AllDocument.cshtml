@@ -8,7 +8,28 @@
     var myFollwedDocs = ViewBag.MyFollowedDocs as List<MarkdownRepository.Models.Document>;
 }
 
+<style>
+    .master-speak{
+        background-color:lightgray;        
+        border-left:1px solid blue;
+        font-size: 0.7em;
+        padding: 0.3em;
+    }
+</style>
+
 <div class="blog-post markdown-body col-md-10">
+    @if (ViewBag.TaoOfProgramming != null) {
+        var obj = (ViewBag.TaoOfProgramming as TaoOfProgramming);
+        if(obj != null)
+        {
+            <div class="master-speak">
+                <span>英语学习：</span>
+                <span>@obj.en</span>
+                <span>@obj.zh</span>
+            </div>
+        }
+    } 
+
     @if (Model != null && Model.Count > 0)
     {
         <div>
