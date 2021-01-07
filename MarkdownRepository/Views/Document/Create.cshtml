@@ -67,11 +67,78 @@ var doc = Model ?? new MarkdownRepository.Models.Document() ;
 
 
         $("#mkEditor").on('paste', function (ev) {
-            var data = ev.clipboardData;
+            var data = event.clipboardData;
             var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            
             for (var index in items) {
                 var item = items[index];
-                if (item.kind === 'file') {
+
+                if (item.type === "text/plain") {
+                    
+                    var text = data.getData("text/plain");
+                    var tab = '\t';
+                    var line = '\r\n';
+                    var delimeter = '|';
+          
+                    var preLineTabs = 0;
+                    var totalRows = 0;
+                    var isTable = true;
+                    var tableContent = '|';
+                    var nextIsNewLine = false;
+
+                    if (text) {
+                        var a = text.split(line);
+                        for (var i = 0; i < a.length; i++) {
+                            var s = a[i];                            
+                            if (i == (a.length - 1) && !s) continue;
+
+                            if (nextIsNewLine) {
+                                tableContent += delimeter;
+                                nextIsNewLine = false;
+                            }
+
+                            if (s.indexOf(tab) > -1) {
+                                // 包含有制表
+                                totalRows++;
+                                var t = s.split(tab);
+                                var thisLineTabs = 0;
+                                for (var j = 0; j < t.length; j++) {
+                                    tableContent += (t[j]?t[j]:'-') + delimeter;
+                                    thisLineTabs++;
+                                }
+                                tableContent += line; //新起一行开始
+                                nextIsNewLine = true;
+                                
+                                if (totalRows > 1 && thisLineTabs !== preLineTabs) {
+                                    isTable = false;
+                                    break;
+                                }
+
+                                preLineTabs = thisLineTabs;
+                            } else {
+                                tableContent += (s?s:'-') + '<br/>';
+                            }                            
+                        }
+                    }
+
+                    if (totalRows > 1 && isTable) {
+                        var tabTitleRow = delimeter;
+                        for (var i = 0; i < preLineTabs; i++) {
+                            tabTitleRow += '  ' + i + '  ' + delimeter;
+                        }
+                        tabTitleRow += line + delimeter;
+                        for (var i = 0; i < preLineTabs; i++) {
+                            tabTitleRow += '-----' + delimeter;
+                        }
+                        
+                        tabTitleRow += line;
+
+                        editor.insertValue(tabTitleRow + tableContent);
+                        ev.preventDefault();
+                        break;
+                    }
+
+                } else if (item.kind === 'file') {
                     var blob = item.getAsFile();
                     var reader = new FileReader();
                     reader.onload = function (event) {
@@ -89,8 +156,7 @@ var doc = Model ?? new MarkdownRepository.Models.Document() ;
                             }
                         });
                     }
-
-                    debugger;
+                    
                     reader.readAsDataURL(blob);
                 }
             }
