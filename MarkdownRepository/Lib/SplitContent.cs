@@ -33,20 +33,51 @@ namespace MarkdownRepository.Lib
         /// <returns> 高亮后结果 </returns>
         public static string HightLight(string keyword, string content)
         {
+            var preTag = "<font style=\"font-style:normal;color:#cc0000;\"><b>";
+            var postTag = "</b></font>";
             //创建HTMLFormatter,参数为高亮单词的前后缀
             PanGu.HighLight.SimpleHTMLFormatter simpleHTMLFormatter =
-                new PanGu.HighLight.SimpleHTMLFormatter("<font style=\"font-style:normal;color:#cc0000;\"><b>", "</b></font>");
+                new PanGu.HighLight.SimpleHTMLFormatter(preTag, postTag);
             //创建 Highlighter ，输入HTMLFormatter 和 盘古分词对象Semgent
             PanGu.HighLight.Highlighter highlighter =
                             new PanGu.HighLight.Highlighter(simpleHTMLFormatter,
                             new Segment());
             //设置每个摘要段的字符数
             highlighter.FragmentSize = 256;
-            //获取最匹配的摘要段
-            var result = highlighter.GetBestFragment(keyword, content);
+            
+            var allFragment = highlighter.GetFragments(keyword, content, 50);
+            var result = GetBestMatchFragment(keyword, allFragment, preTag, postTag);
+            if (result.IsNullOrEmpty())
+                result = highlighter.GetBestFragment(keyword, content);
+
             if (!string.IsNullOrWhiteSpace(result))
                 return result;
             return content.Left(200);
+        }
+
+        private static string GetBestMatchFragment(string keyword, IEnumerable<string> source, string preTag, string postTag)
+        {
+            if (source == null || source.Count() == 0) return string.Empty;
+
+            var s = ReplaceMultiSpaceWithOne(keyword);
+            foreach(var t in source)
+            {
+                var s2 = t.Replace(preTag, "");
+                s2 = s2.Replace(postTag, "");
+                s2 = ReplaceMultiSpaceWithOne(s2);
+                // 如果完整匹配，将视为最佳匹配
+                if(System.Text.RegularExpressions.Regex.IsMatch(s2, s, Reg.RegexOptions.IgnoreCase))
+                {
+                    return t;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private static string ReplaceMultiSpaceWithOne(string txt)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(txt, @"\s+", " ");
         }
 
         public static bool IsWord(this string text)
