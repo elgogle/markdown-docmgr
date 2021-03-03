@@ -1085,7 +1085,7 @@ WHERE 1 = 1
                                                     from documents a, documents_owner b, documents_category c 
                                                     WHERE a.rowid = b.id and c.doc_id = b.id 
                                                         and c.category = @category 
-                                                        and (b.creator = @userId or (@userId='' and b.is_public=1) )
+                                                        and (b.creator = @userId or b.is_public=1)
                                                         and not exists(select 1 from book_directories d where document_id = a.rowid)",
                                                                                                new { category = category, userId = userId });
                 return documents.ToList();
