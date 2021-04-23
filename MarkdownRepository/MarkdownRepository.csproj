@@ -222,6 +222,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Content Include="css\dropzone.min.css" />
     <Content Include="css\jquery-ui.css" />
     <Content Include="Content\PagedList.css" />
     <Content Include="css\blog.css" />
