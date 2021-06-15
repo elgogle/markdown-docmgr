@@ -20,9 +20,11 @@ namespace MarkdownRepository.Lib
         private string _dbPath = null;
         private DocumentSearchManager _indexMgr = null;
         private static object _lock = new object();
+        private static bool _databaseCreated = false;
         const string SQLITE_PATH = "~/App_Data";
         const string SQLITE_BACKUP_PATH = "~/App_Data/DataBackup";
         const string INDEX_PATH = "~/App_Data/Index/";
+
 
         #endregion Members of DocumentManager (6)
 
@@ -58,13 +60,19 @@ namespace MarkdownRepository.Lib
 
         #region Methods of DocumentManager (48)
 
-        private void AddAtachFile(long id, string path)
+        /// <summary>
+        /// 添加附件信息到数据库表中
+        /// </summary>
+        /// <param name="uploadId"></param>
+        /// <param name="id"></param>
+        /// <param name="path"></param>
+        public void AddAtachFile(string uploadId, long id, string path)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
 
-                db.Execute("insert into documents_file(file_path, doc_id) values(@path, @id)", new { path = path, id = id });
+                db.Execute("insert into documents_file(file_path, doc_id, upload_id) values(@path, @id, @uploadId)", new { path = path, id = id, uploadId = uploadId });
             }
         }
 
@@ -228,25 +236,37 @@ update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@pare
             }
         }
 
-        private void ClearNotExistsAtachFile(long id)
+        /// <summary>
+        /// 刷新文章中的附件，如附件在文章中已删除，则将后台的附件也删除
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="uploadId"></param>
+        public void UpdateAtachFiles(long id, string uploadId)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
                 var content = db.Query<string>("select content from documents where rowid=@id", new { id = id }).FirstOrDefault();
                 if (string.IsNullOrWhiteSpace(content))
-                    DeleteAtachFile(id);
+                    DeleteAtachFiles(id, uploadId);
                 else
                 {
-                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id",
-                        new { id = id });
+                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
+                        new { id = id, uploadId = uploadId });
                     foreach (var f in filePath)
                     {
-                        if (!content.Contains(f))
+                        var fileName = System.IO.Path.GetFileName(f);
+                        if (Regex.IsMatch(content, fileName, RegexOptions.IgnoreCase) == false)
                         {
                             if (System.IO.File.Exists(f)) System.IO.File.Delete(f);
-                            db.Execute("delete from documents_file  where doc_id=@id and file_path=@path",
-                                new { id = id, path = f });
+
+                            db.Execute("delete from documents_file  where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
+                                new { id = id, path = f, uploadId = uploadId });
+                        }
+                        else
+                        {
+                            db.Execute("update documents_file set doc_id=@id where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
+                                new { id = id, path = f, uploadId = uploadId });
                         }
                     }
                 }
@@ -370,7 +390,8 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
         /// <param name="content"></param>
         /// <param name="title"></param>
         /// <param name="userId"></param>
-        public void CreateOrUpdateBookArticle(long directoryid, string content, string title, string userId)
+        /// <returns>文章 id</returns>
+        public long CreateOrUpdateBookArticle(long directoryid, string content, string title, string userId)
         {
             using (var db = this.OpenDb())
             {
@@ -391,6 +412,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                 {
                     // 创建文章
                     var doc = Create(content, docTitle, docCategory, userId, book.is_public);
+                    articleId = doc.rowid;
                     // 将文章关联到目录
                     UpdateBookDirectory(directory.book_id, directoryid, directory.title, directory.description, 0, userId, doc.rowid);
                 }
@@ -401,6 +423,8 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
                 }
 
                 db.Execute("update books set update_at = datetime('now', 'localtime')  where id=@id", new { id = book.id });
+
+                return articleId;
             }
         }
 
@@ -409,13 +433,15 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
         /// </summary>
         private void CreateTableIfNotExist()
         {
-            using (var db = this.OpenDb())
+            if(_databaseCreated == false)
             {
-                var sql = @"
+                using (var db = this.OpenDb())
+                {
+                    var sql = @"
 create VIRTUAL table if not exists documents USING fts3(title, content, category);
 create table if not exists documents_owner(id int primary key, creator nvarchar(100) not null, creat_at datetime default (datetime('now', 'localtime')), update_at datetime default (datetime('now', 'localtime')), is_public int default(0));
 create table if not exists documents_category(id INTEGER primary key, category nvarchar(100) not null, doc_id int not null);
-create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null);
+create table if not exists documents_file(id INTEGER primary key, file_path nvarchar(512) not null, doc_id int not null, upload_id varchar(50));
 create table if not exists documents_read_count(id INTEGER primary key, count int not null, doc_id int not null);
 create table if not exists documents_follow(id INTEGER primary key, user_id nvarchar(100) not null, doc_id int not null);
 create table if not exists user(id INTEGER PRIMARY KEY, user_id nvarchar(100) not null, user_name nvarchar(100) not null);
@@ -424,8 +450,20 @@ create table if not exists book_directories(id INTEGER PRIMARY KEY, book_id int 
 create table if not exists book_owner(id INTEGER PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
 create table if not exists id_generator(id INTEGER PRIMARY KEY, ikey nvarchar(100) not null, ivalue int not null);
                 ";
-                db.Execute(sql);
+                    db.Execute(sql);
+
+                    try
+                    {
+                        // alter table
+                        db.Execute("alter table documents_file add column upload_id varchar(50)");
+                    }
+                    catch { }
+
+                    _databaseCreated = true;
+                }
             }
+
+            
         }
 
         /// <summary>
@@ -453,22 +491,25 @@ delete from documents_follow where doc_id=@id;
         /// 删除附件
         /// </summary>
         /// <param name="id"></param>
-        private void DeleteAtachFile(long id)
+        private void DeleteAtachFiles(long id, string uploadId)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id",
-                    new { id = id });
-                foreach (var f in filePath)
+
+                var files = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
+                        new { id = id, uploadId = uploadId }
+                    ).ToList();
+
+                foreach (var f in files)
                 {
                     if (System.IO.File.Exists(f))
                     {
                         System.IO.File.Delete(f);
+                        db.Execute("delete from documents_file where (doc_id=@id or upload_id=@uploadId) and file_path=@filePath", 
+                            new { id = id, uploadId = uploadId, filePath = f });
                     }
                 }
-
-                db.Execute("delete from documents_file where doc_id=@id", new { id = id });
             }
         }
 

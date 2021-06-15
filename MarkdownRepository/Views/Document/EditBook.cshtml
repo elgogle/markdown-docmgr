@@ -1,9 +1,10 @@
 ﻿@using MarkdownRepository.Lib
 
 @{
-ViewBag.Title = "EditBook";
-Layout = "~/Views/Shared/_Layout.cshtml";
-var documentId = 0;
+    ViewBag.Title = "EditBook";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var documentId = 0;
+    var uploadId = Guid.NewGuid().ToString();
 }
 @model MarkdownRepository.Models.BookVm
 
@@ -205,10 +206,10 @@ var documentId = 0;
             $parentDirId = $("#parent_directory_id"),
             $newSubDir = $("#new_sub_directory"),
             $mdContent = $("#md_content");
-        
+
         // 在首次打开页面时，加载参数中的目录
         var openDirId = "@ViewBag.OpenDirId", opened = false;
-        
+
 
         window.jsTree = $("#toc").jstree({
             'plugins': ["wholerow", "types", "dnd"],
@@ -283,10 +284,10 @@ var documentId = 0;
             if (dirId) {
                 //update
                 $.post('@Url.Action("UpdateBookDirectory", "Document")', {
-                        bookid: bookId,
-                        directoryid: dirId,
-                        title: dir,
-                    },
+                    bookid: bookId,
+                    directoryid: dirId,
+                    title: dir,
+                },
                     function (res) {
                         // 刷新目录树
                         window.jsTree.jstree().refresh();
@@ -304,10 +305,10 @@ var documentId = 0;
 
             if (dir) {
                 $.post('@Url.Action("CreateBookDirectory", "Document")', {
-                        bookid: bookId,
-                        parentId: parentDirId,
-                        title: dir,
-                    },
+                    bookid: bookId,
+                    parentId: parentDirId,
+                    title: dir,
+                },
                     function (res) {
                         // 刷新目录树
                         window.jsTree.jstree().refresh();
@@ -326,11 +327,11 @@ var documentId = 0;
             if (newSubDir) {
                 //create
                 $.post('@Url.Action("CreateBookDirectory", "Document")', {
-                        bookId: bookId,
-                        title: newSubDir,
-                        parentId: dirId,
-                        documentId: 0
-                    },
+                    bookId: bookId,
+                    title: newSubDir,
+                    parentId: dirId,
+                    documentId: 0
+                },
                     function (res) {
                         $newSubDir.val('');
                         // 刷新目录树
@@ -351,8 +352,8 @@ var documentId = 0;
                 if (confirm("确认要删除该目录吗？提醒：删除目录会连同关联的文章一并删除")) {
                     //delete
                     $.post('@Url.Action("DeleteBookDirectory", "Document")', {
-                            bookDirecotryId: dirId
-                        },
+                        bookDirecotryId: dirId
+                    },
                         function (res) {
                             if (res.isSuccess) {
                                 $lableCurrentDirPath.val('');
@@ -402,12 +403,12 @@ var documentId = 0;
             var access = $("#chk_book_is_public").is(':checked') ? 1 : 0;
 
             $.post('@Url.Action("UpdateBook", "Document")', {
-                    bookid: $bookId.val(),
-                    name: bookName,
-                    description: bookDesc,
-                    category: bookCategory,
-                    access: access
-                },
+                bookid: $bookId.val(),
+                name: bookName,
+                description: bookDesc,
+                category: bookCategory,
+                access: access
+            },
                 function (res) {
                     if (res.isSuccess) {
                         layer.close(diagEditBookInfoIndex);
@@ -445,13 +446,13 @@ var documentId = 0;
 
         function loadDocument(directoryid) {
             $.ajax({
-                    url: '@Url.Action("GetDocument")',
-                    dataType: "json",
-                    data: {
-                        directoryid: directoryid
-                    },
-                    cache: false,
-                })
+                url: '@Url.Action("GetDocument")',
+                dataType: "json",
+                data: {
+                    directoryid: directoryid
+                },
+                cache: false,
+            })
                 .success(function (res) {
                     if (res.isSuccess && res.data) {
                         editor.setValue(res.data.content);
@@ -460,8 +461,8 @@ var documentId = 0;
                         editor.setValue('');
                     }
                 })
-                .error(function () {})
-                .complete(function () {});
+                .error(function () { })
+                .complete(function () { });
         }
 
         window.editor = editormd("mkEditor", {
@@ -471,11 +472,11 @@ var documentId = 0;
             autoLoadModules: false,
             imageUpload: true,
             imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-            imageUploadURL: '@Url.Action("UploadImage", "Document")',
+            imageUploadURL: '@Url.Action("UploadImage", "Document", new { uploadId = uploadId })',
             pluginPath: '@Url.Content("~/editor.md/plugins/")',
             tex: true,
-            flowChart : true,
-            sequenceDiagram : true,
+            flowChart: true,
+            sequenceDiagram: true,
             taskList: true,
         });
 
@@ -558,7 +559,8 @@ var documentId = 0;
 
                         //ajax上传图片
                         $.post('@Url.Action("UploadImageByBase64", "Document")', {
-                            base64Content: base64
+                            base64Content: base64,
+                            uploadId: '@uploadId'
                         }, function (ret) {
                             if (ret.success === 1) {
                                 //新一行的图片显示
@@ -569,7 +571,6 @@ var documentId = 0;
                         });
                     }
 
-                    debugger;
                     reader.readAsDataURL(blob);
                 }
             }
@@ -580,10 +581,11 @@ var documentId = 0;
 
             if (currentDir) {
                 $.post('@Url.Action("CreateOrUpdateBookArticle", "Document")', {
-                        content: $("#mkEditor > textarea").val(),
-                        title: '',
-                        directoryid: $("#current_directory_id").val()
-                    },
+                    content: $("#mkEditor > textarea").val(),
+                    title: '',
+                    directoryid: $("#current_directory_id").val(),
+                    uploadId: '@uploadId'
+                },
                     function (res) {
                         if (res.isSuccess) {
                             layer.alert("保存成功", {

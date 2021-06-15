@@ -4,7 +4,8 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model MarkdownRepository.Models.Document
 @{
-var doc = Model ?? new MarkdownRepository.Models.Document() ;
+    var doc = Model ?? new MarkdownRepository.Models.Document() ;
+    var uploadId = Guid.NewGuid().ToString();
 }
 
 <div id="message" class=""></div>
@@ -57,7 +58,7 @@ var doc = Model ?? new MarkdownRepository.Models.Document() ;
             autoLoadModules: false,
             imageUpload: true,
             imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-            imageUploadURL: '@Url.Action("UploadImage", "Document")',
+            imageUploadURL: '@Url.Action("UploadImage", "Document", new { uploadId = uploadId })',
             pluginPath: '@Url.Content("~/editor.md/plugins/")',
             tex: true,
             flowChart : true,
@@ -146,7 +147,8 @@ var doc = Model ?? new MarkdownRepository.Models.Document() ;
 
                         //ajax上传图片
                         $.post('@Url.Action("UploadImageByBase64", "Document")', {
-                            base64Content: base64
+                            base64Content: base64,
+                            uploadId: '@uploadId'
                         }, function (ret) {
                             if (ret.success === 1) {
                                 //新一行的图片显示
@@ -168,7 +170,8 @@ var doc = Model ?? new MarkdownRepository.Models.Document() ;
                     title: $("#title").val(),
                     category: $("#category").val(),
                     id: $("#docId").val(),
-                    access: $("#access")[0].checked === true ? 1 : 0
+                    access: $("#access")[0].checked === true ? 1 : 0,
+                    uploadId: '@uploadId'
                 },
                 function (result) {
                     $("#docId").val(result.rowid);

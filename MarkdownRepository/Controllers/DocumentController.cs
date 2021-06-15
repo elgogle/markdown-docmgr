@@ -168,28 +168,6 @@ namespace MarkdownRepository.Controllers
             return Json(new { success = false });
         }
 
-        [Authorize(Roles = "admin")]
-        public ActionResult CleanPicture()
-        {
-            string picPath = Path.Combine(HostingEnvironment.ApplicationPhysicalPath, PIC_PATH);
-            if (Directory.Exists(picPath) == false || DocumentSearchManager.IndexMgr == null) return Content("-1");
-
-            System.Threading.Tasks.Task.Factory.StartNew(() =>
-            {
-                foreach (var picFile in Directory.GetFiles(picPath))
-                {
-                    var fname = Path.GetFileNameWithoutExtension(picFile);
-                    var docs = DocumentSearchManager.IndexMgr.SearchDocumentContentAndNotSplitWord(fname);
-                    if (docs == null || docs.Count == 0)
-                    {
-                        System.Diagnostics.Debug.Print(picFile);
-                        //System.IO.File.Delete(picFile);
-                    }
-                }
-            });
-
-            return Content("0");
-        }
 
         /// <summary>
         /// 创建或修改
@@ -229,7 +207,7 @@ namespace MarkdownRepository.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateInput(false)]
-        public ActionResult Create(string category, string content, string title, long id, DocumentAccess access)
+        public ActionResult Create(string category, string content, string title, long id, DocumentAccess access, string uploadId)
         {
             Document document = null;
             // create
@@ -259,6 +237,8 @@ namespace MarkdownRepository.Controllers
                     docMgr.CancelFollow(UserId, id);
                 }
             }
+
+            docMgr.UpdateAtachFiles(document.rowid, uploadId);
 
             return Json(document);
         }
@@ -329,7 +309,7 @@ namespace MarkdownRepository.Controllers
         /// <param name="title"></param>
         /// <returns></returns>
         [HttpPost, ValidateInput(false)]
-        public ActionResult CreateOrUpdateBookArticle(long directoryid, string content, string title)
+        public ActionResult CreateOrUpdateBookArticle(long directoryid, string content, string title, string uploadId)
         {
             try
             {
@@ -338,7 +318,9 @@ namespace MarkdownRepository.Controllers
                     throw new Exception("请选择目录后，再写文章和保存");
                 }
 
-                docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
+                var docId = docMgr.CreateOrUpdateBookArticle(directoryid, content, title, this.UserId);
+                docMgr.UpdateAtachFiles(docId, uploadId);
+
                 return Success();
             }
             catch (Exception ex)
@@ -1034,7 +1016,7 @@ namespace MarkdownRepository.Controllers
         /// 上传图片
         /// </summary>
         /// <returns></returns>
-        public ActionResult UploadImage()
+        public ActionResult UploadImage(string uploadId)
         {
             var hfc = this.HttpContext.Request.Files;
             if (hfc.Count > 0)
@@ -1049,6 +1031,7 @@ namespace MarkdownRepository.Controllers
                 var fileName = Guid.NewGuid().ToString() + pic;
                 var path = Path.Combine(savePath, fileName);
                 file.SaveAs(path);
+                docMgr.AddAtachFile(uploadId, 0, path);
 
                 var relativePath = string.Format("{0}/{1}/{2}", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/')
                     , PIC_PATH.TrimEnd('/')
@@ -1066,7 +1049,7 @@ namespace MarkdownRepository.Controllers
         /// </summary>
         /// <param name="base64Content"></param>
         /// <returns></returns>
-        public ActionResult UploadImageByBase64(string base64Content)
+        public ActionResult UploadImageByBase64(string base64Content, string uploadId)
         {
             try
             {
@@ -1080,6 +1063,7 @@ namespace MarkdownRepository.Controllers
                 var fileName = Guid.NewGuid().ToString() + ".png";
                 var path = Path.Combine(savePath, fileName);
                 System.IO.File.WriteAllBytes(path, fileContent);
+                docMgr.AddAtachFile(uploadId, 0, path);
 
                 var relativePath = string.Format("{0}/{1}/{2}", HostingEnvironment.ApplicationVirtualPath.TrimEnd('/')
                     , PIC_PATH.TrimEnd('/')

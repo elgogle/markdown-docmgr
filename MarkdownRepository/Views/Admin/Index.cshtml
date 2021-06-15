@@ -18,9 +18,6 @@
 <button id="btn_recreate_index" class="btn btn-primary btn-sm">点击执行</button>
 
 
-<h3  class="func-caption">清理所有没有使用的图片</h3>
-<button id="btn_clean_picture" class="btn btn-primary btn-sm">点击执行</button>
-
 @section scripts{
 <script>
     $(document).ready(function () {
@@ -32,13 +29,6 @@
             alert("已经在后台重建索引，稍后再检查是否已经完成");
         });
 
-        $("#btn_clean_picture").click(function () {
-            $.ajax({
-                url: '@Url.Action("CleanPicture", "Document")',
-                cache: false
-            });
-            alert("已经在后台清理图片，稍后再检查是否已经完成");
-        });
     });
 </script>    
 }
