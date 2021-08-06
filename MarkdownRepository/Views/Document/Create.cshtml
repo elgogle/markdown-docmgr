@@ -50,8 +50,16 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
 <script>
+    function resizeLayout() {        
+        window.editor.height(window.visualViewport.height - 145);
+    }
+
+    window.onresize = function () {
+        resizeLayout();
+    }
+
     $(function () {
-        var editor = editormd("mkEditor", {
+        window.editor = editormd("mkEditor", {
             width: "100%",
             height: 640,
             saveHTMLToTextarea: true,
@@ -205,6 +213,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
             }
         });
 
+        resizeLayout();
     });
 </script>
 }
