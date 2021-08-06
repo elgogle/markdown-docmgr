@@ -52,31 +52,28 @@
 
 <div>
     <div id="main">
-        <div class="window-head">
-            <div class="toolbar">
-                <div class="book-ins">
-                    <h3>
-                        <span>书名:</span><span id="label_book_name">@Model.Book.name</span>
-                    </h3>
-                    <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
-                        <span style="">简介: </span><span id="label_book_desc">@Model.Book.description.GetShortDesc()</span>
-                    </p>
-                </div>
-                <div>
-                    <button id="btn_edit_book_title" class="btn btn-default btn-xs">
-                        <i class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介
-                    </button>
-                    <button id="btn_exit_edit" class="btn btn-default btn-xs">
-                        退出编辑
-                    </button>
-                </div>
-            </div>
-        </div>
-
 
         <div id="content_body">
 
             <div id="content_toc">
+                <div class="toolbar">
+                    <div class="book-ins">
+                        <h5>
+                            <span>书名:</span><span id="label_book_name">@Model.Book.name</span>
+                        </h5>
+                        <p style="font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">
+                            <span style="">简介: </span><span id="label_book_desc">@Model.Book.description.GetShortDesc()</span>
+                        </p>
+                    </div>
+                    <div>
+                        <button id="btn_edit_book_title" class="btn btn-default btn-xs">
+                            <i class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介
+                        </button>
+                        <button id="btn_exit_edit" class="btn btn-default btn-xs">
+                            退出编辑
+                        </button>
+                    </div>
+                </div>
                 <div class="">
                     <div class="catalog-body">
                         <div id="toc"></div>
@@ -198,6 +195,15 @@
 <script src="~/javascripts/bootstrap-switch/js/bootstrap-switch.min.js"></script>
 
 <script>
+    function resizeLayout() {
+        $("#content_toc").height(window.visualViewport.height - 70);
+        window.editor.height(window.visualViewport.height - 140);
+    }
+
+    window.onresize = function () {
+        resizeLayout();
+    }
+
     $(document).ready(function () {
         var $currentDir = $("#current_directory"),
             $currentDirId = $("#current_directory_id"),
@@ -466,8 +472,8 @@
         }
 
         window.editor = editormd("mkEditor", {
-            width: "100%",
-            height: 640,
+            //width: "100%",
+            //height: "100%",
             saveHTMLToTextarea: true,
             autoLoadModules: false,
             imageUpload: true,
@@ -617,6 +623,8 @@
                 }
             }
         });
+
+        resizeLayout();
     });
 </script>
 }

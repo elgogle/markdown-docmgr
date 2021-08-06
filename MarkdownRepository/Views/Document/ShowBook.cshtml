@@ -92,32 +92,32 @@
                 z-index: 20;
             }
 
-            .window-container .window-head .toolbar {
-                display: flex;
-                height: 55px;
-                padding: 0 .8em;
-                flex-direction: row;
+            .window-body.with-sidebar .toolbar {
+                /*display: flex;
+                height: 55px;*/
+                padding: 5px;
+                /*flex-direction: row;
                 flex-wrap: nowrap;
                 justify-content: flex-start;
-                align-items: stretch;
+                align-items: stretch;*/
             }
 
-            .window-container .window-head .toolbar .book-ins {
+            /*.window-body.with-sidebar .toolbar .book-ins {
                 flex-grow: 8;
             }
 
-            .window-container .window-head .toolbar .extra2 {
+            .window-body.with-sidebar .toolbar .extra2 {
                 margin-left: 15px;
                 flex-grow: 0.5;
                 font-size: 0.7em;
-            }
+            }*/
 
-            .window-container .window-body.with-sidebar .sidebar {
+            .window-body.with-sidebar .sidebar {
                 left: 0;
             }
 
             .window-container.with-head .window-body .sidebar {
-                top: 111px;
+                top: 50px;
             }
 
             .window-body .sidebar {
@@ -168,7 +168,7 @@
 
             div.window-body {
                 position: relative;
-                top: 50px;
+                top: 0px;
                 /*margin-left: 280px;*/
             }
 
@@ -279,31 +279,28 @@
     <div id="main">
         <div class="window-container with-head">
 
-            <div class="window-head">
-                <div class="toolbar">
-                    <div class="book-ins">
-                        <h3>
-                            @Model.Book.name
-                        </h3>
-                        <p style="font-size:0.7em; text-overflow: ellipsis; word-wrap: break-word;">
-                            创建人: @AdAccount.GetUserNameById(Model.Book.creator)
-                            创建时间: @Model.Book.creat_at
-                        </p>
-                    </div>
-
-                    <div>
-                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
-                        User.Identity.Name.GetUserName() && t.is_owner))
-                        {
-                            <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
-                                <i class="glyphicon glyphicon-edit"></i> 编辑
-                            </a>
-                        }
-                    </div>
-                </div>
-            </div>
             <div class="window-body with-sidebar">
                 <div class="sidebar">
+                    <div class="toolbar">
+                        <div class="book-ins">
+                            <h5>
+                                @Model.Book.name
+                            </h5>
+                            <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
+                            <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建时间: @Model.Book.creat_at</span>   
+                        </div>
+
+                        <div>
+                            @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
+                                User.Identity.Name.GetUserName() && t.is_owner))
+                            {
+                                <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
+                                    <i class="glyphicon glyphicon-edit"></i> 编辑
+                                </a>
+                            }
+                        </div>
+                    </div>
+
                     @*<div class="sidebar-header">
                             <div class="search-form">
                                 <div class="ui small fluid icon input">
