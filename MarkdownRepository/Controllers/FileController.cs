@@ -79,6 +79,7 @@ namespace MarkdownRepository.Controllers
 
         public ActionResult Index(string p)
         {
+            ViewBag.Title = "我的文件";
             ViewBag.Action = "MyFiles";
             var currentPath = (p ?? "").TrimStart('\\', '/');
 

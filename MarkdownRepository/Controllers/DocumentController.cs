@@ -920,6 +920,7 @@ namespace MarkdownRepository.Controllers
                 return View("NoPermission");
             }
 
+            ViewBag.Title = doc.title;
             return View(doc);
         }
 

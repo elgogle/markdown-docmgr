@@ -77,6 +77,7 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult Search(string searchText, string codeLanguage, int? page)
         {
+            ViewBag.Title = "代码搜索";
             ViewBag.Action = "CodeSearch";
             ViewBag.CodeLanguage = codeLanguage.IsNullOrEmpty()?CodeLanguage.Csharp: codeLanguage;
 
@@ -93,6 +94,7 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult Show(string id)
         {
+            ViewBag.Title = "代码搜索";
             var indexMgr = this.GetIndexManager();
             var doc = indexMgr.Get(id);
             return View(doc);

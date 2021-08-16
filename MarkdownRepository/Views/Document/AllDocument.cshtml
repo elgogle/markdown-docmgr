@@ -4,6 +4,7 @@
 @model PagedList.IPagedList<MarkdownRepository.Models.Document>
 
 @{    
+    ViewBag.Title = "全部文章";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var myFollwedDocs = ViewBag.MyFollowedDocs as List<MarkdownRepository.Models.Document>;
 }
