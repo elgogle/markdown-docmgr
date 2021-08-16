@@ -707,7 +707,7 @@
     <Content Include="images\chapter-mark.png" />
     <Content Include="images\code_background.gif" />
     <Content Include="images\CrystalLogo.png" />
-    <Content Include="images\favicon.ico" />
+    <Content Include="images\favicon.png" />
     <Content Include="images\loading%402x.gif" />
     <Content Include="images\loading%403x.gif" />
     <Content Include="images\loading.gif" />
