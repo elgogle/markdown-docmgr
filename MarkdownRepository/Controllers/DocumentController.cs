@@ -828,6 +828,7 @@ namespace MarkdownRepository.Controllers
                 return View("NoPermission");
             }
 
+            ViewBag.Title = doc.title;
             ViewBag.IsFollowed = false;
             if (User.Identity.IsAuthenticated)
             {
@@ -863,6 +864,10 @@ namespace MarkdownRepository.Controllers
             var book = docMgr.GetBook(bookid, this.UserId);
             var dirNav = GetBookDirectoryNavigator(book);
             var currentDirectoryId = dirNav[0];
+            if (book.Book.name.IsNullOrEmpty() == false)
+            {
+                ViewBag.Title = book.Book.name;
+            }
 
             if (dirId != 0)
             {
@@ -880,8 +885,8 @@ namespace MarkdownRepository.Controllers
             ViewBag.CurrentDiretoryId = currentDirectoryId;
             var currentIndex = dirNav.IndexOf(currentDirectoryId);
             ViewBag.PreDirectoryId = currentIndex > 0 ? dirNav[currentIndex - 1] : -1;
-            ViewBag.NextDirectoryId = currentIndex < (dirNav.Count - 1) ? dirNav[currentIndex + 1] : -1;
-            ViewBag.Document = docMgr.GetDocumentByDirectory(currentDirectoryId);
+            ViewBag.NextDirectoryId = currentIndex < (dirNav.Count - 1) ? dirNav[currentIndex + 1] : -1;            
+            ViewBag.Document = docMgr.GetDocumentByDirectory(currentDirectoryId);            
 
             var directories = book.BookDirectory.Select(t => new
             {
