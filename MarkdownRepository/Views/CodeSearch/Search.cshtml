@@ -15,7 +15,7 @@
     };
 }
 
-@model PagedList.IPagedList<MarkdownRepository.Lib.CodeModel>
+@model PagedList.IPagedList<MarkdownRepository.Lib.CodeIndex>
 
 
 @section style{
@@ -189,7 +189,7 @@
                 select: selectItem,
                 minLength: 2,
                 change: function () {
-                    $searchText.val("").css("display", 2);
+                    //$searchText.val("").css("display", 2);
                 }
             });
 

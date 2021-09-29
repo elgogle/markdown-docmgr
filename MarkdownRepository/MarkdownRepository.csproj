@@ -210,6 +210,7 @@
     <Compile Include="Lib\DocumentSearchManager.cs" />
     <Compile Include="Lib\Extentions.cs" />
     <Compile Include="Lib\LogHelper.cs" />
+    <Compile Include="Lib\LuceneHelper.cs" />
     <Compile Include="Lib\MarkdownSharp.cs" />
     <Compile Include="Lib\RssHelper.cs" />
     <Compile Include="Lib\SplitContent.cs" />

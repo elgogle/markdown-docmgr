@@ -18,7 +18,7 @@ namespace MarkdownRepository.Controllers
     [Authorize]
     public class CodeSearchController : Controller
     {
-        const string CodeIndexPath = "~/App_Data/CodeIndex/";
+        const string CodeIndexPath = "~/App_Data/";
 
         private string UserId
         {
@@ -140,14 +140,15 @@ namespace MarkdownRepository.Controllers
             }
             else
             {
-                var m = new CodeModel
+                var m = new CodeIndex
                 {
                     CodeBody = codeSearchCodeBody,
                     Id = codeSearchCodeBody.ToHashText(),
                     Language = codeLanguage,
                     Operate = Operate.AddOrUpdate,
                     SearchText = codeSearchText,
-                    UserId = UserId
+                    UserId = UserId,
+                    FileId = string.Empty
                 };
 
                 var indexMgr = this.GetIndexManager();
@@ -202,6 +203,7 @@ namespace MarkdownRepository.Controllers
                                 var sr = new StreamReader(st);
                                 var text = sr.ReadToEnd();
                                 var codemodels = await ParseCsharpFile(text);
+
                                 foreach (var m in codemodels)
                                 {
                                     codeIndexManager.Enqueue(m);
@@ -227,10 +229,11 @@ namespace MarkdownRepository.Controllers
         }
 
 
-        private async Task<List<CodeModel>> ParseCsharpFile(string fileContent)
+        private async Task<List<CodeIndex>> ParseCsharpFile(string fileContent)
         {
-            List<CodeModel> result = new List<CodeModel>();
-            await Task.Run(() =>
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("([A-Z]+[a-z]+)");
+            List<CodeIndex> result = new List<CodeIndex>();
+            await Task.Run((Action)(() =>
             {
                 var tree = CSharpSyntaxTree.ParseText(fileContent);
                 var node = tree.GetRoot();
@@ -246,6 +249,11 @@ namespace MarkdownRepository.Controllers
                         if(n is MethodDeclarationSyntax)
                         {
                             methodName = (n as MethodDeclarationSyntax).Identifier.Text;
+                        }
+
+                        if (n is ClassDeclarationSyntax)
+                        {
+                            methodName = (n as ClassDeclarationSyntax).Identifier.Text;
                         }
 
                         foreach (var d in n.GetLeadingTrivia())
@@ -271,13 +279,17 @@ namespace MarkdownRepository.Controllers
                                     }
                                 }
 
-                                var m = new CodeModel
+                                var m = new CodeIndex
                                 {
                                     Id = codeBody.ToHashText(),
                                     CodeBody = codeBody,
-                                    SearchText = comment + " " + methodName,
+                                    SearchText = comment + " "
+                                                // 将 Pascal 名称拆分成空格连接的单个单词
+                                                + regex.Replace(methodName, s => (s.Value.Length > 3 ? s.Value : s.Value.ToLower()) + " "),
                                     UserId = UserId,
-                                    Language = CodeLanguage.Csharp
+                                    Language = CodeLanguage.Csharp,
+                                    FileContent = fileContent,
+                                    FileId = fileContent.ToHashText()
                                 };
 
                                 result.Add(m);
@@ -285,7 +297,7 @@ namespace MarkdownRepository.Controllers
                         }
                     }
                 }
-            });
+            }));
             return result;
         }
 

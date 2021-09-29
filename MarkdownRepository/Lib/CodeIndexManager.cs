@@ -1,4 +1,6 @@
-﻿using Lucene.Net.Analysis.PanGu;
+﻿#region Imports (11)
+
+using Lucene.Net.Analysis.PanGu;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -10,25 +12,195 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
+#endregion Imports (11)
+
 namespace MarkdownRepository.Lib
 {
+    public class CodeFile : IDoc
+    {
+        #region Properties of CodeFile (2)
+
+        public string FileContent { get; set; }
+
+        public string Id { get; set; }
+
+        #endregion Properties of CodeFile (2)
+    }
+
+    public class CodeIndex : IDoc
+    {
+        #region Properties of CodeIndex (8)
+
+        public string CodeBody { get; set; }
+
+        public string FileContent { get; set; }
+
+        public string FileId { get; set; }
+
+        public string Id { get; set; }
+
+        public string Language { get; set; }
+
+        public Operate Operate { get; set; }
+
+        public string SearchText { get; set; }
+
+        public string UserId { get; set; }
+
+        #endregion Properties of CodeIndex (8)
+    }
+
     public class CodeIndexManager
     {
+        #region Structs of CodeIndexManager (1)
+
+        struct IndexField
+        {
+            #region Members of IndexField (7)
+
+            public const string Id = "ID";
+            public const string SearchText = "SearchText";
+            public const string CodeBody = "CodeBody";
+            public const string UserId = "UserId";
+            public const string Language = "Language";
+            public const string FileId = "FileId";
+            public const string FileContent = "FileContent";
+
+            #endregion Members of IndexField (7)
+        }
+
+        #endregion Structs of CodeIndexManager (1)
+
+        #region Members of CodeIndexManager (5)
         private static object _lock = new object();
         private static CodeIndexManager _indexMgr = null;
-        private FSDirectory _fsDir = null;
-        private IndexReader _indexReader = null;
-        private IndexWriter _indexWriter = null;
-        private Queue<CodeModel> _docqueue = new Queue<CodeModel>();
+        private Queue<CodeIndex> _docqueue = new Queue<CodeIndex>();
+        private LuceneHelper<CodeFile> _codeFileLucene = null;
+        private LuceneHelper<CodeIndex> _codeIndexLucene = null;
+
+        #endregion Members of CodeIndexManager (5)
+
+        #region Constructors of CodeIndexManager (1)
+
+        private CodeIndexManager(string indexPath)
+        {
+            if (!System.IO.Directory.Exists(indexPath))
+                System.IO.Directory.CreateDirectory(indexPath);
+
+            indexPath = Path.GetDirectoryName(indexPath);
+
+            this._codeIndexLucene = new LuceneHelper<CodeIndex>(indexPath);
+            this._codeFileLucene = new LuceneHelper<CodeFile>(indexPath);
+            this.Start();
+        }
+
+        #endregion Constructors of CodeIndexManager (1)
+
+        #region Methods of CodeIndexManager (8)
+
+        private void Create(CodeIndex m)
+        {
+            try
+            {
+                if (!this._codeIndexLucene.ExistsDoc(m.Id, IndexField.Id))
+                {
+                    Document doc = new Document();
+                    doc.Add(this._codeIndexLucene.CreateStoreField(IndexField.Id, m.Id));
+                    doc.Add(this._codeIndexLucene.CreateSearchField(IndexField.SearchText, m.SearchText));
+                    doc.Add(this._codeIndexLucene.CreateStoreField(IndexField.Language, m.Language));
+                    doc.Add(this._codeIndexLucene.CreateStoreField(IndexField.CodeBody, m.CodeBody));
+                    doc.Add(this._codeIndexLucene.CreateStoreField(IndexField.UserId, m.UserId));
+                    doc.Add(this._codeIndexLucene.CreateStoreField(IndexField.FileId, m.FileId));
+                    this._codeIndexLucene.AddDoc(doc);
+                }
+
+                if (!m.FileId.IsNullOrEmpty()
+                    && !this._codeFileLucene.ExistsDoc(m.FileId))
+                {
+                    Document codeFileDoc = new Document();
+                    codeFileDoc.Add(this._codeIndexLucene.CreateStoreField(nameof(CodeFile.Id), m.FileId));
+                    codeFileDoc.Add(this._codeIndexLucene.CreateStoreField(nameof(CodeFile.FileContent), m.FileContent));
+                    this._codeFileLucene.AddDoc(codeFileDoc);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
+        }
+
+        private void Delete(CodeIndex m)
+        {
+            try
+            {
+                this._codeIndexLucene.DeleteDoc(m.Id, IndexField.Id);
+                this._codeFileLucene.DeleteDoc(m.FileId);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+            }
+        }
+
+        public void Enqueue(CodeIndex m)
+        {
+            this._docqueue.Enqueue(m);
+        }
+
+        public CodeIndex Get(string id)
+        {
+            try
+            {
+                var doc = this._codeIndexLucene.GetDoc(id, IndexField.Id);
+                if (doc != null)
+                {
+                    var m = new CodeIndex
+                    {
+                        Id = doc.Get(IndexField.Id),
+                        SearchText = doc.Get(IndexField.SearchText),
+                        CodeBody = doc.Get(IndexField.CodeBody),
+                        UserId = doc.Get(IndexField.UserId),
+                        FileId = doc.Get(IndexField.FileId),
+                    };
+
+                    if (!m.FileId.IsNullOrEmpty())
+                    {
+                        var codeDoc = this._codeFileLucene.GetDoc(m.FileId);
+                        if (codeDoc != null)
+                        {
+                            m.FileContent = codeDoc.Get(nameof(CodeFile.FileContent));
+                        }
+                    }
+
+                    return m;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteError(this.GetType(), ex);
+                return null;
+            }
+        }
+
+        public List<string> GetAutoCompleteList(string text, string language)
+        {
+            var searchResult = Search(text, language, 15);
+            var result = searchResult.Select(t => t.SearchText.Left(100)).ToList();
+            return result;
+        }
 
         public static CodeIndexManager GetInstance(string indexPath)
         {
-            if(_indexMgr == null)
+            if (_indexMgr == null)
             {
-                if(indexPath.IsNullOrEmpty() == false)
+                if (indexPath.IsNullOrEmpty() == false)
                 {
                     if (_indexMgr == null)
+                    {
                         _indexMgr = new CodeIndexManager(indexPath);
+                    }
 
                     return _indexMgr;
                 }
@@ -43,48 +215,16 @@ namespace MarkdownRepository.Lib
             }
         }
 
-        public void Enqueue(CodeModel m)
+        public List<CodeIndex> Search(string text, string language, int size = 300)
         {
-            this._docqueue.Enqueue(m);
-        }
-
-        public CodeModel Get(string id)
-        {
+            List<CodeIndex> result = new List<CodeIndex>();
             try
             {
-                this._indexReader = IndexReader.Open(this._fsDir, false);
-                var termDocs = this._indexReader.TermDocs(new Term(IndexField.Id, id));
-                termDocs.Next();
-                var docId = termDocs.Doc();
-                var doc = this._indexReader.Document(docId);
-                var m = new CodeModel
-                {
-                    Id = doc.Get(IndexField.Id),
-                    SearchText = doc.Get(IndexField.SearchText),
-                    CodeBody = doc.Get(IndexField.CodeBody),
-                    UserId = doc.Get(IndexField.UserId)
-                };
+                bool isExistIndex = this._codeIndexLucene.IndexExists();
 
-                this._indexReader.Close();
-                return m;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteError(this.GetType(), ex);
-                return null;
-            }
-        }
-
-        public List<CodeModel> Search(string text, string language, int size=300)
-        {
-            List<CodeModel> result = new List<CodeModel>();
-            try
-            {
-                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
                 if (isExistIndex)
                 {
-                    this._indexReader = IndexReader.Open(this._fsDir, false);
-                    IndexSearcher searcher = new IndexSearcher(this._indexReader);
+                    IndexSearcher searcher = new IndexSearcher(this._codeIndexLucene.OpenReader());
 
                     BooleanQuery allQuery = new BooleanQuery();
                     allQuery.Add(new TermQuery(new Term(IndexField.Language, language)), BooleanClause.Occur.MUST);
@@ -111,7 +251,7 @@ namespace MarkdownRepository.Lib
                     {
                         int docId = docs[i].doc;//得到查询结果文档的id（Lucene内部分配的id）
                         Document doc = searcher.Doc(docId);//根据文档id来获得文档对象Document
-                        var m = new CodeModel
+                        var m = new CodeIndex
                         {
                             Id = doc.Get(IndexField.Id),
                             SearchText = doc.Get(IndexField.SearchText),
@@ -119,6 +259,13 @@ namespace MarkdownRepository.Lib
                             UserId = doc.Get(IndexField.UserId),
                             Language = doc.Get(IndexField.Language)
                         };
+
+                        var codeDoc = this._codeFileLucene.GetDoc(m.FileId);
+                        if (codeDoc != null)
+                        {
+                            m.FileContent = codeDoc.Get(nameof(CodeFile.FileContent));
+                        }
+
                         result.Add(m);
 
                         // 当完全匹配时，只返回此条
@@ -126,28 +273,12 @@ namespace MarkdownRepository.Lib
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogHelper.WriteError(this.GetType(), ex);
             }
 
             return result;
-        }
-
-        public List<string> GetAutoCompleteList(string text, string language)
-        {
-            var searchResult = Search(text, language, 15);
-            var result = searchResult.Select(t => t.SearchText.Left(100)).ToList();
-            return result;
-        }
-
-        private CodeIndexManager(string indexPath)
-        {
-            if (!System.IO.Directory.Exists(indexPath))
-                System.IO.Directory.CreateDirectory(indexPath);
-
-            this._fsDir = FSDirectory.Open(new DirectoryInfo(indexPath), new NoLockFactory());
-            this.Start();
         }
 
         private void Start()
@@ -159,10 +290,10 @@ namespace MarkdownRepository.Lib
                     while (this._docqueue.Count > 0)
                     {
                         var doc = this._docqueue.Dequeue();
-                        switch(doc.Operate)
+                        switch (doc.Operate)
                         {
                             case Operate.Delete:
-                                Delete(doc.Id);
+                                Delete(doc);
                                 break;
                             case Operate.AddOrUpdate:
                                 Create(doc);
@@ -175,67 +306,6 @@ namespace MarkdownRepository.Lib
             });
         }
 
-        private void Create(CodeModel m)
-        {
-            try
-            {
-                bool isExistIndex = IndexReader.IndexExists(this._fsDir);
-                if (isExistIndex)
-                {
-                    Delete(m.Id);
-                }
-
-                Document doc = new Document();
-                doc.Add(new Field(IndexField.Id, m.Id, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-                doc.Add(new Field(IndexField.SearchText, m.SearchText, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-                doc.Add(new Field(IndexField.Language, m.Language, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-                doc.Add(new Field(IndexField.CodeBody, m.CodeBody, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-                doc.Add(new Field(IndexField.UserId, m.UserId, Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.WITH_POSITIONS_OFFSETS));
-
-                this._indexWriter = new IndexWriter(this._fsDir, new PanGuAnalyzer(), !isExistIndex, IndexWriter.MaxFieldLength.UNLIMITED);
-                this._indexWriter.AddDocument(doc);
-                this._indexWriter.Commit();
-                this._indexWriter.Optimize();
-                this._indexWriter.Close();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteError(this.GetType(), ex);
-            }
-        }
-
-        private void Delete(string id)
-        {
-            try
-            {
-                this._indexReader = IndexReader.Open(this._fsDir, false);
-                this._indexReader.DeleteDocuments(new Term(IndexField.Id, id));
-                this._indexReader.Commit();
-                this._indexReader.Close();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteError(this.GetType(), ex);
-            }
-        }
-
-        struct IndexField
-        {
-            public const string Id = "ID";
-            public const string SearchText = "SearchText";
-            public const string CodeBody = "CodeBody";
-            public const string UserId = "UserId";
-            public const string Language = "Language";
-        }
-    }
-
-    public class CodeModel
-    {
-        public string Id { get; set; }
-        public string SearchText { get; set; }
-        public string CodeBody { get; set; }
-        public Operate Operate { get; set; }
-        public string UserId { get; set; }
-        public string Language { get; set; }
+        #endregion Methods of CodeIndexManager (8)
     }
 }

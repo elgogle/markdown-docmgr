@@ -3,7 +3,7 @@
     ViewBag.Title = "代码搜索结果";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@model MarkdownRepository.Lib.CodeModel
+@model MarkdownRepository.Lib.CodeIndex
 
 @section style{
     <!-- git hub markdown style -->
@@ -14,34 +14,80 @@
 
     <!-- other style for highlight -->
     <link href="~/css/highlight-styles/androidstudio.css" rel="stylesheet">
+    <style>
+        .tab-content{
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        .tab-pane{
+            padding: 1em;
+        }
+        pre{
+            padding: 0;
+        }
+    </style>
 }
 
-<div>
+<div style="padding: 1em;">
     <div>
+@if (Model != null)
+{
         <div class="pull-left" style="font-size:0.8em;">
             <span class="glyphicon glyphicon-hand-down"></span>
+
             <span>以下代码由 @AdAccount.GetUserNameById(Model.UserId) 上传</span>
         </div>
+}
         <div class="pull-right">
             <input type="button" value="返回" onclick="history.back()" class="btn btn-xs btn-default">
         </div>
         <div style="clear:both"></div>
     </div>
-    <div>
-        @if(Model != null)
-        {
-            <pre>
+
+    <div class="tabbable">        
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">代码片段</a></li>
+            <li><a href="#tab2" data-toggle="tab">完整源码</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="tab1">
+                <div>
+                    @if (Model != null)
+                    {
+                        <pre>
 <code>
 @Model.CodeBody
 </code>
-</pre>
-        }
-        else
-        {
-            <p>代码找不到了</p>
-        }
+                        </pre>
+                    }
+                    else
+                    {
+                        <p>代码找不到了</p>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <div>
+                    @if (Model != null && Model.FileContent.IsNullOrEmpty() == false)
+                    {
 
+                        <pre>
+<code>
+    @Model.FileContent
+</code>
+                        </pre>
+                    }
+                    else
+                    {
+                        <p>没有收录完整源码</p>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
+    
 </div>
 
 <div id="comments"></div>
@@ -59,6 +105,9 @@
 
     <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />
     <script src="//192.168.13.119/web-comment/Script/comment.js"></script>
+
+    @if (Model != null)
+    {
     <script>
         (function () {
             Comments({
@@ -72,4 +121,5 @@
             });
         })();
     </script>
-}
+        }
+    }
