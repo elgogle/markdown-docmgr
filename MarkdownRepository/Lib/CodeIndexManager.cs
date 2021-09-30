@@ -222,7 +222,7 @@ namespace MarkdownRepository.Lib
             {
                 bool isExistIndex = this._codeIndexLucene.IndexExists();
 
-                if (isExistIndex)
+                if (isExistIndex && !text.IsNullOrEmpty())
                 {
                     IndexSearcher searcher = new IndexSearcher(this._codeIndexLucene.OpenReader());
 

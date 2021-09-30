@@ -81,18 +81,16 @@ namespace MarkdownRepository.Lib
             }
 
             var termDocs = reader.TermDocs(term);
-            termDocs.Next();
-            var docId = termDocs.Doc();
-
-            var doc = reader.Document(docId);
-            if(doc.fields_ForNUnit.Count == 0)
+            if (termDocs.Next())
             {
+                var docId = termDocs.Doc();
+                var doc = reader.Document(docId);
                 reader.Close();
-                return null;
+
+                return doc;
             }
 
-            reader.Close();
-            return doc;
+            return null;
         }
 
         public virtual void DeleteDoc(string id, string fieldName = null)

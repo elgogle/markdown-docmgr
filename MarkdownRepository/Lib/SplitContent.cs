@@ -13,6 +13,8 @@ namespace MarkdownRepository.Lib
     {
         public static string[] SplitWords(string content)
         {
+            if (content.IsNullOrEmpty()) return new List<string>().ToArray();
+
             List<string> strList = new List<string>();
             Analyzer analyzer = new PanGuAnalyzer();//指定使用盘古 PanGuAnalyzer 分词算法
             TokenStream tokenStream = analyzer.TokenStream("", new StringReader(content));
@@ -21,6 +23,7 @@ namespace MarkdownRepository.Lib
             { //Next继续分词 直至返回null
                 strList.Add(token.TermText()); //得到分词后结果
             }
+
             return strList.ToArray();
         }
 
