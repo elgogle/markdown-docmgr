@@ -848,12 +848,17 @@ select distinct b.id as rowid,
     a.category,
     b.creat_at, 
     b.update_at, 
-    b.creator
-from documents a, documents_owner b
-where a.rowid = b.id
+    b.creator,
+    ifnull(d.id, 0) as ref_book_directory_id,
+    ifnull(d.book_id, 0) as ref_book_id
+from documents a
+inner join documents_owner b on b.id = a.rowid
+left outer join book_directories d on d.document_id = b.id
+where 1=1
     and b.is_public = 1
     and b.update_at > @updateAt
-", new { updateAt = DateTime.Now.AddDays(days) });
+",
+            new { updateAt = DateTime.Now.AddDays(days) });
                 return docs.ToList();
             }
         }
@@ -1048,7 +1053,8 @@ WHERE  b.id in @list
     and (b.creator = @userId 
         or (b.creator <> @userId and b.is_public=1 and @isOnlySearchMine=0) 
         or (
-            select 1 from book_directories c 
+            select 1 
+            from book_directories c 
             inner join book_owner d on d.book_id = c.book_id
             where c.document_id = a.rowid
                 and d.user_id = @userId

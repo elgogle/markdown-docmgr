@@ -644,14 +644,16 @@ namespace MarkdownRepository.Controllers
                 var urlBuilder =
                     new System.UriBuilder(Request.Url.AbsoluteUri)
                     {
-                        Path = Url.Action("Show", new { id = t.rowid }),
+                        Path = t.ref_book_id > 0
+                                ? Url.Action("ShowBook", new { bookid = t.ref_book_id, docId = t.rowid })
+                                : Url.Action("Show", new { id = t.rowid }),
                         Query = null,
                     };
 
                 Uri uri = urlBuilder.Uri;
 
-                return new SyndicationItem((t.title??"").XmlCharacterEscape(), 
-                    (markdownTransfer.Transform(t.content ?? "")).XmlCharacterEscape(), 
+                return new SyndicationItem((t.title ?? "").XmlCharacterEscape(),
+                    (markdownTransfer.Transform(t.content ?? "")).XmlCharacterEscape(),
                     uri);
             }).ToList();
 
