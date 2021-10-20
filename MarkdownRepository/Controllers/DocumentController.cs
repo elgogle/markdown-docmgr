@@ -641,16 +641,10 @@ namespace MarkdownRepository.Controllers
             var latestDocs = docMgr.GetLatestDocuments();
             var items = latestDocs.Select(t =>
             {
-                var urlBuilder =
-                    new System.UriBuilder(Request.Url.AbsoluteUri)
-                    {
-                        Path = t.ref_book_id > 0
-                                ? Url.Action("ShowBook", new { bookid = t.ref_book_id, docId = t.rowid })
-                                : Url.Action("Show", new { id = t.rowid }),
-                        Query = null,
-                    };
-
-                Uri uri = urlBuilder.Uri;
+                var absoluteUrl = t.ref_book_id > 0
+                                ? Url.Action("ShowBook", "Document", new { bookid = t.ref_book_id, docId = t.rowid }, Request.Url.Scheme)
+                                : Url.Action("Show", "Document", new { id = t.rowid }, Request.Url.Scheme);
+                Uri uri = new Uri(absoluteUrl);
 
                 return new SyndicationItem((t.title ?? "").XmlCharacterEscape(),
                     (markdownTransfer.Transform(t.content ?? "")).XmlCharacterEscape(),
