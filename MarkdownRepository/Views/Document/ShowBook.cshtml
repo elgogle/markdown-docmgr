@@ -1,7 +1,7 @@
 ﻿@using MarkdownRepository.Lib
 
 @{    
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_BookLayout.cshtml";
 }
 @model MarkdownRepository.Models.BookVm
 
@@ -12,262 +12,105 @@
     @System.Web.Optimization.Styles.Render("~/css/editor.md")
 
     <style>
-            .ui.input {
-                position: relative;
-                font-weight: 400;
-                font-style: normal;
-                display: inline-flex;
-                color: rgba(0, 0, 0, .87);
-            }
 
-            .ui.input > input {
-                margin: 0;
-                max-width: 100%;
-                flex: 1 0 auto;
-                outline: none;
-                -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-                text-align: left;
-                line-height: 1.28571429em;
-                font-family: Helvetica Neue, NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, Microsoft Yahei, WenQuanYi Micro Hei, Arial, Helvetica, sans-serif;
-                padding: .64285714em 1em;
-                background: #fff;
-                border: 1px solid rgba(34, 36, 38, .15);
-                color: rgba(0, 0, 0, .87);
-                border-radius: .28571429rem;
-                transition: box-shadow .1s ease, border-color .1s ease;
-                box-shadow: none;
-            }
+        /*内容*/
+        .window-body{          
+            margin-left: 280px;
+            padding: 0 30px;
+        }
 
-            .ui.icon.input > i.icon:not(.link) {
-                pointer-events: none;
-            }
+        /*左边目录*/
+        .sidebar{  
+            top: 55px;          
+            left: 0;
+            position: fixed;
+            width: 280px;
+            border-right: 1px solid #ddd;
+            background-color: #fafafa;            
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            transition: left 0.25s ease;
+            overflow: auto;
+        }
 
-            .ui.icon.input > i.icon:not(.link) {
-                pointer-events: none;
-            }
+        /*左边目录*/
+        .sidebar .sidebar-body .catalog-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        /*左边目录*/
+        .sidebar .sidebar-body .catalog-body ul li {
+            line-height: 30px;
+            cursor: pointer;
+            white-space: nowrap;
+            width: 100%;
+            overflow: hidden;
+        }
 
-            .ui.icon.input > i.icon {
-                cursor: default;
-                position: absolute;
-                line-height: 1;
-                text-align: center;
-                top: 0;
-                right: 0;
-                margin: 0;
-                height: 100%;
-                width: 2.67142857em;
-                opacity: .5;
-                border-radius: 0 .28571429rem .28571429rem 0;
-                transition: opacity .3s ease;
-            }
+        /*内容 TOC*/
+        #toc_container {
+            z-index: 999;
+        }
+        /*内容 TOC*/
+        #toc_container ul {
+            list-style-type: none;
+            padding-left: 1em;
+            white-space: nowrap;
+        }
+        /*内容 TOC*/
+        #toc_container ul:first-child {
+            padding-left: 0px !important;
+        }
+        /*内容 TOC*/
+        #toc_container ul > li {
+            padding-top: 3px;
+            padding-bottom: 3px;
+        }
+        /*内容 TOC， TOC 在内容上方时*/
+        .toc-integrate {
+            position: relative;
+            font-size: 0.75em;
+            padding: 20px;
+            background: #b1e8e7 !important;
+            overflow:hidden;
+        }
+        div.toc-integrate::before{
+            content: "目录"
+        }
+        /*内容 TOC， TOC 单独在右边*/
+        .toc-absolute {
+            position: fixed;
+            right: 20px;
+            border: gray solid 1px;
+            border-radius: 7px;
+            overflow: hidden;
+            padding: 1em;
+            width: 180px;
+            font-size: 0.8em;
+            max-height: calc(100% - 250px);
+        }
+        /*内容 TOC*/
+        .toc-absolute:hover {
+            overflow: auto;
+        }        
+        /*内容*/
+        .doc{
+            padding-top:1em;
+        }
+        
+        /*隐藏左侧目录按钮*/
+        #hide-sidebar{
+            position:fixed;
+            margin-left: -25px;
+        }
+        #hide-sidebar>span{
+            color:lightgray;
+            cursor: pointer;
+        }
 
-            .ui.small.input {
-                font-size: .8em;
-            }
-
-            .ui.fluid.input {
-                display: flex;
-            }
-
-            .ui.fluid.input > input {
-                width: 0 !important;
-            }
-
-            .ui.icon.input > input {
-                padding-right: 2.67142857em !important;
-                font-size: 0.8em;
-            }
-
-            .window-container .window-head {
-                position: fixed;
-                flex: none;
-                order: 1;
-                top: 51px;
-                left: 0;
-                right: 0;
-                background: #fff;
-                border-bottom: 1px solid #ddd;
-                z-index: 20;
-            }
-
-            .window-body.with-sidebar .toolbar {
-                /*display: flex;
-                height: 55px;*/
-                padding: 5px;
-                /*flex-direction: row;
-                flex-wrap: nowrap;
-                justify-content: flex-start;
-                align-items: stretch;*/
-            }
-
-            /*.window-body.with-sidebar .toolbar .book-ins {
-                flex-grow: 8;
-            }
-
-            .window-body.with-sidebar .toolbar .extra2 {
-                margin-left: 15px;
-                flex-grow: 0.5;
-                font-size: 0.7em;
-            }*/
-
-            .window-body.with-sidebar .sidebar {
-                left: 0;
-            }
-
-            .window-container.with-head .window-body .sidebar {
-                top: 50px;
-            }
-
-            .window-body .sidebar {
-                position: fixed;
-                left: -280px;
-                top: 0;
-                bottom: 0;
-                width: 280px;
-                border-right: 1px solid #ddd;
-                background-color: #fafafa;
-                display: flex;
-                flex-direction: column;
-                flex-wrap: nowrap;
-                transition: left .25s ease;
-            }
-
-            .window-body .sidebar .sidebar-body {
-                flex: auto;
-                overflow: hidden;
-                position: relative;
-            }
-
-            .window-body .sidebar .sidebar-header {
-                position: relative;
-                flex: none;
-            }
-
-            .window-body .sidebar .sidebar-header .search-form {
-                padding: 12px;
-                border-bottom: 1px solid #ddd;
-                flex: none;
-            }
-
-            .window-body .sidebar .sidebar-body .catalog-body {
-                padding: 12px 0;
-                overflow-y: auto;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .window-body .sidebar .sidebar-body > div {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
-
-            div.window-body {
-                position: relative;
-                top: 0px;
-                /*margin-left: 280px;*/
-            }
-
-            .window-body .sidebar .sidebar-body .catalog-body > ul {
-                padding-right: 10px;
-            }
-
-            .window-body .sidebar .sidebar-body .catalog-body ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-
-            .window-body .sidebar .sidebar-body .catalog-body > ul > li {
-                margin-left: 0;
-            }
-
-            .window-body .sidebar .sidebar-body .catalog-body ul li {
-                line-height: 30px;
-                margin-left: 24px;
-                cursor: pointer;
-                white-space: nowrap;
-                width: 100%;
-                overflow: hidden;
-            }
-
-            .blog-footer {
-                display: none;
-            }
-
-            #paging_tool {
-                padding: 1em;
-            }
-
-            #pre_page,
-            #next_page {
-                cursor: pointer;
-            }
-
-            #toc_container ul {
-                list-style-type: none;
-                padding-left: 15px;
-                white-space: nowrap;    
-            }
-
-            #toc_container ul:first-child {
-                padding-left: 0px !important;
-            }
-
-            #toc_container ol.markdown-toc-list,
-            ul.markdown-toc-list {
-                padding: 5px;
-            }
-
-            #toc_container:hover {
-                overflow: auto;
-            }
-
-            @@media screen and (max-width: 1300px) {
-                #toc_container {
-                    position: relative;
-                }
-
-                #toc_container ul {
-                    padding-left: 1em;
-                }
-            }
-
-            @@media screen and (min-width: 1301px) {
-                #toc_container {
-                    position: fixed;
-                    right: 20px;
-                    border: gray solid 1px;
-                    border-radius: 7px;
-                    overflow: hidden;
-                    padding: 1em;
-                    max-height: calc(100% - 150px);
-                    width: 180px;
-                    font-size: 0.8em;
-                }
-            }
-
-            @@media screen and (max-width:1724px) {
-                div.window-body {
-                    margin-left: 280px;
-                }
-            }
-
-            @@media screen and (min-width:1725px) {
-                div.window-body {
-                    margin-left: 0;
-                }
-            }
-
-            /** 文章锚点点击时，偏移一定距离，因为顶部有导航占有一定高度 */
-            /*a.reference-link::before {
-            content: '';
-            display: block;
-            height: 130px;
-            margin: -128px 0 0;
-        }*/
     </style>
 }
 
@@ -275,49 +118,44 @@
 
 <div>
     <div id="main">
-        <div class="window-container with-head">
-
-            <div class="window-body with-sidebar">
-                <div class="sidebar">
-                    <div class="toolbar">
-                        <div class="book-ins">
-                            <h5>
-                                @Model.Book.name
-                            </h5>
-                            <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
-                            <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建时间: @Model.Book.creat_at</span>   
-                        </div>
-
-                        <div>
-                            @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
-                                User.Identity.Name.GetUserName() && t.is_owner))
-                            {
-                                <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
-                                    <i class="glyphicon glyphicon-edit"></i> 编辑
-                                </a>
-                            }
-                        </div>
+        <div class="window-container">
+            <div id="doc-category" class="sidebar">
+                <div class="toolbar">
+                    <div class="book-ins">
+                        <h5>
+                            @Model.Book.name
+                        </h5>
+                        <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
+                        <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建时间: @Model.Book.creat_at</span>   
                     </div>
 
-                    @*<div class="sidebar-header">
-                            <div class="search-form">
-                                <div class="ui small fluid icon input">
-                                    <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
-                                </div>
-                            </div>
-                        </div>*@
-                    <div class="sidebar-body">
-                        <div class="catalog-body">
-                            <div id="toc"></div>
-                        </div>
+                    <div>
+                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
+                            User.Identity.Name.GetUserName() && t.is_owner))
+                        {
+                            <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
+                                <i class="glyphicon glyphicon-edit"></i> 编辑
+                            </a>
+                        }
                     </div>
-
                 </div>
 
-
+                @*<div class="sidebar-header">
+                        <div class="search-form">
+                            <div class="ui small fluid icon input">
+                                <input type="text" placeholder="请输入搜索关键词..."><i class="icon search"></i>
+                            </div>
+                        </div>
+                    </div>*@
+                <div class="sidebar-body">
+                    <div class="catalog-body">
+                        <div id="toc"></div>
+                    </div>
+                </div>
             </div>
-
-            <div class="window-body">
+            
+            <div id="doc-body" class="window-body">
+                <div id="hide-sidebar"><span class="glyphicon glyphicon-align-justify"></span></div>
                 <div class="doc">
 
                     <div id="toc_container"></div>
@@ -361,7 +199,6 @@
                     <div id="comments"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -447,8 +284,69 @@
             if($("ul.markdown-toc-list").children().length === 0){
                 $("#toc_container").hide();
             }
-        }, 500);
+        }, 200);
+
+        
+        $("#hide-sidebar").on('click', function(){
+            var $sidebar = $(".sidebar");
+            $sidebar.toggle(0);
+            resizeBody();
+        });
+
+                
+        resizeBody();
+        
+        $(window).resize(function(){
+            resizeBody();
+        })
+
+        function resizeBody(){
+            debounce(function(){
+                var $leftSidebar = $(".sidebar"),
+                    $body = $("#doc-body"),
+                    $main = $("#main"),
+                    $toc = $("#toc_container"),
+                    leftSidebarIsShow = $leftSidebar.is(':visible'),
+                    leftSideWidth = 280,
+                    rightSideWidth = 230,
+                    docWidth = $main.width();
+
+                if(leftSidebarIsShow){
+                    $body.css({ "margin-left": leftSideWidth + "px" });
+                    docWidth = docWidth - leftSideWidth;
+                }else{
+                    $body.css({ "margin-left": "0" });
+                }
+
+                if(docWidth <= 1000){
+                    $toc.addClass('toc-integrate');
+                    $toc.removeClass('toc-absolute');
+                    $body.css({ "margin-right": "0" });
+                }else{
+                    $toc.addClass('toc-absolute');
+                    $toc.removeClass('toc-integrate');
+                    $body.css({ "margin-right": rightSideWidth + "px" });
+                }
+            }, 50);
+        }
+
+        function hashCode(s){
+            return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+        }
+
+        function debounce(func,wait) {
+            var key = hashCode(func.toString());
+            
+            if(!window.timeout) window.timeout = {};
+
+            if (window.timeout[key]) clearTimeout(window.timeout[key]);
+                
+            window.timeout[key] = setTimeout(() => {
+                func();
+            }, wait);            
+        }
     });
+
     </script>
 
     <link href="//192.168.13.119/web-comment/CSS/comment.css" rel="stylesheet" />

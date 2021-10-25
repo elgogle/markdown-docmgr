@@ -86,15 +86,9 @@
 
         #content {
             margin-top: 50px;
-            padding-top: 1em;
             min-height: 600px;
         }
 
-        .doc-category ul li {
-            color: #862ad8;
-            font-weight: 600;
-            font-family: sans-serif;
-        }
 
         .doc-list h4 {
             font-weight: 500;
@@ -108,69 +102,12 @@
             border-bottom: #da2fcd solid 2px;
         }
 
-        .side-category {
-            height: 100%;
-        }
-
-        .side-category .title {
-            font-size: 0.8em;
-            padding: 0.2em;
-            color: firebrick;
-            border-bottom: #31708f solid 2px;
-        }
-
-        .doc-category {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 5px;
-        }
 
         .blog-post {
             margin-top: 0 !important;
         }
 
-        .latest-doc li {
-            list-style-type: none;
-            margin-bottom: 1em;
-        }
 
-        .doc-category ul {
-            padding-left: 0.2em;
-        }
-
-        .doc-category ul li {
-            list-style-type: none;
-            font-size: 0.8em;
-        }
-
-        .doc-category ul li>a{
-            color:#555;
-        }
-
-        .list-foot {
-            font-size: 0.6em;
-            color: Gray;
-            font-family: sans-serif;
-            /*margin-top: 0.5em;*/
-        }
-
-        .list-doc-category {
-            /*color: #337ab7;*/
-        }
-
-        .list-doc-updatetime {
-            margin-left: 1em;
-            /*color: #a342a9;*/
-        }
-
-        .list-doc-creator{
-            margin-left: 1em;
-            /*color:brown;*/
-        }
-
-        .all-doc td{
-            padding-bottom: 2px !important;
-        }
 
         .md {
             word-wrap: break-word;
@@ -306,12 +243,8 @@
         </div>
     </div>
 
-    <div class="container" id="content">
-        <div class="row">
-            <div class="col-sm-12 blog-main">
-                @RenderBody()
-            </div><!-- /.blog-main -->
-        </div><!-- /.row -->
+    <div id="content">
+        @RenderBody()
     </div><!-- /.container -->
 
     @*<footer class="blog-footer">
@@ -361,7 +294,7 @@
     @RenderSection("scripts", required: false)
 
     <!-- 宠物 -->
-    <div class="model-container" style="position:fixed;top:50px; left:50px;">
+    @*<div class="model-container" style="position:fixed;top:50px; left:50px;">
         <canvas width="200"
                 height="300"
                 id="model"></canvas>
@@ -369,6 +302,6 @@
     <script src="@Url.Content("~/Live2d/live2d.js")"></script>
     <script>
         loadlive2d("model", "@Url.Content("~/Live2d/live2d-widget-model-tororo/assets/tororo.model.json")");
-    </script>
+    </script>*@
 </body>
 </html>
