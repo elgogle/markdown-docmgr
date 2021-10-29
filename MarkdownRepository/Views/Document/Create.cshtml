@@ -57,7 +57,7 @@
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
 
 <script>
-    function resizeLayout() {        
+    function resizeLayout() {
         window.editor.height(window.visualViewport.height - 145);
     }
 
@@ -79,82 +79,110 @@
             flowChart : true,
             sequenceDiagram : true,
             taskList: true,
+            syncScrolling : true,
+            toolbarIcons : function() {
+                return ['undo', 'redo', '|',
+                    'bold', 'del', 'italic', 'quote', 'ucwords', 'uppercase', 'lowercase', '|',
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', '|',
+                    'list-ul', 'list-ol', 'hr', 'table', 'pasteTable', '|',
+                    'link', 'reference-link', 'image', 'code', 'preformatted-text', 'code-block', 'datetime', 'emoji', 'html-entities', 'pagebreak', '|',
+                    'goto-line', 'watch', 'preview', 'fullscreen', 'clear', 'search', '|'
+                    ];
+            },
+            toolbarIconsClass : {
+                pasteTable : "fa-clipboard"
+            },
+            toolbarIconTexts : {
+                pasteTable : "粘贴表格"
+            },
+            lang : {
+                toolbar : {
+                    pasteTable : "粘贴表格"
+                }
+            },
+            toolbarHandlers : {
+                /**
+                * @@param {Object}      cm         CodeMirror对象
+                * @@param {Object}      icon       图标按钮jQuery元素对象
+                * @@param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
+                * @@param {String}      selection  编辑器选中的文本
+                */
+                pasteTable: function(cm, icon, cursor, selection) {
+                    navigator.clipboard.readText().then(function(copiedText){
+                        var text = copiedText;
+                        var tab = '\t';
+                        var line = '\r\n';
+                        var delimeter = '|';
+
+                        var preLineTabs = 0;
+                        var totalRows = 0;
+                        var isTable = true;
+                        var tableContent = '|';
+                        var nextIsNewLine = false;
+
+                        if (text) {
+                            var a = text.split(line);
+                            for (var i = 0; i < a.length; i++) {
+                                var s = a[i];
+                                if (i == (a.length - 1) && !s) continue;
+
+                                if (nextIsNewLine) {
+                                    tableContent += delimeter;
+                                    nextIsNewLine = false;
+                                }
+
+                                if (s.indexOf(tab) > -1) {
+                                    // 包含有制表
+                                    totalRows++;
+                                    var t = s.split(tab);
+                                    var thisLineTabs = 0;
+                                    for (var j = 0; j < t.length; j++) {
+                                        tableContent += (t[j]?t[j]:'&nbsp;') + delimeter;
+                                        thisLineTabs++;
+                                    }
+                                    tableContent += line; //新起一行开始
+                                    nextIsNewLine = true;
+
+                                    if (totalRows > 1 && thisLineTabs !== preLineTabs) {
+                                        isTable = false;
+                                        break;
+                                    }
+
+                                    preLineTabs = thisLineTabs;
+                                } else {
+                                    tableContent += (s?s:'-') + '<br/>';
+                                }
+                            }
+                        }
+
+                        if (totalRows > 1 && isTable) {
+                            var tabTitleRow = delimeter;
+                            for (var i = 0; i < preLineTabs; i++) {
+                                tabTitleRow += '  ' + i + '  ' + delimeter;
+                            }
+                            tabTitleRow += line + delimeter;
+                            for (var i = 0; i < preLineTabs; i++) {
+                                tabTitleRow += '-----' + delimeter;
+                            }
+
+                            tabTitleRow += line;
+
+                            editor.insertValue(tabTitleRow + tableContent);
+                            ev.preventDefault();
+                        }
+                    });
+                }
+            }
         });
 
 
         $("#mkEditor").on('paste', function (ev) {
             var data = event.clipboardData;
             var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-            
+
             for (var index in items) {
                 var item = items[index];
-
-                if (item.type === "text/plain") {
-                    
-                    var text = data.getData("text/plain");
-                    var tab = '\t';
-                    var line = '\r\n';
-                    var delimeter = '|';
-          
-                    var preLineTabs = 0;
-                    var totalRows = 0;
-                    var isTable = true;
-                    var tableContent = '|';
-                    var nextIsNewLine = false;
-
-                    if (text) {
-                        var a = text.split(line);
-                        for (var i = 0; i < a.length; i++) {
-                            var s = a[i];                            
-                            if (i == (a.length - 1) && !s) continue;
-
-                            if (nextIsNewLine) {
-                                tableContent += delimeter;
-                                nextIsNewLine = false;
-                            }
-
-                            if (s.indexOf(tab) > -1) {
-                                // 包含有制表
-                                totalRows++;
-                                var t = s.split(tab);
-                                var thisLineTabs = 0;
-                                for (var j = 0; j < t.length; j++) {
-                                    tableContent += (t[j]?t[j]:'-') + delimeter;
-                                    thisLineTabs++;
-                                }
-                                tableContent += line; //新起一行开始
-                                nextIsNewLine = true;
-                                
-                                if (totalRows > 1 && thisLineTabs !== preLineTabs) {
-                                    isTable = false;
-                                    break;
-                                }
-
-                                preLineTabs = thisLineTabs;
-                            } else {
-                                tableContent += (s?s:'-') + '<br/>';
-                            }                            
-                        }
-                    }
-
-                    if (totalRows > 1 && isTable) {
-                        var tabTitleRow = delimeter;
-                        for (var i = 0; i < preLineTabs; i++) {
-                            tabTitleRow += '  ' + i + '  ' + delimeter;
-                        }
-                        tabTitleRow += line + delimeter;
-                        for (var i = 0; i < preLineTabs; i++) {
-                            tabTitleRow += '-----' + delimeter;
-                        }
-                        
-                        tabTitleRow += line;
-
-                        editor.insertValue(tabTitleRow + tableContent);
-                        ev.preventDefault();
-                        break;
-                    }
-
-                } else if (item.kind === 'file') {
+                if (item.kind === 'file') {
                     var blob = item.getAsFile();
                     var reader = new FileReader();
                     reader.onload = function (event) {
@@ -173,7 +201,7 @@
                             }
                         });
                     }
-                    
+
                     reader.readAsDataURL(blob);
                 }
             }
@@ -193,7 +221,7 @@
                function (result) {
                    if (callback && typeof callback === 'function') {
                        callback(result);
-                   }                   
+                   }
                }
             );
         }
@@ -220,7 +248,7 @@
         $("#btnView").on('click', function () {
             saveDocument(function (result) {
                 document.location = '@Url.Action("Show", "Document")' + '?id=' + result.rowid;
-            });            
+            });
         });
 
         $(document).on('keydown', function (e) {
