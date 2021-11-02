@@ -137,6 +137,21 @@
         pre {
             pointer-events: none;
         }
+
+        /*书籍介绍*/
+        .book-ins{
+            padding: 5px;
+        }
+        .book-ins-label{
+            display:block; 
+            font-size:0.7em; 
+            text-overflow: ellipsis; 
+            word-wrap: break-word;
+        }
+        .book-edit-block{
+            border-bottom: #03a9f4 solid 1px;
+            padding: 2px;
+        }
     </style>
 }
 
@@ -151,11 +166,11 @@
                         <h5>
                             @Model.Book.name
                         </h5>
-                        <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
-                        <span style="display:block; font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">创建时间: @Model.Book.creat_at</span>   
+                        <span class="book-ins-label">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
+                        <span class="book-ins-label">创建时间: @Model.Book.creat_at</span>   
                     </div>
 
-                    <div>
+                    <div class="book-edit-block">
                         @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
                             User.Identity.Name.GetUserName() && t.is_owner))
                         {

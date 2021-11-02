@@ -2,7 +2,7 @@
 
 @{
     ViewBag.Title = "修改书籍";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_BookLayout.cshtml";
     var documentId = 0;
     var uploadId = Guid.NewGuid().ToString();
 }
@@ -44,6 +44,20 @@
     .container{
         width: auto !important;
     }
+
+    /*书籍介绍*/
+    .book-ins{
+        padding: 5px;
+    }
+    .book-ins-label{
+        font-size:0.7em; 
+        text-overflow: ellipsis; 
+        word-wrap: break-word;
+    }
+    .book-edit-block{
+        border-bottom: #03a9f4 solid 1px;
+        padding: 2px;
+    }
 </style>
 }
 
@@ -61,11 +75,11 @@
                         <h5>
                             <span>书名:</span><span id="label_book_name">@Model.Book.name</span>
                         </h5>
-                        <p style="font-size:0.6em; text-overflow: ellipsis; word-wrap: break-word;">
+                        <p class="book-ins-label">
                             <span style="">简介: </span><span id="label_book_desc">@Model.Book.description.GetShortDesc()</span>
                         </p>
                     </div>
-                    <div>
+                    <div class="book-edit-block">
                         <button id="btn_edit_book_title" class="btn btn-default btn-xs">
                             <i class="glyphicon glyphicon-pencil"></i> 更新书籍名与简介
                         </button>
