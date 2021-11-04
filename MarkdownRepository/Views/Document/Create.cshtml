@@ -1,7 +1,7 @@
 ﻿@using MarkdownRepository.Models
 @{
     ViewBag.Title = "写文章";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_BookLayout.cshtml";
 }
 @model MarkdownRepository.Models.Document
 @{
@@ -13,11 +13,11 @@
 
 <input id="docId" type="hidden" value="@doc.rowid" />
 
-<label style="font-size:0.8em">标题
+<label style="">标题
     <input id="title" class="form-control col-sm-4" type="text" value="@doc.title" class="" />
 </label>
 
-<label style="font-size:0.8em">文章分类
+<label style="">文章分类
     <input id="category" class="form-control col-sm-4" placeholder="使用','分隔" type="text" value="@doc.category" class=""
         list="categories" />
 </label>
@@ -31,7 +31,7 @@
     }
 </datalist>
 
-<label style="font-size:0.8em">是否公开
+<label style="">是否公开
     <input id="access" type="checkbox" @(doc.is_public==DocumentAccess.PUBLIC?"checked":"") />
 </label>
 
@@ -49,7 +49,14 @@
 </div>
 
 @section style{
+
 @System.Web.Optimization.Styles.Render("~/css/editor.md")
+
+<style>
+    #content{
+        padding: 15px;
+    }
+</style>
 }
 
 @section scripts{
