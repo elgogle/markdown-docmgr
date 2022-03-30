@@ -199,6 +199,7 @@
     <Compile Include="Controllers\CodeSearchController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\FileController.cs" />
+    <Compile Include="Controllers\ShareController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
