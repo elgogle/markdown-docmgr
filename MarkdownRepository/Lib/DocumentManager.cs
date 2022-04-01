@@ -476,10 +476,12 @@ create table if not exists id_generator(id INTEGER PRIMARY KEY, ikey nvarchar(10
             {
                 CreateTableIfNotExist();
                 var sql = @"
+BEGIN TRANSACTION;
 delete from documents_owner where id=@id; 
 delete from documents where rowid=@id;
 delete from documents_category where doc_id=@id;
 delete from documents_follow where doc_id=@id;
+COMMIT;
 ";
                 db.Execute(sql, new { id = id });
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Operate = Operate.Delete });
@@ -525,12 +527,14 @@ delete from documents_follow where doc_id=@id;
 
                 CheckPermissionForUpdateBook(userid, db, bookid);
 
+                var book = GetBook(bookid, userid);
+                foreach(var d in book.BookDirectory)
+                {
+                    Delete(d.document_id);
+                }
+
                 var sql = @"
 BEGIN TRANSACTION;
-delete from documents_owner where exists(select 1 from book_directories b where b.document_id = documents_owner.id and b.book_id=@book_id); 
-delete from documents where exists(select 1 from book_directories b where b.document_id = documents.rowid and b.book_id=@book_id);
-delete from documents_category where exists(select 1 from book_directories b where b.document_id = documents_category.doc_id and b.book_id=@book_id);
-delete from documents_follow where exists(select 1 from book_directories b where b.document_id = documents_follow.doc_id and b.book_id=@book_id);
 delete from book_owner where book_id=@book_id;
 delete from book_directories where book_id=@book_id;
 delete from books where id=@book_id;
@@ -555,12 +559,12 @@ COMMIT;
                 {
                     CheckPermissionForUpdateBook(userid, db, directory.book_id);
 
-                    var bookId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
+                    var docId = db.Query<long>("select document_id from book_directories where id=@id", new { id = bookDirId }).FirstOrDefault();
                     db.Execute("delete from book_directories where id=@id;", new { id = bookDirId });
 
-                    if (bookId > 0)
+                    if (docId > 0)
                     {
-                        Delete(bookId);
+                        Delete(docId);
                     }
                 }
             }
