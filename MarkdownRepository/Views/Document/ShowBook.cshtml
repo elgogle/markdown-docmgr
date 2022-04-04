@@ -216,12 +216,15 @@
             <div id="doc-body" class="window-body">
                 <div id="hide-sidebar"><span class="glyphicon glyphicon-align-justify"></span></div>
                 <div class="doc">
-                    <div class="pull-right" style="font-size:0.9em;">
-                        <a href="@Url.Action("Slide", new { id=(ViewBag.Document as Document).rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
-                    </div>
-                    <div style="clear: both"></div>
+                    @if (ViewBag.Document != null)
+                    {
+                        <div class="pull-right" style="font-size:0.9em;">
+                            <a href="@Url.Action("Slide", new { id=(ViewBag.Document as Document).rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
+                        </div>
+                        <div style="clear: both"></div>
+                        <h2 style="" class="title">@((ViewBag.Document as Document).title)</h2>
+                    }
 
-                    <h2 style="" class="title">@((ViewBag.Document as Document).title)</h2>
                     <div id="paging_tool_top">
                         <div class="pull-right">
                             @if (ViewBag.PreDirectoryId >= 0)
@@ -238,8 +241,6 @@
                         </div>
                         <div style="clear: both"></div>
                     </div>
-
-
 
                     <div id="toc_container"></div>
 
