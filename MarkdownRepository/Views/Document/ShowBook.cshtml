@@ -20,6 +20,11 @@
             padding: 0 30px;
         }
 
+        #md{
+            margin-top:0;
+            padding-top:0;
+        }
+
         /*左边目录*/
         .sidebar{  
             top: 55px;          
@@ -158,6 +163,9 @@
             border-bottom-width: 2px;
             border-bottom-color: black;
         }
+        .title-margin{
+            margin: 0 20px;
+        }
         a.paging-tool-link{
             font-size: 1.3em;
             border: 1px solid gray;
@@ -218,15 +226,15 @@
                 <div class="doc">
                     @if (ViewBag.Document != null)
                     {
-                        <div class="pull-right" style="font-size:0.9em;">
+                        <div class="pull-right title-margin" style="font-size:0.9em;">
                             <a href="@Url.Action("Slide", new { id=(ViewBag.Document as Document).rowid })"><span class="glyphicon glyphicon-blackboard"></span> 演示</a>
                         </div>
                         <div style="clear: both"></div>
-                        <h2 style="" class="title">@((ViewBag.Document as Document).title)</h2>
+                        <h2 style="" class="title title-margin">@((ViewBag.Document as Document).title)</h2>
                     }
 
                     <div id="paging_tool_top">
-                        <div class="pull-right">
+                        <div class="pull-right title-margin">
                             @if (ViewBag.PreDirectoryId >= 0)
                             {
                                 <a class="paging-tool-link" title="上一章" 
