@@ -1,7 +1,7 @@
 ﻿@using MarkdownRepository.Lib
 @using MarkdownRepository.Models
 
-@{    
+@{
     Layout = "~/Views/Shared/_BookLayout.cshtml";
 }
 @model MarkdownRepository.Models.BookVm
@@ -15,7 +15,7 @@
     <style>
 
         /*内容*/
-        .window-body{          
+        .window-body{
             margin-left: 280px;
             padding: 0 30px;
         }
@@ -26,13 +26,13 @@
         }
 
         /*左边目录*/
-        .sidebar{  
-            top: 55px;          
+        .sidebar{
+            top: 55px;
             left: 0;
             position: fixed;
             width: 280px;
             border-right: 1px solid #ddd;
-            background-color: #fafafa;            
+            background-color: #fafafa;
             bottom: 0;
             display: flex;
             flex-direction: column;
@@ -59,6 +59,7 @@
         /*内容 TOC*/
         #toc_container {
             z-index: 999;
+            margin: 0 20px;
         }
         /*内容 TOC*/
         #toc_container ul {
@@ -101,12 +102,12 @@
         /*内容 TOC*/
         .toc-absolute:hover {
             overflow: auto;
-        }        
+        }
         /*内容*/
         .doc{
             padding-top:1em;
         }
-        
+
         /*隐藏左侧目录按钮*/
         #hide-sidebar{
             position:fixed;
@@ -149,9 +150,9 @@
             padding: 5px;
         }
         .book-ins-label{
-            display:block; 
-            font-size:0.7em; 
-            text-overflow: ellipsis; 
+            display:block;
+            font-size:0.7em;
+            text-overflow: ellipsis;
             word-wrap: break-word;
         }
         .book-edit-block{
@@ -176,7 +177,7 @@
         a.paging-tool-link:hover{
             text-decoration: none;
         }
-        
+
 
     </style>
 }
@@ -193,7 +194,7 @@
                             @Model.Book.name
                         </h5>
                         <span class="book-ins-label">创建人: @AdAccount.GetUserNameById(Model.Book.creator)</span>
-                        <span class="book-ins-label">创建时间: @Model.Book.creat_at</span>   
+                        <span class="book-ins-label">创建时间: @Model.Book.creat_at</span>
                     </div>
 
                     <div class="book-edit-block">
@@ -220,7 +221,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div id="doc-body" class="window-body">
                 <div id="hide-sidebar"><span class="glyphicon glyphicon-align-justify"></span></div>
                 <div class="doc">
@@ -237,14 +238,14 @@
                         <div class="pull-right title-margin">
                             @if (ViewBag.PreDirectoryId >= 0)
                             {
-                                <a class="paging-tool-link" title="上一章" 
-                                   href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.PreDirectoryId })">&laquo;</a>
+                                <a class="paging-tool-link" title="上一章"
+                                    href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.PreDirectoryId })">&laquo;</a>
                             }
 
                             @if (ViewBag.NextDirectoryId >= 0)
                             {
-                                <a class="paging-tool-link" title="下一章" 
-                                   href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.NextDirectoryId })">&raquo;</a>
+                                <a class="paging-tool-link" title="下一章"
+                                    href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.NextDirectoryId })">&raquo;</a>
                             }
                         </div>
                         <div style="clear: both"></div>
@@ -263,17 +264,17 @@
 
                     <div id="paging_tool_bottom">
                         <input type="hidden" id="current_dir_id" value="@ViewBag.CurrentDiretoryId" />
-                        <div class="pull-right">
+                        <div class="pull-right title-margin">
                             @if (ViewBag.PreDirectoryId >= 0)
                             {
-                                <a class="paging-tool-link" title="上一章" 
-                                   href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.PreDirectoryId })">&laquo;</a>
+                                <a class="paging-tool-link" title="上一章"
+                                    href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.PreDirectoryId })">&laquo;</a>
                             }
 
                             @if (ViewBag.NextDirectoryId >= 0)
                             {
-                                <a class="paging-tool-link" title="下一章" 
-                                   href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.NextDirectoryId })">&raquo;</a>
+                                <a class="paging-tool-link" title="下一章"
+                                    href="@Url.Action("ShowBook", new{ bookid = Model.Book.id, dirId = ViewBag.NextDirectoryId })">&raquo;</a>
                             }
                         </div>
                         <div style="clear: both"></div>
@@ -369,16 +370,16 @@
             }
         }, 200);
 
-        
+
         $("#hide-sidebar").on('click', function(){
             var $sidebar = $(".sidebar");
             $sidebar.toggle(0);
             resizeBody();
         });
 
-                
+
         resizeBody();
-        
+
         $(window).resize(function(){
             resizeBody();
         })
@@ -414,19 +415,19 @@
         }
 
         function hashCode(s){
-            return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+            return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
         }
 
         function debounce(func,wait) {
             var key = hashCode(func.toString());
-            
+
             if(!window.timeout) window.timeout = {};
 
             if (window.timeout[key]) clearTimeout(window.timeout[key]);
-                
+
             window.timeout[key] = setTimeout(() => {
                 func();
-            }, wait);            
+            }, wait);
         }
     });
 
