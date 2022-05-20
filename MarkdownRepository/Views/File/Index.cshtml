@@ -1,4 +1,4 @@
-﻿@{    
+﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @using MarkdownRepository.Lib
@@ -10,21 +10,19 @@
 
     <style>
 
-
-        a:hover, a:visited, a:focus {
-            text-decoration: none !important;
-        }
-
         * {
             -webkit-border-radius: 0 !important;
             -moz-border-radius: 0 !important;
             border-radius: 0 !important;
         }
 
+        a:hover, a:visited, a:focus {
+            text-decoration: none !important;
+        }
+
         .filename, td, th {
             white-space: nowrap;
         }
-
 
         #search-addon {
             font-size: 12px;
@@ -418,7 +416,7 @@
     <a title="上传文件" class="btn btn-default" href="@Url.Action("Upload", new { p = ViewBag.CurrentPath })"><i class="fa fa-cloud-upload" aria-hidden="true"></i> 上传文件</a>
     <a title="新增目录" class="btn btn-default" href="#createNewItem" data-toggle="modal" data-target="#createNewItem"><i class="fa fa-plus-square"></i> 新增目录</a>
 
-    <div class="pull-right input-group col-md-4" role="group" aria-label="...">        
+    <div class="pull-right input-group col-md-4" role="group" aria-label="...">
         <input id="search_text" name="text" type="text" placeholder="搜索目录名或文件名" class="form-control">
         <div id="btn_search" class="input-group-addon" style="cursor: pointer">
             <i class="glyphicon glyphicon-search"></i>

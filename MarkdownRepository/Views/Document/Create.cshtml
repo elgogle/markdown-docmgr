@@ -113,7 +113,7 @@
                 }
             },
             toolbarHandlers: {
-                
+
                 /**
                 * @@param {Object}      cm         CodeMirror对象
                 * @@param {Object}      icon       图标按钮jQuery元素对象
@@ -184,7 +184,7 @@
 
                                 var t = s.split(tab);
                                 var thisLineTabs = 0;
-                                for (var j = 0; j < t.length; j++) {                                    
+                                for (var j = 0; j < t.length; j++) {
                                     tableContent += (t[j] ? t[j] : '-') + delimeter;
                                     thisLineTabs++;
                                 }
@@ -232,11 +232,11 @@
                     access: $("#access")[0].checked === true ? 1 : 0,
                     uploadId: '@uploadId'
                 },
-               function (result) {
-                   if (callback && typeof callback === 'function') {
-                       callback(result);
-                   }
-               }
+                function (result) {
+                    if (callback && typeof callback === 'function') {
+                        callback(result);
+                    }
+                }
             );
         }
 

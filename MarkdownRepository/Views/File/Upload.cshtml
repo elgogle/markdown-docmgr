@@ -1,6 +1,6 @@
 ﻿@{
     ViewBag.Title = "上传文件";
-    Layout = "~/Views/Shared/_Layout.cshtml";    
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section style{
@@ -34,7 +34,7 @@
         </div>
         <div class="card-body" style="margin-top: 1em;">
             <form id="fileUploader" action="@Url.Action("Upload")" class="dropzone card-tabs-container"  enctype="multipart/form-data">
-                <input type="hidden" name="p" value="@ViewBag.CurrentPath">                
+                <input type="hidden" name="p" value="@ViewBag.CurrentPath">
                 <div class="fallback">
                     <input name="file" type="file" multiple />
                 </div>

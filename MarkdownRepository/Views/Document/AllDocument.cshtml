@@ -3,7 +3,7 @@
 @using MarkdownRepository.Lib
 @model PagedList.IPagedList<MarkdownRepository.Models.Document>
 
-@{    
+@{
     ViewBag.Title = "全部文章";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var myFollwedDocs = ViewBag.MyFollowedDocs as List<MarkdownRepository.Models.Document>;
@@ -11,7 +11,7 @@
 
 <style>
     .master-speak{
-        background-color:lightgray;        
+        background-color:lightgray;
         border-left:1px solid blue;
         font-size: 0.7em;
         padding: 0.3em;
@@ -29,7 +29,7 @@
                 <span>@obj.zh</span>
             </div>
         }
-    } 
+    }
 
     @if (Model != null && Model.Count > 0)
     {
@@ -69,7 +69,7 @@
                                         </div>
                                     }
                                 </div>
-                                
+
                                 @*@if (User.Identity.IsAuthenticated)
                                 {
                                     <div class="pull-right" style="margin-top:25px;font-size:0.8em;">
@@ -222,7 +222,7 @@
 
         function transferDoc(docId, docName) {
             $("#transfer_doc_name").text("文章: " + docName);
-            $("#transfer_doc_id").val(docId);            
+            $("#transfer_doc_id").val(docId);
 
             window.diagEditBookInfoIndex = layer.open({
                 type: 1,

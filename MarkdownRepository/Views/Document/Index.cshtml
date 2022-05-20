@@ -28,7 +28,7 @@
                                     <span class="list-doc-category">文章分类: </span>
                                     @if (!string.IsNullOrEmpty(doc.category))
                                     {
-                                         @doc.category
+                                        @doc.category
                                     }
                                     <span class="list-doc-updatetime">更新时间: </span> @doc.update_at
                                 </div>
@@ -47,19 +47,19 @@
 
     <div class="col-md-2 side-category">
         <div class="export-section">
-            <a href="@Url.Action("ExportMyDocumentsWithMarkdown", "Document")"><span class="glyphicon glyphicon-floppy-save"></span> 导出全部</a>            
+            <a href="@Url.Action("ExportMyDocumentsWithMarkdown", "Document")"><span class="glyphicon glyphicon-floppy-save"></span> 导出全部</a>
         </div>
         <div class="title">文章分类</div>
-        <div class="doc-category">        
-        @if (ViewBag.Category != null) 
+        <div class="doc-category">
+        @if (ViewBag.Category != null)
         {
             <ul>
-                @foreach (var c in ViewBag.Category as List<dynamic>) 
+                @foreach (var c in ViewBag.Category as List<dynamic>)
                 {
                     if (!string.IsNullOrWhiteSpace(c.category as string))
-				    {
+                    {
                     <li>@Html.ActionLink(string.Format("{0}", c.category as string), "SearchByCategory", new { category = c.category, byOwner=true })<sup> @c.hint</sup> </li>
-				    }
+                    }
                 }
             </ul>
         }
