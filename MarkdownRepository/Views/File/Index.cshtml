@@ -472,7 +472,7 @@
                             <td class="inline-actions">
 
                                 <a title="删除" href="@Url.Action("Delete", new { currentPath = ViewBag.CurrentPath, deleteFile = Path.Combine(f.Parent, f.FileName) })" onclick="return confirm('确认删除@(f.IsFile?"文件":"目录")?');"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
-                                <a title="重命名" href="#" onclick="rename('@ViewBag.CurrentPath', '@f.FileName');return false;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                <a title="重命名" href="#" onclick="rename('@Url.Encode(ViewBag.CurrentPath)', '@Url.Encode(f.FileName)');return false;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
 
                                 @if (f.IsFile)
                                 {
@@ -506,7 +506,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-primary" data-dismiss="modal"><i class="fa fa-times-circle"></i> 取消</button>
-                    <button type="button" class="btn btn-success" onclick="newfolder('@ViewBag.CurrentPath');return false;"><i class="fa fa-check-circle"></i> 马上创建</button>
+                    <button type="button" class="btn btn-success" onclick='newfolder("@(Url.Encode(ViewBag.CurrentPath))");return false;'><i class="fa fa-check-circle"></i> 马上创建</button>
                 </div>
             </div>
         </div>
@@ -552,14 +552,14 @@
             var n = prompt("新文件名", t);
             null !== n
             && "" !== n && n != t
-            && (window.location.href = "@Url.Action("Rename")?currentPath=" + encodeURIComponent(e) + "&from=" + encodeURIComponent(t) + "&to=" + encodeURIComponent(n))
+            && (window.location.href = "@Url.Action("Rename")?currentPath=" + e + "&from=" + t + "&to=" + encodeURIComponent(n))
         }
 
         function newfolder(e) {
             var t = document.getElementById("newfilename").value;
             null !== t
             && "" !== t
-            && (window.location.href = "@Url.Action("NewFolder")?currentPath=" + encodeURIComponent(e) + "&folderName=" + encodeURIComponent(t))
+            && (window.location.href = "@Url.Action("NewFolder")?currentPath=" + e + "&folderName=" + encodeURIComponent(t))
         }
 
     </script>
