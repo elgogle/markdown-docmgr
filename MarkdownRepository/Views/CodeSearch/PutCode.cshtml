@@ -1,6 +1,5 @@
 ﻿@using MarkdownRepository.Controllers
 
-
 <div>
     <div class="form-group">
         <label class="form-group">代码所属编程语言</label>
@@ -30,8 +29,8 @@
 
     <div class="form-group">
         <label>将代码粘贴到以下框中</label>
-        <div>
-            <textarea style="width: 100%" rows="15" name="codeSearchCodeBody"></textarea>
+        <div id="txtCodeSearchCodeBody">
+            <textarea name="codeSearchCodeBody" style="display:none;" ></textarea>
         </div>
     </div>
 
@@ -39,6 +38,3 @@
         <button id="btnSubmit" type="submit" class="btn btn-primary btn-sm">提交</button>
     </div>
 </div>
-
-
-

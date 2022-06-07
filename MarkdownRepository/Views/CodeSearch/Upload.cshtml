@@ -4,6 +4,7 @@
 }
 
 @section style{
+    @System.Web.Optimization.Styles.Render("~/css/editor.md")
     <link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
     <link href="@Url.Content("~/css/dropzone.min.css")" rel="stylesheet">
     <style>
@@ -80,8 +81,12 @@
 
 
 @section scripts{
+    @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+
     <script src="@Url.Content("~/javascripts/layer-v3.1.1/layer/layer.js")"></script>
     <script src="@Url.Content("~/javascripts/dropzone.min.js")"></script>
+    
+
     <script>
         function messageAlert(message) {
             layer.alert(message, {
@@ -92,6 +97,23 @@
         }
 
         $(document).ready(function () {
+            window.codeEditor = editormd("txtCodeSearchCodeBody", {
+                width: "100%",
+                height: 640,
+                watch: false,
+                toolbar: false,
+                codeFold: true,
+                searchReplace: true,
+                saveHTMLToTextarea: true,
+                placeholder: "将代码粘贴到此!",
+                theme: "default",
+                mode: "clike",
+                path: '@Url.Content("~/editor.md/lib/")',
+            });
+
+            setTimeout(function () {
+                codeEditor.resize();
+            }, 2000);
 
             $("#btnSubmit").on('click', function () {
                 $.post('@Url.Action("PutCode")', {
