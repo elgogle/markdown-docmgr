@@ -16,7 +16,15 @@ namespace MarkdownRepository.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
-            ViewBag.ReturnUrl = returnUrl;
+            if(!returnUrl.IsNullOrEmpty())
+            {
+                ViewBag.ReturnUrl = returnUrl;
+            }
+            else if(this.Request.UrlReferrer != null)
+            {
+                ViewBag.ReturnUrl = this.Request.UrlReferrer.AbsoluteUri;
+            }
+
             return View();
         }
 
