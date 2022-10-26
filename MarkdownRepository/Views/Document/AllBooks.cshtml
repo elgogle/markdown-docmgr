@@ -49,6 +49,8 @@
         .category {
             color: #337ab7;
             font-size: 0.7em;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
 
         .books-container{
@@ -90,13 +92,13 @@
                         <div>
                             <a href="@Url.Action("ShowBook", new { bookid = item.id })">
                                 <h4>@Html.Raw(item.name)</h4>
-                                <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
+                                <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;" title="@Html.Raw(item.description)">
                                     简介: @Html.Raw(item.description)
                                 </p>
                             </a>
                         </div>
 
-                        <div class="category">
+                        <div class="category" title="@Html.Raw(item.category)">
                             分类: @Html.Raw(item.category)
                         </div>
 
