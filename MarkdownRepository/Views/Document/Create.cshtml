@@ -9,6 +9,7 @@
     var uploadId = Guid.NewGuid().ToString();
 }
 
+
 <div id="message" class=""></div>
 
 <input id="docId" type="hidden" value="@doc.rowid" />
@@ -43,6 +44,10 @@
     <span class="glyphicon glyphicon-floppy-save"
         aria-hidden="true"></span> 保存
 </button>
+<button id="btnHistory" class="btn btn-default pull-right">
+    <span class="glyphicon glyphicon-time"
+          aria-hidden="true"></span> 历史
+</button>
 
 <div id="mkEditor">
     <textarea style="display:none;">@doc.content</textarea>
@@ -51,7 +56,7 @@
 @section style{
 
 @System.Web.Optimization.Styles.Render("~/css/editor.md")
-
+<link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
 <style>
     #content{
         padding: 15px;
@@ -67,6 +72,7 @@
 @section scripts{
 
 @System.Web.Optimization.Scripts.Render("~/script/editor.md")
+<script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
 
 <script>
     function resizeLayout() {
@@ -265,6 +271,18 @@
         $("#btnView").on('click', function () {
             saveDocument(function (result) {
                 document.location = '@Url.Action("Show", "Document")' + '?id=' + result.rowid;
+            });
+        });
+
+        $("#btnHistory").on('click', function () {
+            layer.open({
+                type: 2,
+                title: '版本历史',
+                shadeClose: true,
+                shade: false,
+                maxmin: true, //开启最大化最小化按钮
+                area: ['800px', '600px'],
+                content: '@Url.Action("DocumentHistory", new { id = doc.rowid })'
             });
         });
 

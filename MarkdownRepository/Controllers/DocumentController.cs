@@ -185,6 +185,12 @@ namespace MarkdownRepository.Controllers
             }
         }
 
+        public ActionResult DocumentHistory(long id)
+        {
+            ViewBag.Versions = docMgr.GetDocVersions(id);
+            return View();
+        }
+
         /// <summary>
         /// 创建用户组
         /// </summary>

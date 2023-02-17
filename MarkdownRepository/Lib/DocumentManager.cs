@@ -276,7 +276,7 @@ update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@pare
         {
             using (var db = this.OpenDb())
             {
-                var isDocOwner = db.Query<bool>("select 1 from documents_owner where id=docId and creator=@creator",
+                var isDocOwner = db.Query<bool>("select 1 from documents_owner where id=@docId and creator=@creator",
                     new { creator = userId, docId = docId }).FirstOrDefault();
                 if (isDocOwner) return true;
 
