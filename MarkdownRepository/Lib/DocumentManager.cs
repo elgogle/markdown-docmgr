@@ -1,5 +1,3 @@
-#region Imports (9)
-
 using Dapper;
 using MarkdownRepository.Models;
 using System;
@@ -10,13 +8,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-#endregion Imports (9)
-
 namespace MarkdownRepository.Lib
 {
     public class DocumentManager
     {
-        #region Members of DocumentManager (6)
         private string _dbPath = null;
         private DocumentSearchManager _indexMgr = null;
         private static object _lock = new object();
@@ -25,11 +20,6 @@ namespace MarkdownRepository.Lib
         const string SQLITE_BACKUP_PATH = "~/App_Data/DataBackup";
         const string INDEX_PATH = "~/App_Data/Index/";
 
-
-        #endregion Members of DocumentManager (6)
-
-        #region Properties of DocumentManager (1)
-
         public DocumentSearchManager IndexManager
         {
             get
@@ -37,10 +27,6 @@ namespace MarkdownRepository.Lib
                 return this._indexMgr;
             }
         }
-
-        #endregion Properties of DocumentManager (1)
-
-        #region Constructors of DocumentManager (2)
 
         public DocumentManager()
         {
@@ -56,10 +42,6 @@ namespace MarkdownRepository.Lib
             this._indexMgr = DocumentSearchManager.IndexMgr;
         }
 
-        #endregion Constructors of DocumentManager (2)
-
-        #region Methods of DocumentManager (48)
-
         /// <summary>
         /// 添加附件信息到数据库表中
         /// </summary>
@@ -73,6 +55,76 @@ namespace MarkdownRepository.Lib
                 CreateTableIfNotExist();
 
                 db.Execute("insert into documents_file(file_path, doc_id, upload_id) values(@path, @id, @uploadId)", new { path = path, id = id, uploadId = uploadId });
+            }
+        }
+
+        /// <summary>
+        /// 添加用户到用户组
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userGroupRowid"></param>
+        public void AddUserToGroup(string creator, string userId, long userGroupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isGroupOwner = db.Query<bool>("select 1 from user_group where rowid=@group_rowid and creator=@creator",
+                    new { group_rowid = userGroupRowid, creator = creator }).FirstOrDefault();
+                if (isGroupOwner)
+                {
+                    db.Execute("insert or replace into user_group_member(group_rowid, user_id, creator) values(@group_rowid, @user_id, @creator)",
+                        new { group_rowid = userGroupRowid, user_id = userId, creator = creator });
+                }
+                else
+                {
+                    throw new Exception("这个用户组不是你创建，你无权操作");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 列出在某个用户组中的所有用户 id
+        /// </summary>
+        /// <param name="userGroupRowid"></param>
+        /// <returns></returns>
+        public List<string> ListUsersInUserGroup(string userId, long userGroupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isGroupOwner = db.Query<bool>("select 1 from user_group where rowid=@group_rowid and creator=@creator",
+                    new { group_rowid = userGroupRowid, creator = userId }).FirstOrDefault();
+                if (isGroupOwner)
+                {
+                    var users = db.Query<string>("select user_id from user_group_member where group_rowid=@group_rowid",
+                        new { group_rowid = userGroupRowid }).ToList();
+                    return users;
+                }
+                else
+                {
+                    throw new Exception("这个用户组不是你创建，你无权操作");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 列出我所在的用户组
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public List<UserGroup> ListUserGroupsOfMe(string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var groups = db.Query<UserGroup>(@"
+select distinct u.rowid, u.group_name, u.group_description
+from user_group u, user_group_member m
+where m.user_id = @user_id
+    and u.rowid = m.group_rowid
+", new { user_id = userId }).ToList();
+
+                return groups;
             }
         }
 
@@ -220,6 +272,27 @@ update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@pare
             }
         }
 
+        public bool CanUpdateDocByUser(string userId, long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                var isDocOwner = db.Query<bool>("select 1 from documents_owner where id=docId and creator=@creator",
+                    new { creator = userId, docId = docId }).FirstOrDefault();
+                if (isDocOwner) return true;
+
+                var isDocShareToUser = db.Query<bool>(@"
+select 1
+from documents_share s, user_group_member u
+where s.user_group_rowid = u.group_rowid
+    and s.doc_id = @docId
+    and u.user_id = @userId
+", new { userId, docId }).FirstOrDefault();
+                if (isDocShareToUser) return true;
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// 检查是否有权对书籍更新
         /// </summary>
@@ -233,43 +306,6 @@ update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@pare
             if (!hasPermission)
             {
                 throw new Exception("你无权更新");
-            }
-        }
-
-        /// <summary>
-        /// 刷新文章中的附件，如附件在文章中已删除，则将后台的附件也删除
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="uploadId"></param>
-        public void UpdateAtachFiles(long id, string uploadId)
-        {
-            using (var db = this.OpenDb())
-            {
-                CreateTableIfNotExist();
-                var content = db.Query<string>("select content from documents where rowid=@id", new { id = id }).FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(content))
-                    DeleteAtachFiles(id, uploadId);
-                else
-                {
-                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
-                        new { id = id, uploadId = uploadId });
-                    foreach (var f in filePath)
-                    {
-                        var fileName = System.IO.Path.GetFileName(f);
-                        if (Regex.IsMatch(content, fileName, RegexOptions.IgnoreCase) == false)
-                        {
-                            if (System.IO.File.Exists(f)) System.IO.File.Delete(f);
-
-                            db.Execute("delete from documents_file  where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
-                                new { id = id, path = f, uploadId = uploadId });
-                        }
-                        else
-                        {
-                            db.Execute("update documents_file set doc_id=@id where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
-                                new { id = id, path = f, uploadId = uploadId });
-                        }
-                    }
-                }
             }
         }
 
@@ -296,6 +332,9 @@ update book_directories set seq=seq-1 where book_id=@book_id and parent_id=@pare
 
                 db.Execute("insert into documents(rowid, title, content, category) values(@rowid, @title, @content, @category)",
                     new { rowid = document.rowid, title = title, content = content, category = category });
+
+                db.Execute("insert into documents_history(creator, doc_id, title, content, category) values(@creator, @docId, @title, @content, @category)",
+                    new { creator = userId, docId = document.rowid, title = title, content = content, category = category });
 
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = document.rowid.ToString(), Category = category, Content = content, Title = title, Operate = Operate.AddOrUpdate });
                 return document;
@@ -433,7 +472,7 @@ values(@id, @book_id, @title, @description, @parent_id, @document_id, @seq);",
         /// </summary>
         private void CreateTableIfNotExist()
         {
-            if(_databaseCreated == false)
+            if (_databaseCreated == false)
             {
                 using (var db = this.OpenDb())
                 {
@@ -449,6 +488,10 @@ create table if not exists books(id INTEGER PRIMARY KEY, creator nvarchar(100) n
 create table if not exists book_directories(id INTEGER PRIMARY KEY, book_id int not null, title nvarchar(256) not null, description nvarchar(512), parent_id int, document_id int, seq int);
 create table if not exists book_owner(id INTEGER PRIMARY KEY, book_id int not null, user_id nvarchar(100) not null, is_owner int not null);
 create table if not exists id_generator(id INTEGER PRIMARY KEY, ikey nvarchar(100) not null, ivalue int not null);
+create table if not exists documents_history(doc_id int not null, create_at datetime default (datetime('now', 'localtime')), creator nvarchar(100), title nvarchar(512), content text, category nvarchar(100));
+create table if not exists user_group(group_name nvarchar(100) primary key, group_description nvarchar(255), creator nvarchar(100), create_at datetime default (datetime('now', 'localtime')));
+create table if not exists user_group_member(group_rowid int not null, user_id not null, creator nvarchar(100), create_at datetime default (datetime('now', 'localtime')));
+create table if not exists documents_share(doc_id int not null, user_group_rowid, creator nvarchar(100), create_at datetime default (datetime('now', 'localtime')));
                 ";
                     db.Execute(sql);
 
@@ -463,7 +506,46 @@ create table if not exists id_generator(id INTEGER PRIMARY KEY, ikey nvarchar(10
                 }
             }
 
-            
+
+        }
+
+        /// <summary>
+        /// 创建用户组
+        /// </summary>
+        /// <param name="creator"></param>
+        /// <param name="groupName"></param>
+        /// <param name="groupDescription"></param>
+        public long CreateUserGroup(string creator, string groupName, string groupDescription)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+
+                var id = GetId("user_group");
+                db.Execute(@"
+insert into user_group(rowid, group_name, group_description, creator) values(@group_rowid, @group_name, @group_description, @creator);
+insert into user_group_member(group_rowid, user_id, creator) values(@group_rowid, @creator, @creator);
+",
+                    new { group_rowid = id, group_name = groupName, group_description = groupDescription, creator = creator });
+                return id;
+            }
+        }
+
+        /// <summary>
+        /// 列出我创建的用户组
+        /// </summary>
+        /// <param name="creator"></param>
+        /// <returns></returns>
+        public List<UserGroup> ListMyUserGroup(string creator)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var myUserGroups = db.Query<UserGroup>("select rowid, group_name, group_description from user_group where creator=@creator",
+                    new { creator }).ToList();
+
+                return myUserGroups;
+            }
         }
 
         /// <summary>
@@ -508,7 +590,7 @@ COMMIT;
                     if (System.IO.File.Exists(f))
                     {
                         System.IO.File.Delete(f);
-                        db.Execute("delete from documents_file where (doc_id=@id or upload_id=@uploadId) and file_path=@filePath", 
+                        db.Execute("delete from documents_file where (doc_id=@id or upload_id=@uploadId) and file_path=@filePath",
                             new { id = id, uploadId = uploadId, filePath = f });
                     }
                 }
@@ -528,7 +610,7 @@ COMMIT;
                 CheckPermissionForUpdateBook(userid, db, bookid);
 
                 var book = GetBook(bookid, userid);
-                foreach(var d in book.BookDirectory)
+                foreach (var d in book.BookDirectory)
                 {
                     Delete(d.document_id);
                 }
@@ -566,6 +648,83 @@ COMMIT;
                     {
                         Delete(docId);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 删除用户组
+        /// </summary>
+        /// <param name="groupRowid"></param>
+        public void DeleteUserGroup(string creator, long groupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isGroupOwner = db.Query<bool>("select 1 from user_group where rowid=@group_rowid and creator=@creator",
+                    new { group_rowid = groupRowid, creator = creator }).FirstOrDefault();
+                if (isGroupOwner)
+                {
+                    db.Execute(@"
+BEGIN TRANSACTION;
+delete from user_group where rowid = @rowid;
+delete from user_group_member where group_rowid = @rowid;
+delete from documents_share where user_group_rowid = @rowid;
+COMMIT;
+");
+                }
+                else
+                {
+                    throw new Exception("这个用户组不是你创建，你无权操作");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将文档共享的用户组收回共享
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <param name="userGroupRowid"></param>
+        public void DocRemoveShare(string creator, long docId, long userGroupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isDocOwner = db.Query<bool>("select 1 from documents_owner where id=@doc_id and creator=@creator",
+                    new { doc_id = docId, creator = creator }).FirstOrDefault();
+                if (isDocOwner)
+                {
+                    db.Execute("delete from documents_share where doc_id=@doc_id and user_group_rowid=@user_group_rowid",
+                        new { doc_id = docId, user_group_rowid = userGroupRowid });
+                }
+                else
+                {
+                    throw new Exception("你不是文档的创建者，不能执行此操作");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将文档共享给用户组
+        /// </summary>
+        /// <param name="creator"></param>
+        /// <param name="docId"></param>
+        /// <param name="userGroupRowid"></param>
+        public void DocShareToUserGroup(string creator, long docId, long userGroupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isDocOwner = db.Query<bool>("select 1 from documents_owner where id=@doc_id and creator=@creator",
+                    new { doc_id = docId, creator = creator }).FirstOrDefault();
+                if (isDocOwner)
+                {
+                    db.Execute("insert into documents_share(doc_id, user_group_rowid, creator) values(@doc_id, @user_group_rowid, @creator)",
+                    new { doc_id = docId, user_group_rowid = userGroupRowid, creator = creator });
+                }
+                else
+                {
+                    throw new Exception("你不是文档的创建者，不能执行此操作");
                 }
             }
         }
@@ -702,6 +861,28 @@ or exists(select 1 from book_owner b where b.book_id = a.id and user_id = @user_
         }
 
         /// <summary>
+        /// 取某一个版本的文档
+        /// </summary>
+        /// <param name="versionId"></param>
+        /// <returns></returns>
+        public Document GetByVersionId(long versionId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var document = db.Query<Document>(@"
+select a.doc_id as rowid, a.title, a.content, a.category, b.creat_at, a.create_at as update_at, a.creator, b.is_public
+from documents_history a
+left join documents_owner b on a.doc_id = b.id
+where a.rowid = @versionId
+",
+                new { versionId = versionId }).FirstOrDefault();
+
+                return document;
+            }
+        }
+
+        /// <summary>
         /// 获取文档所有类别
         /// </summary>
         /// <returns></returns>
@@ -756,6 +937,22 @@ order by count(*) desc";
                 doc.ref_book_directory_id = directory.id;
                 doc.ref_book_id = directory.document_id;
                 return doc;
+            }
+        }
+
+        /// <summary>
+        /// 取文档的历史版本
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <returns></returns>
+        public List<DocumentVersion> GetDocVersions(long docId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var versions = db.Query<DocumentVersion>(@"select rowid, creator, create_at from documents_history where doc_id=@docId order by rowid desc",
+                    new { docId = docId }).ToList();
+                return versions;
             }
         }
 
@@ -989,6 +1186,30 @@ inner join documents_owner b on a.rowid = b.id
         }
 
         /// <summary>
+        /// 将用户从组中移除
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="userGroupRowid"></param>
+        public void RemoveUserFromGroup(string creator, string userId, long userGroupRowid)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var isGroupOwner = db.Query<bool>("select 1 from user_group where rowid=@group_rowid and creator=@creator",
+                   new { group_rowid = userGroupRowid, creator = creator }).FirstOrDefault();
+                if (isGroupOwner)
+                {
+                    db.Execute("delete from user_group_member where group_rowid=@group_rowid and user_id=@user_id",
+                        new { group_rowid = userGroupRowid, user_id = userId });
+                }
+                else
+                {
+                    throw new Exception("这个用户组不是你创建，你无权操作");
+                }
+            }
+        }
+
+        /// <summary>
         /// 保存文档类别
         /// </summary>
         /// <param name="id"></param>
@@ -1029,7 +1250,7 @@ inner join documents_owner b on a.rowid = b.id
         /// </summary>
         /// <param name="queryText"></param>
         /// <returns></returns>
-        public List<Document> Search(string queryText, string userId = "", bool isOnlySearchMine=false)
+        public List<Document> Search(string queryText, string userId = "", bool isOnlySearchMine = false)
         {
             // TODO: 搜索书籍
             var result = new List<Document>();
@@ -1202,16 +1423,61 @@ WHERE 1 = 1
             {
                 CreateTableIfNotExist();
 
+                if (!CanUpdateDocByUser(userId, id))
+                {
+                    throw new Exception("你无权操作");
+                }
+
                 SaveCategory(id, category, db);
 
-                db.Execute("update documents_owner set update_at=datetime('now', 'localtime'), is_public=@access, creator=@userId where id=@id",
+                db.Execute("update documents_owner set update_at=datetime('now', 'localtime'), is_public=@access where id=@id",
                     new { id = id, access = access, userId = userId });
 
                 db.Execute("update documents set title=@title, content=@content, category=@category where rowid=@rowid",
                     new { rowid = id, title = title, content = content, category = category });
 
+                db.Execute("insert into documents_history(creator, doc_id, title, content, category) values(@creator, @docId, @title, @content, @category)",
+                    new { creator = userId, docId = id, title = title, content = content, category = category });
+
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Category = category, Content = content, Title = title, Operate = Operate.AddOrUpdate });
                 //ClearNotExistsAtachFile(id);
+            }
+        }
+
+        /// <summary>
+        /// 刷新文章中的附件，如附件在文章中已删除，则将后台的附件也删除
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="uploadId"></param>
+        public void UpdateAtachFiles(long id, string uploadId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                var content = db.Query<string>("select content from documents where rowid=@id", new { id = id }).FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(content))
+                    DeleteAtachFiles(id, uploadId);
+                else
+                {
+                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
+                        new { id = id, uploadId = uploadId });
+                    foreach (var f in filePath)
+                    {
+                        var fileName = System.IO.Path.GetFileName(f);
+                        if (Regex.IsMatch(content, fileName, RegexOptions.IgnoreCase) == false)
+                        {
+                            if (System.IO.File.Exists(f)) System.IO.File.Delete(f);
+
+                            db.Execute("delete from documents_file  where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
+                                new { id = id, path = f, uploadId = uploadId });
+                        }
+                        else
+                        {
+                            db.Execute("update documents_file set doc_id=@id where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
+                                new { id = id, path = f, uploadId = uploadId });
+                        }
+                    }
+                }
             }
         }
 
@@ -1271,7 +1537,5 @@ WHERE 1 = 1
                 }
             }
         }
-
-        #endregion Methods of DocumentManager (48)
     }
 }

@@ -74,4 +74,18 @@ namespace MarkdownRepository.Models
         public IList<BookOwner> BookOwner { get; set; }
         public IList<BookDirectory> BookDirectory { get; set; }
     }
+
+    public class DocumentVersion
+    {
+        public long rowid { get; set; }
+        public string creator { get; set; }
+        public DateTime create_at { get; set; }
+    }
+
+    public class UserGroup
+    {
+        public long rowid { get; set; }
+        public string group_name { get; set; }
+        public string group_description { get; set; }
+    }
 }

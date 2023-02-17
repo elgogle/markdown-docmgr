@@ -131,6 +131,152 @@ namespace MarkdownRepository.Controllers
         }
 
         /// <summary>
+        /// 取某一个版本的文档
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult GetDocumentByVersion(long id)
+        {
+            try
+            {
+                var doc = docMgr.GetByVersionId(id);
+                return Success(doc);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 取文档的版本历史
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult GetDocumentVersions(long id)
+        {
+            try
+            {
+                var versions = docMgr.GetDocVersions(id);
+                return Success(versions);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// 用户加入到某用户组
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionResult AddToUserGroup(long id)
+        {
+            try
+            {
+                docMgr.AddUserToGroup(UserId, UserId, id);
+                return Success();
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 创建用户组
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="groupDescription"></param>
+        /// <returns></returns>
+        public ActionResult CreatUserGroup(string groupName, string groupDescription)
+        {
+            try
+            {
+                var userGroupId = docMgr.CreateUserGroup(UserId, groupName, groupDescription);
+                return Success(userGroupId);
+            }
+            catch(Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 列出我创建的用户组
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult ListMyUserGroups()
+        {
+            try
+            {
+                var groups = docMgr.ListMyUserGroup(UserId);
+                return Success(groups);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 列出我所在的所有用户组
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult ListUserGroupsOfMe()
+        {
+            try
+            {
+                var groups = docMgr.ListUserGroupsOfMe(UserId);
+                return Success(groups);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 列出在某个用户组中的所有用户 id
+        /// </summary>
+        /// <param name="id">user group rowid</param>
+        /// <returns></returns>
+        public ActionResult ListUsersInUserGroup(long id)
+        {
+            try
+            {
+                var groups = docMgr.ListUsersInUserGroup(UserId, id);
+                return Success(groups);
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// 将某文档分享给某一个用户组
+        /// </summary>
+        /// <param name="docId"></param>
+        /// <param name="userGroupId"></param>
+        /// <returns></returns>
+        public ActionResult DocShareToUserGroup(long docId, long userGroupId)
+        {
+            try
+            {
+                docMgr.DocShareToUserGroup(UserId, docId, userGroupId);
+                return Success();
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// 书籍目录顺序更改，包括层级变化
         /// </summary>
         /// <param name="bookId"></param>
