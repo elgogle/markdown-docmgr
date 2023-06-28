@@ -289,6 +289,13 @@ where s.user_group_rowid = u.group_rowid
 ", new { userId, docId }).FirstOrDefault();
                 if (isDocShareToUser) return true;
 
+                var book = GetBookByDoc(docId, userId);
+                if (book != null)
+                {
+                    CheckPermissionForUpdateBook(userId, db, book.Book.id);
+                    return true;
+                }
+
                 return false;
             }
         }
