@@ -149,7 +149,13 @@
                                     <span class="input-group-btn">
                                         <button id="btn_save_article" class="btn btn-default"
                                                 type="button">
-                                            保存文章
+                                            <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> 保存
+                                        </button>
+                                    </span>
+                                    <span class="input-group-btn">
+                                        <button id="btn_history" class="btn btn-default"
+                                                type="button">
+                                                <span class="glyphicon glyphicon-time" aria-hidden="true"></span> 历史
                                         </button>
                                     </span>
                                 </div>
@@ -418,6 +424,18 @@
                 area: '516px',
                 skin: 'layui-layer-rim', //加上边框
                 content: $('#diag_edit_book_info')
+            });
+        });
+
+        $("#btn_history").on('click', function () {
+            layer.open({
+                type: 2,
+                title: '版本历史',
+                shadeClose: true,
+                shade: false,
+                maxmin: true, //开启最大化最小化按钮
+                area: ['800px', '600px'],
+                content: '@Url.Action("DocumentHistory")' + '?id=' + $("#current_directory_id").val()
             });
         });
 

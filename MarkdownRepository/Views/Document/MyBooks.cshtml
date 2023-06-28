@@ -50,10 +50,17 @@
         .category {
             color: #337ab7;
             font-size: 0.7em;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .select-list{
             width: 220px;
+        }
+
+        .doc-title{
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .books-container{
@@ -64,7 +71,7 @@
         li.search-list{
             box-shadow: 4px -2px 3px #e5e5e5;
             display: grid;
-            grid-template-rows: auto 20px 50px;
+            grid-template-rows: 50% 15% 35%;
             max-width: 200px;
         }
 
@@ -100,7 +107,7 @@
                     isEven = !isEven;
 
                     <li class="search-list @(isEven?"even":"odd")">
-                        <div>
+                        <div class="doc-title">
                             <a href="@Url.Action("ShowBook", new { bookid = item.id })">
                                 <h4>@Html.Raw(item.name)</h4>
                                 <p style="text-overflow: ellipsis; word-wrap: break-word; font-size: 0.7em; color: gray; margin: 1em;">
@@ -117,6 +124,8 @@
                             <input type="checkbox" class="switch" data-value-book-id="@item.id" @(item.is_public == MarkdownRepository.Models.DocumentAccess.PUBLIC ? "checked" : "")>
 
                             <button class="btn btn-primary btn-xs" onclick="transferBook(@item.id, '@item.name')" type="button">转让书籍</button>
+                            <button class="btn btn-primary btn-xs" onclick="shareBook(@item.id)" type="button">邀请协作</button>
+                            <button class="btn btn-primary btn-xs" onclick="removeShare(@item.id)" type="button">删除协作</button>
 
                             <a class="btn btn-primary btn-xs" href="@Url.Action("EditBook", new { id = item.id })"><i class="glyphicon glyphicon-edit"></i> 编辑</a>
                             <a class="btn btn-primary btn-xs" href="#" onclick="return confirmDelete('@item.name', '@item.id');"><i class="glyphicon glyphicon-trash"></i> 删除</a>
@@ -139,6 +148,18 @@
     </div>
     <div class="form-group">
         <button id="transfer_submit" class="btn-primary" type="submit">确认</button>
+    </div>
+</div>
+
+<div id="diag_remove_share" style="display: none; padding:1em;">
+    <input type="hidden" id="remove_share_book_id" />
+    <div class="form-group">
+        <label>删除协作人：
+            <input id="share_user_id" type="text" class="form-control" placeholder="协作人 Id"/>
+        </label>
+    </div>
+    <div class="form-group">
+        <button id="remove_share_submit" class="btn-primary" type="submit">确认</button>
     </div>
 </div>
 
@@ -169,6 +190,66 @@
             });
         }
 
+        function copyToClipboard(text) {
+            if (window.clipboardData && window.clipboardData.setData) {
+                // Internet Explorer-specific code path to prevent textarea being shown while dialog is visible.
+                return clipboardData.setData("Text", text);
+            }
+            else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                var textarea = document.createElement("textarea");
+                textarea.textContent = text;
+                textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in Microsoft Edge.
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+                }
+                catch (ex) {
+                    console.warn("Copy to clipboard failed.", ex);
+                    return false;
+                }
+                finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+        }
+
+        function shareBook(bookid){
+            $.ajax({
+                url: '@Url.Action("GetShareBookUrl")',
+                data: { bookId: bookid },
+                cache: false,
+                dataType: 'json'
+            }).success(function (res) {
+                if (res.isSuccess) {
+                    var shareUrl = '@Url.GetFullUrl("AcceptShareBook")';
+                    var fullUrl = shareUrl + "?" + $.param({
+                        bookId: bookid,
+                        owner: '@User.Identity.Name.GetUserName()',
+                        key: res.data
+                    });
+                    copyToClipboard(fullUrl);
+                    layer.alert('分享链接已经复制，请粘贴发送给邀请人');
+                } else {
+                    layer.alert(res.message);
+                }
+            });
+        }
+
+        function removeShare(bookid){
+            $("#remove_share_book_id").val(bookid);
+            window.diagRemoveShare = layer.open({
+                type: 1,
+                title: "删除协作人",
+                closeBtn: 1,
+                moveType: 1,
+                shade: 0,
+                area: '450px',
+                skin: 'layui-layer-rim', //加上边框
+                content: $('#diag_remove_share')
+            });
+        }
+
         $(document).ready(function () {
             window.$transferBookName = $("#transfer_book_name");
             window.$transferBookId = $("#transfer_book_id");
@@ -195,6 +276,30 @@
                     });
                 } else {
                     layer.alert("请选择转让人，转让人不能是自己");
+                }
+            });
+
+            
+            $("#remove_share_submit").on('click', function(){
+                var removeUserId = $("#share_user_id").val(),
+                    bookId = $("#remove_share_book_id").val();
+                if(removeUserId){
+                    $.ajax({
+                        url: '@Url.Action("RemoveBookShare")',
+                        data: { bookId: bookId, removeUserId: removeUserId },
+                        cache: false,
+                        dataType: "json",
+                    })
+                    .success(function (res) {
+                        if (res.isSuccess) {
+                            layer.alert("删除成功");
+                            diagRemoveShare.close();
+                        } else {
+                            layer.alert(res.message);
+                        }
+                    });
+                }else{
+                    layer.alert("请输入要删除的协作人 id");
                 }
             });
 

@@ -204,6 +204,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Lib\AdAccount.cs" />
+    <Compile Include="Lib\CacheHelper.cs" />
     <Compile Include="Lib\CodeIndexManager.cs" />
     <Compile Include="Lib\CustomRoleProvider.cs" />
     <Compile Include="Lib\DocumentManager.cs" />

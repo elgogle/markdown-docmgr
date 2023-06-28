@@ -301,11 +301,44 @@ where s.user_group_rowid = u.group_rowid
         /// <param name="bookid"></param>
         private static void CheckPermissionForUpdateBook(string userId, DbConnection db, long bookid)
         {
+            var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id",
+                   new { book_id = bookid, user_id = userId }).FirstOrDefault();
+            if (!hasPermission)
+            {
+                throw new Exception("你无权更新");
+            }
+        }
+
+        /// <summary>
+        /// 检查是否有权删除书籍
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="db"></param>
+        /// <param name="bookid"></param>
+        private static void CheckIfIsBookOwner(string userId, DbConnection db, long bookid)
+        {
             var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1",
                    new { book_id = bookid, user_id = userId }).FirstOrDefault();
             if (!hasPermission)
             {
                 throw new Exception("你无权更新");
+            }
+        }
+
+        /// <summary>
+        /// 是否为书籍拥有人
+        /// </summary>
+        /// <param name="bookId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public bool IsBookOwner(long bookId, string userId)
+        {
+            using (var db = this.OpenDb())
+            {
+                var hasPermission = db.Query<bool>("select 1 from book_owner where book_id=@book_id and user_id = @user_id and is_owner=1",
+                  new { book_id = bookId, user_id = userId }).FirstOrDefault();
+
+                return hasPermission;
             }
         }
 
@@ -607,7 +640,7 @@ COMMIT;
             {
                 CreateTableIfNotExist();
 
-                CheckPermissionForUpdateBook(userid, db, bookid);
+                CheckIfIsBookOwner(userid, db, bookid);
 
                 var book = GetBook(bookid, userid);
                 foreach (var d in book.BookDirectory)
@@ -1390,11 +1423,46 @@ WHERE 1 = 1
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                CheckPermissionForUpdateBook(owner, db, bookid);
+                CheckIfIsBookOwner(owner, db, bookid);
 
                 db.Execute("update book_owner set user_id=@transferid where book_id = @book_id and is_owner = 1 and user_id = @owner", new { book_id = bookid, owner = owner, transferid = transferid });
             }
         }
+
+        /// <summary>
+        /// 将书籍分享给 id 实现共同修改
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="owner"></param>
+        /// <param name="shareToUserId"></param>
+        public void ShareBookTo(long bookid, string owner, string shareToUserId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                CheckIfIsBookOwner(owner, db, bookid);
+
+                db.Execute("insert or replace into book_owner(book_id, user_id, is_owner) values(@bookid, @shareToUserId, 0)", new { bookid, shareToUserId });
+            }
+        }
+
+        /// <summary>
+        /// 移除书籍共享人
+        /// </summary>
+        /// <param name="bookid"></param>
+        /// <param name="owner"></param>
+        /// <param name="shareToUserId"></param>
+        public void RemoveBookShare(long bookid, string owner, string shareToUserId)
+        {
+            using (var db = this.OpenDb())
+            {
+                CreateTableIfNotExist();
+                CheckIfIsBookOwner(owner, db, bookid);
+
+                db.Execute("delete from book_owner where book_id=@bookid and user_id=@shareToUserId", new { bookid, shareToUserId });
+            }
+        }
+
 
         /// <summary>
         /// 更改文章属主
@@ -1536,6 +1604,27 @@ WHERE 1 = 1
                             new { id = directoryid, title = title, description = description, seq = seq });
                 }
             }
+        }
+       
+
+        public void LockEdit(long docId, string userId, string host)
+        {
+            var key = GetLockEditKey(docId);
+            var lockBy = CacheHelper.Instance.GetCache<string>(key);
+
+            if (lockBy.IsNullOrEmpty() || lockBy.ToLower() == userId.ToLower())
+            {                
+                CacheHelper.Instance.SetCache(key, userId, TimeSpan.FromMinutes(2));
+            }
+            else
+            {
+                throw new Exception($"文档正在被{AdAccount.GetUserNameById(lockBy)}编辑，请稍后再试");
+            }
+        }
+
+        string GetLockEditKey(long docId)
+        {
+            return $"GetLockEditKey_{docId}";
         }
     }
 }

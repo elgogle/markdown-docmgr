@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,6 +14,30 @@ namespace MarkdownRepository.Lib
     {
         const string DESKEY = "7JKFJ*&*JVN#@HGFNjfkwoYGGLdji";
 
+        public static string GetFullUrl(this System.Web.Mvc.UrlHelper helper, string actionName)
+        {
+            var urlBuilder = new UriBuilder(helper.RequestContext.HttpContext.Request.Url.AbsoluteUri);
+            urlBuilder.Path = helper.Action(actionName);
+            return urlBuilder.ToString();
+        }
+
+        /// <summary>
+        /// 得到当前客户端 IP
+        /// </summary>
+        /// <returns></returns>
+        public static string GetClientIp(this NameValueCollection serverVariables)
+        {
+            //可以透过代理服务器
+            string userIP = serverVariables["HTTP_X_FORWARDED_FOR"];
+            //判断是否有代理服务器
+            if (string.IsNullOrEmpty(userIP))
+            {
+                //没有代理服务器,如果有代理服务器获取的是代理服务器的IP
+                userIP = serverVariables["REMOTE_ADDR"];
+            }
+
+            return userIP;
+        }
 
         public static string GetFileSize(this long? length)
         {

@@ -80,6 +80,7 @@
         padding-top: var(--base-size-8, 8px) !important;
     }
 </style>
+<link href="~/javascripts/layer-v3.1.1/layer/theme/default/layer.css" rel="stylesheet" />
 
 @if (ViewBag.Versions != null && (ViewBag.Versions as List<DocumentVersion>).Count > 0)
 {
@@ -94,7 +95,7 @@
                     </svg>
                 </div>
                 <div class="TimelineItem-body">
-                    <h2 class="f5 text-normal">版本: @(item.rowid), 由 @(AdAccount.GetUserNameById(item.creator)) 创建于 @(item.create_at.ToString("yyyy-MM-dd HH:mm:ss")) </h2>
+                    <h2 class="f5 text-normal">版本: <a href="" onclick="viewVersion(event, @(item.rowid))"> @(item.rowid)</a>, 由 @(AdAccount.GetUserNameById(item.creator)) 创建于 @(item.create_at.ToString("yyyy-MM-dd HH:mm:ss")) </h2>
                 </div>
             </div>
         }
@@ -108,4 +109,36 @@ else
     </div>
 }
 
+<div id="md_viewer" style="display:none; padding:1em;">
+    <textarea id="md_doc_container" cols="100" rows="60" ></textarea>
+</div>
 
+@System.Web.Optimization.Scripts.Render("~/jquery")
+<script src="~/javascripts/layer-v3.1.1/layer/layer.js"></script>
+<script>
+    function viewVersion(e, docId) {
+        e.preventDefault();
+        $.ajax({
+            url: '@Url.Action("GetDocumentByVersion")' + "?id=" + docId,
+            cache: false,
+            dataType: 'json'
+        }).success(function (res) {
+            if (res.isSuccess) {
+                var doc = res.data;
+                $("#md_doc_container").val(doc.content);
+                layer.open({
+                    type: 1,
+                    title: '版本 ' + docId,
+                    closeBtn: 1,
+                    moveType: 1,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    //area: ['800px', '600px'],
+                    content: $('#md_viewer')
+                });
+            } else {
+                layer.alert(res.message);
+            }
+        });
+    }
+</script>

@@ -157,6 +157,10 @@ namespace MarkdownRepository.Controllers
         {
             try
             {
+                var doc = docMgr.GetDocumentByDirectory(id);
+                if (doc != null)
+                    id = doc.rowid;
+
                 var versions = docMgr.GetDocVersions(id);
                 return Success(versions);
             }
@@ -187,9 +191,21 @@ namespace MarkdownRepository.Controllers
 
         public ActionResult DocumentHistory(long id)
         {
-            ViewBag.Versions = docMgr.GetDocVersions(id);
+            var version = docMgr.GetDocVersions(id);
+            if(version == null || version.Count == 0)
+            {
+                var doc = docMgr.GetDocumentByDirectory(id);
+                if (doc != null)
+                {
+                    version = docMgr.GetDocVersions(doc.rowid);
+                }
+            }
+
+            ViewBag.Versions = version;
+
             return View();
         }
+        
 
         /// <summary>
         /// 创建用户组
@@ -752,6 +768,7 @@ namespace MarkdownRepository.Controllers
             try
             {
                 var doc = docMgr.GetDocumentByDirectory(directoryid);
+                docMgr.LockEdit(doc.rowid, this.UserId, this.Request.ServerVariables.GetClientIp());
                 return Success(doc);
             }
             catch (Exception ex)
@@ -1259,6 +1276,63 @@ namespace MarkdownRepository.Controllers
             {
                 result.Add(nextSibling.id);
                 WalkDirectory(directory, result, nextSibling);
+            }
+        }
+
+
+        public ActionResult AcceptShareBook(long bookId, string owner, string key)
+        {
+            var a = CacheHelper.Instance.GetCache<string>(key);
+            if (a.IsNullOrEmpty() == false)
+            {
+                docMgr.ShareBookTo(bookId, owner, this.UserId);
+                CacheHelper.Instance.Remove(key);
+                return RedirectToAction("EditBook", new { id = bookId });
+            }
+            else
+            {
+                throw new Exception("链接无效");
+            }
+        }
+
+        public ActionResult GetShareBookUrl(long bookId)
+        {
+            try
+            {
+                if (docMgr.IsBookOwner(bookId, this.UserId))
+                {
+                    var key = Guid.NewGuid().ToString();
+                    CacheHelper.Instance.SetCache(key, bookId.ToString());
+                    return Success(key);
+                }
+                else
+                {
+                    throw new Exception("你无权分享该书籍");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
+            }
+        }
+
+        public ActionResult RemoveBookShare(long bookId, string removeUserId)
+        {
+            try
+            {
+                if (docMgr.IsBookOwner(bookId, this.UserId))
+                {
+                    docMgr.RemoveBookShare(bookId, this.UserId, removeUserId);
+                    return Success();
+                }
+                else
+                {
+                    throw new Exception("你无权删除分享");
+                }
+            }
+            catch (Exception ex)
+            {
+                return Fail(ex.Message);
             }
         }
 

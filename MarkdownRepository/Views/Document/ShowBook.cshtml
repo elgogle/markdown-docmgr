@@ -198,8 +198,8 @@
                     </div>
 
                     <div class="book-edit-block">
-                        @if (User.Identity.IsAuthenticated && Model.BookOwner.Any(t => t.user_id ==
-                            User.Identity.Name.GetUserName() && t.is_owner))
+                        @if (User.Identity.IsAuthenticated 
+                            && Model.BookOwner.Any(t => t.user_id == User.Identity.Name.GetUserName()))
                         {
                             <a href="@Url.Action("EditBook", new { id=Model.Book.id, dirId = ViewBag.CurrentDiretoryId })" class="btn btn-default btn-xs">
                                 <i class="glyphicon glyphicon-edit"></i> 编辑
