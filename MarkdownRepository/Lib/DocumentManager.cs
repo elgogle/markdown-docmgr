@@ -607,7 +607,7 @@ COMMIT;
 ";
                 db.Execute(sql, new { id = id });
                 _indexMgr.AddOrUpdateDocIndex(new Doc { Id = id.ToString(), Operate = Operate.Delete });
-                //DeleteAtachFile(id);
+                DeleteAtachFiles(id);
             }
         }
 
@@ -615,23 +615,23 @@ COMMIT;
         /// 删除附件
         /// </summary>
         /// <param name="id"></param>
-        private void DeleteAtachFiles(long id, string uploadId)
+        private void DeleteAtachFiles(long id)
         {
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
 
-                var files = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
-                        new { id = id, uploadId = uploadId }
+                var files = db.Query<DocumentFile>("select * from documents_file where doc_id=@doc_id",
+                        new { doc_id = id }
                     ).ToList();
 
                 foreach (var f in files)
                 {
-                    if (System.IO.File.Exists(f))
+                    db.Execute("delete from documents_file where id=@id", new { f.id });
+
+                    if (System.IO.File.Exists(f.file_path))
                     {
-                        System.IO.File.Delete(f);
-                        db.Execute("delete from documents_file where (doc_id=@id or upload_id=@uploadId) and file_path=@filePath",
-                            new { id = id, uploadId = uploadId, filePath = f });
+                        System.IO.File.Delete(f.file_path);
                     }
                 }
             }
@@ -1529,27 +1529,34 @@ WHERE 1 = 1
             using (var db = this.OpenDb())
             {
                 CreateTableIfNotExist();
-                var content = db.Query<string>("select content from documents where rowid=@id", new { id = id }).FirstOrDefault();
+                var content = db.Query<string>("select content from documents where rowid=@doc_id", 
+                    new { doc_id = id }).FirstOrDefault();
+
                 if (string.IsNullOrWhiteSpace(content))
-                    DeleteAtachFiles(id, uploadId);
+                {
+                    DeleteAtachFiles(id);
+                }
                 else
                 {
-                    var filePath = db.Query<string>("select file_path from documents_file where doc_id=@id or upload_id=@uploadId",
-                        new { id = id, uploadId = uploadId });
-                    foreach (var f in filePath)
+                    var files = db.Query<DocumentFile>(
+                        "select * from documents_file where doc_id=@doc_id or upload_id=@uploadId",
+                        new { doc_id = id, uploadId = uploadId });
+
+                    foreach (var f in files)
                     {
-                        var fileName = System.IO.Path.GetFileName(f);
+                        if (f.id > 0 && f.id != id) continue;
+
+                        var fileName = System.IO.Path.GetFileName(f.file_path);
                         if (Regex.IsMatch(content, fileName, RegexOptions.IgnoreCase) == false)
                         {
-                            if (System.IO.File.Exists(f)) System.IO.File.Delete(f);
+                            db.Execute("delete from documents_file where id=@id", new { f.id });
 
-                            db.Execute("delete from documents_file  where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
-                                new { id = id, path = f, uploadId = uploadId });
+                            if (System.IO.File.Exists(f.file_path)) System.IO.File.Delete(f.file_path);
                         }
                         else
                         {
-                            db.Execute("update documents_file set doc_id=@id where (doc_id=@id or upload_id=@uploadId) and file_path=@path",
-                                new { id = id, path = f, uploadId = uploadId });
+                            db.Execute("update documents_file set doc_id=@doc_id where doc_id=0 and upload_id=@uploadId and file_path=@path",
+                                new { doc_id = id, path = f.file_path, uploadId = uploadId });
                         }
                     }
                 }

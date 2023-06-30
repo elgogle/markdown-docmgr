@@ -88,4 +88,12 @@ namespace MarkdownRepository.Models
         public string group_name { get; set; }
         public string group_description { get; set; }
     }
+
+    public class DocumentFile
+    {
+        public long id { get; set; }
+        public long doc_id { get; set; }
+        public string upload_id { get; set; }
+        public string file_path { get; set; }
+    }
 }
